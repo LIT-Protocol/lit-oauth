@@ -1,21 +1,26 @@
 {
-  "name": "lit-zoom-oauth",
+  "name": "lit-oauth",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "proxy": "http://localhost:4000",
   "dependencies": {
+    "@consta/uikit": "^3.3.0",
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.21.4",
+    "lit-js-sdk": "^1.1.71",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "PORT=4001 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "startDev": "concurrently \"yarn start\" \"cd server && yarn startDev\""
   },
   "eslintConfig": {
     "extends": [

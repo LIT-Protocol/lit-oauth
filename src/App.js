@@ -1,24 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { Button } from "@consta/uikit/Button";
+import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
+import axios from "axios";
+import LitJsSdk from "lit-js-sdk";
+
+const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 function App() {
+  const connect = async (service) => {
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
+
+    if (service === "zoom") {
+      const resp = await axios.post(`${API_HOST}/api/oauth/zoom/login`, {
+        authSig,
+      });
+      if (resp.data.redirectTo) {
+        window.location = resp.data.redirectTo;
+      }
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Theme preset={presetGpnDefault}>
+      <div className="App">
+        <Button
+          label="Connect your Zoom account"
+          onClick={() => connect("zoom")}
+        />
+      </div>
+    </Theme>
   );
 }
 
