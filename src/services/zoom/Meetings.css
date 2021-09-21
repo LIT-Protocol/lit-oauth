@@ -1,0 +1,14 @@
+.Meeting {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.Meetings {
+  display: flex;
+  justify-content: center;
+}
+
+.MeetingColumn {
+  margin: 8px;
+}

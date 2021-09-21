@@ -3,6 +3,7 @@ import { Button } from "@consta/uikit/Button";
 import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
+import Meetings from "./services/zoom/Meetings";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -29,6 +30,8 @@ function App() {
           label="Connect your Zoom account"
           onClick={() => connect("zoom")}
         />
+        <h3>Zoom Meetings</h3>
+        <Meetings />
       </div>
     </Theme>
   );

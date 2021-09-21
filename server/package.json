@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "startDev": "nodemon index.js"
+    "startDev": "nodemon index.js",
+    "migrate": "node migrate.js"
   },
   "dependencies": {
     "axios": "^0.21.4",

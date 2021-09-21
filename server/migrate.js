@@ -3,7 +3,7 @@ const { Client } = pg;
 
 const main = async () => {
   const dbConfig = {
-    connectionString: process.env.LIT_GATEWAY_DB_URL,
+    connectionString: process.env.LIT_PROTOCOL_OAUTH_DB_URL,
   };
   if (process.env.LIT_DEPLOY_ENV === "production") {
     dbConfig.ssl = { rejectUnauthorized: false };
@@ -15,7 +15,7 @@ const main = async () => {
   await client.query(
     "CREATE TABLE IF NOT EXISTS connected_services (id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(), service_name text, access_token text, refresh_token text, scope text, id_on_service text, email text, created_at timestamp, user_id text, extra_data text);"
   );
-  await client.query("create index on connected_services (eth_address);");
+  await client.query("create index on connected_services (user_id);");
   await client.query("create index on connected_services (service_name);");
 
   await client.query(
