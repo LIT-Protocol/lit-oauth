@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { getMeetings, createMeetingShare } from "../api";
+import { useAppContext } from "../../../context";
 
 import LitJsSdk from "lit-js-sdk";
 
@@ -14,6 +15,7 @@ import "./Meetings.css";
 import { getResourceIdForMeeting, getSharingLink } from "../utils";
 
 export default function Meetings(props) {
+  const { performWithAuthSig } = useAppContext();
   const [meetings, setMeetings] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
@@ -21,11 +23,19 @@ export default function Meetings(props) {
 
   useEffect(() => {
     const go = async () => {
-      const resp = await getMeetings();
-      setMeetings(resp.meetings.map((m) => m.meetings).flat());
+      const resp = await loadMeetings();
     };
     go();
   }, []);
+
+  const loadMeetings = async () => {
+    await performWithAuthSig(async (authSig) => {
+      const resp = await getMeetings({ authSig });
+      const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
+      setMeetings(flatMeetings);
+      return flatMeetings;
+    });
+  };
 
   const handleGrantAccess = async (meeting) => {
     await LitJsSdk.checkAndSignAuthMessage({
@@ -40,25 +50,34 @@ export default function Meetings(props) {
   };
 
   const onAccessControlConditionsSelected = async (accessControlConditions) => {
-    console.log("onAccessControlConditionsSelected", accessControlConditions);
-    const chain = accessControlConditions[0].chain;
+    await performWithAuthSig(async (authSig) => {
+      console.log("onAccessControlConditionsSelected", accessControlConditions);
+      const chain = accessControlConditions[0].chain;
 
-    const resp = await createMeetingShare({
-      meeting: currentMeeting,
-      accessControlConditions,
-    });
-    console.log(resp);
+      const resp = await createMeetingShare({
+        authSig,
+        meeting: currentMeeting,
+        accessControlConditions,
+      });
+      console.log(resp);
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({
-      chain: "ethereum",
-    });
+      // reload meeting with share so that when the user clicks "copy link"
+      // in the access control modal, it actually works
+      const meetings = await loadMeetings();
+      const meeting = meetings.find((m) => m.id === currentMeeting.id);
+      setCurrentMeeting(meeting);
+      const share = meeting.shares[0];
 
-    const resourceId = getResourceIdForMeeting(currentMeeting);
-    await window.litNodeClient.saveSigningCondition({
-      accessControlConditions,
-      chain,
-      authSig,
-      resourceId,
+      const resourceId = getResourceIdForMeeting({
+        meeting: currentMeeting,
+        share,
+      });
+      await window.litNodeClient.saveSigningCondition({
+        accessControlConditions,
+        chain,
+        authSig,
+        resourceId,
+      });
     });
   };
 

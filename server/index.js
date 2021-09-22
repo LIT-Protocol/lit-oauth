@@ -164,7 +164,7 @@ fastify.post("/api/zoom/meetings", async (request, reply) => {
           [service.id]
         )
       ).rows;
-      console.log("got shares", shares);
+      // console.log("got shares", shares);
       return { ...service, shares };
     })
   );
@@ -213,10 +213,11 @@ fastify.post("/api/zoom/shares", async (request, reply) => {
 });
 
 fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
-  const { jwt, meetingId } = request.body;
+  const { jwt, meetingId, shareId } = request.body;
 
   // verify the jwt
   const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
+  const userId = payload.sub;
 
   // The "verified" variable is a boolean that indicates whether or not the signature verified properly.
   // Note: YOU MUST CHECK THE PAYLOAD AGAINST THE CONTENT YOU ARE PROTECTING.
@@ -225,7 +226,14 @@ fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
 
   const sharedLinkPath = getSharingLinkPath({ id: meetingId });
 
-  // note: you should check payload.path here, too, but we do not because for this demo we are generating a random path every time.
+  const extraData = JSON.stringify({
+    shareId,
+  });
+
+  console.log("payload is", payload);
+  console.log("correct extra data is ", extraData);
+  console.log("shared link path is", sharedLinkPath);
+
   if (
     !verified ||
     payload.baseUrl !==
@@ -233,16 +241,38 @@ fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
     payload.path !== sharedLinkPath ||
     payload.orgId !== "" ||
     payload.role !== "" ||
-    payload.extraData !== ""
+    payload.extraData !== extraData
   ) {
     // Reject this request!
     return { success: false, errorCode: "not_authorized" };
   }
 
+  // get the meeting and oauth creds
+  let meeting = (
+    await fastify.pg.query(
+      "SELECT * FROM shares WHERE asset_id_on_service=$1",
+      [meetingId]
+    )
+  ).rows[0];
+
+  let service = (
+    await fastify.pg.query("SELECT * FROM connected_services WHERE id=$1", [
+      meeting.connected_service_id,
+    ])
+  ).rows[0];
+
   // grant access on zoom api
+  const { joinUrl } = await zoom.createMeetingInvite({
+    accessToken: service.access_token,
+    refreshToken: service.refresh_token,
+    connectedServiceId: service.id,
+    fastify,
+    userId,
+    meetingId,
+  });
 
   return {
-    success: true,
+    joinUrl,
   };
 });
 

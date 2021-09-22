@@ -10,14 +10,16 @@ export const getSharingLink = (meeting) => {
   return HOST + path;
 };
 
-export const getResourceIdForMeeting = (meeting) => {
+export const getResourceIdForMeeting = ({ meeting, share }) => {
   const path = getSharingLinkPath(meeting);
   const resourceId = {
     baseUrl: HOST,
     path,
     orgId: "",
     role: "",
-    extraData: "",
+    extraData: JSON.stringify({
+      shareId: share.id,
+    }),
   };
   return resourceId;
 };

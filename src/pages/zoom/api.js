@@ -3,11 +3,7 @@ import LitJsSdk from "lit-js-sdk";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const getMeetings = async () => {
-  const authSig = await LitJsSdk.checkAndSignAuthMessage({
-    chain: "ethereum",
-  });
-
+export const getMeetings = async ({ authSig }) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/meetings`, {
     authSig,
   });
@@ -15,17 +11,18 @@ export const getMeetings = async () => {
   return resp.data;
 };
 
-export const createMeetingShare = async (body) => {
-  const authSig = await LitJsSdk.checkAndSignAuthMessage({
-    chain: "ethereum",
-  });
-
-  const resp = await axios.post(`${API_HOST}/api/zoom/shareMeeting`, {
-    ...body,
+export const createMeetingShare = async ({
+  authSig,
+  meeting,
+  accessControlConditions,
+}) => {
+  const data = await axios.post(`${API_HOST}/api/zoom/shareMeeting`, {
     authSig,
+    meeting,
+    accessControlConditions,
   });
 
-  return resp.data;
+  return data;
 };
 
 export const getShares = async ({ authSig, meetingId }) => {
@@ -37,10 +34,11 @@ export const getShares = async ({ authSig, meetingId }) => {
   return resp.data;
 };
 
-export const getZoomUrl = async ({ meetingId, jwt }) => {
+export const getMeetingUrl = async ({ meetingId, jwt, shareId }) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/getMeetingUrl`, {
     jwt,
     meetingId,
+    shareId,
   });
 
   return resp.data;

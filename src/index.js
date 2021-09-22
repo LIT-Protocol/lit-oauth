@@ -7,9 +7,12 @@ import LitJsSdk from "lit-js-sdk";
 import Bugsnag from "@bugsnag/js";
 import BugsnagPluginReact from "@bugsnag/plugin-react";
 
+import { AppContextProvider } from "./context/app";
+
 Bugsnag.start({
   apiKey: "cf16e209b17501304af19b24e1a89eb6",
   plugins: [new BugsnagPluginReact()],
+  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
 });
 
 const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(React);
@@ -23,7 +26,9 @@ window.LitJsSdk = LitJsSdk;
 ReactDOM.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <AppContextProvider>
+        <App />
+      </AppContextProvider>
     </ErrorBoundary>
   </React.StrictMode>,
   document.getElementById("root")

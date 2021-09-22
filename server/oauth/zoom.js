@@ -74,6 +74,44 @@ export const getMeetings = async ({
   });
 };
 
+export const createMeetingInvite = async ({
+  accessToken,
+  refreshToken,
+  connectedServiceId,
+  fastify,
+  userId,
+  meetingId,
+}) => {
+  return refreshTokenIfNeeded({
+    accessToken,
+    refreshToken,
+    fastify,
+    connectedServiceId,
+    req: async (accessToken) => {
+      const url = `https://api.zoom.us/v2/meetings/${meetingId}/invite_links`;
+      const resp = await axios.post(
+        url,
+        {
+          attendees: [
+            {
+              name: userId,
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const joinUrl = resp.data.attendees[0].join_url;
+
+      return { joinUrl };
+    },
+  });
+};
+
 export const refreshAccessToken = async ({
   connectedServiceId,
   refreshToken,
@@ -110,7 +148,7 @@ export const refreshAccessToken = async ({
     );
   });
 
-  return resp.data;
+  return resp.data.access_token;
 };
 
 const refreshTokenIfNeeded = async ({
@@ -124,16 +162,19 @@ const refreshTokenIfNeeded = async ({
     const resp = await req(accessToken);
     return resp;
   } catch (e) {
-    console.log("response status from axios", e.response.status);
-    console.log("response code from axios", e.response.data.code);
-    if (e.response.status === 401 && e.response.data.code === 124) {
-      // refresh the token, then try again
-      const refreshedAccessToken = await refreshAccessToken({
-        refreshToken,
-        fastify,
-        connectedServiceId,
-      });
-      return req(refreshedAccessToken);
+    if (e.response) {
+      console.log("response status from axios", e.response.status);
+      console.log("response code from axios", e.response.data.code);
+
+      if (e.response.status === 401 && e.response.data.code === 124) {
+        // refresh the token, then try again
+        const refreshedAccessToken = await refreshAccessToken({
+          refreshToken,
+          fastify,
+          connectedServiceId,
+        });
+        return req(refreshedAccessToken);
+      }
     } else {
       throw e;
     }
