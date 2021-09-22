@@ -1,15 +1,12 @@
-import ZoomAccess from "./pages/zoom/ZoomAccess.js";
-import ZoomGranting from "./pages/zoom/ZoomGranting.js";
-
 export const URL_MAP = {
   zoomGranting: {
     path: "/",
-    component: ZoomGranting,
+    componentName: "ZoomGranting",
     exact: true,
   },
   zoomAccess: {
     path: "/share/zoom/:meetingId",
-    component: ZoomAccess,
+    componentName: "ZoomAccess",
     exact: false,
   },
 };

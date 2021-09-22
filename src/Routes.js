@@ -1,6 +1,13 @@
 import { Route, Switch } from "react-router-dom";
 
 import { URL_MAP } from "./config";
+import ZoomAccess from "./pages/zoom/ZoomAccess";
+import ZoomGranting from "./pages/zoom/ZoomGranting";
+
+const ROUTING_COMPONENTS = {
+  ZoomGranting: ZoomGranting,
+  ZoomAccess: ZoomAccess,
+};
 
 const Routes = () => {
   return (
@@ -11,7 +18,7 @@ const Routes = () => {
             <Route
               key={k}
               path={URL_MAP[k].path}
-              component={URL_MAP[k].component}
+              component={ROUTING_COMPONENTS[URL_MAP[k].componentName]}
               exact={URL_MAP[k].exact}
             />
           ))}
