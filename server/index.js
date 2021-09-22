@@ -9,6 +9,8 @@ import * as zoom from "./oauth/zoom.js";
 import { authUser } from "./auth.js";
 import { getAccessToken, getUser } from "./oauth/zoom.js";
 import { keysToCamel } from "./utils.js";
+import LitJsSdk from "lit-js-sdk";
+import { getSharingLinkPath } from "../src/pages/zoom/utils.js";
 
 const __dirname = path.resolve();
 
@@ -91,38 +93,48 @@ fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
   const user = await zoom.getUser({ accessToken });
   console.log("user", user);
 
-  // if access token already stored, replace it
-  await fastify.pg.transact(async (client) => {
-    // will resolve to an id, or reject with an error
-    const id = await client.query(
-      "DELETE FROM connected_services WHERE user_id=$1 AND service_name=$2 AND id_on_service=$3",
-      [userId, "zoom", user.id]
-    );
+  // check for existing access token
+  const service = (
+    await fastify.pg.query(
+      "SELECT id FROM connected_services WHERE user_id=$1 AND id_on_service=$2",
+      [userId, user.id]
+    )
+  ).rows[0];
 
-    // potentially do something with id
-    return id;
-  });
+  if (service) {
+    // update
+    // store access token and user info
+    await fastify.pg.transact(async (client) => {
+      // will resolve to an id, or reject with an error
+      await client.query(
+        "UPDATE connected_services SET access_token=$1, refresh_token=$2 WHERE id=$3",
+        [data.access_token, data.refresh_token, service.id]
+      );
+    });
+  } else {
+    // insert
+    // store access token and user info
+    await fastify.pg.transact(async (client) => {
+      // will resolve to an id, or reject with an error
+      const id = await client.query(
+        "INSERT INTO connected_services(user_id, service_name, id_on_service, email, created_at, access_token, refresh_token, extra_data, scope) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
+        [
+          authSig.address,
+          "zoom",
+          user.id,
+          user.email,
+          new Date(),
+          data.access_token,
+          data.refresh_token,
+          JSON.stringify({ token: data, user }),
+          data.scope,
+        ]
+      );
 
-  // store access token and user info
-  await fastify.pg.transact(async (client) => {
-    // will resolve to an id, or reject with an error
-    const id = await client.query(
-      "INSERT INTO connected_services(user_id, service_name, id_on_service, email, created_at, access_token, refresh_token, extra_data) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
-      [
-        authSig.address,
-        "zoom",
-        user.id,
-        user.email,
-        new Date(),
-        data.access_token,
-        data.refresh_token,
-        JSON.stringify({ token: data, user }),
-      ]
-    );
-
-    // potentially do something with id
-    return id;
-  });
+      // potentially do something with id
+      return id;
+    });
+  }
 
   reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
 });
@@ -136,12 +148,26 @@ fastify.post("/api/zoom/meetings", async (request, reply) => {
   }
   const userId = authSig.address;
 
-  const services = (
+  let services = (
     await fastify.pg.query(
       "SELECT * FROM connected_services WHERE user_id=$1 and service_name=$2",
       [userId, "zoom"]
     )
   ).rows;
+
+  // add shares
+  services = await Promise.all(
+    services.map(async (service) => {
+      const shares = (
+        await fastify.pg.query(
+          "SELECT * FROM shares WHERE connected_service_id=$1",
+          [service.id]
+        )
+      ).rows;
+      console.log("got shares", shares);
+      return { ...service, shares };
+    })
+  );
 
   const meetings = await Promise.all(
     services.map((s) =>
@@ -149,12 +175,74 @@ fastify.post("/api/zoom/meetings", async (request, reply) => {
         accessToken: s.access_token,
         refreshToken: s.refresh_token,
         connectedServiceId: s.id,
+        fastify,
+        shares: s.shares,
       })
     )
   );
 
   return {
     meetings,
+  };
+});
+
+// get shares for a given meeting
+fastify.post("/api/zoom/shares", async (request, reply) => {
+  const { authSig, meetingId } = request.body;
+
+  if (!authUser(authSig)) {
+    reply.code(400);
+    return { error: "Invalid signature" };
+  }
+  const userId = authSig.address;
+
+  let shares = (
+    await fastify.pg.query(
+      "SELECT * FROM shares WHERE asset_id_on_service=$1",
+      [meetingId]
+    )
+  ).rows;
+
+  return {
+    shares: shares.map((s) => {
+      const share = keysToCamel(s);
+      share.accessControlConditions = JSON.parse(share.accessControlConditions);
+      return share;
+    }),
+  };
+});
+
+fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
+  const { jwt, meetingId } = request.body;
+
+  // verify the jwt
+  const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
+
+  // The "verified" variable is a boolean that indicates whether or not the signature verified properly.
+  // Note: YOU MUST CHECK THE PAYLOAD AGAINST THE CONTENT YOU ARE PROTECTING.
+  // This means you need to look at "payload.baseUrl" which should match the hostname of the server, and you must also look at "payload.path" which should match the path being accessed, and you must also look at payload.orgId, payload.role, and payload.extraData which will probably be empty
+  // If these do not match what you're expecting, you should reject the request!!
+
+  const sharedLinkPath = getSharingLinkPath({ id: meetingId });
+
+  // note: you should check payload.path here, too, but we do not because for this demo we are generating a random path every time.
+  if (
+    !verified ||
+    payload.baseUrl !==
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
+    payload.path !== sharedLinkPath ||
+    payload.orgId !== "" ||
+    payload.role !== "" ||
+    payload.extraData !== ""
+  ) {
+    // Reject this request!
+    return { success: false, errorCode: "not_authorized" };
+  }
+
+  // grant access on zoom api
+
+  return {
+    success: true,
   };
 });
 

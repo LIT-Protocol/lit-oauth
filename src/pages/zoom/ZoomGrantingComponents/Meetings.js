@@ -1,18 +1,23 @@
 import React, { useEffect, useState } from "react";
 
-import { getMeetings, createMeetingShare } from "./api";
+import { getMeetings, createMeetingShare } from "../api";
+
+import LitJsSdk from "lit-js-sdk";
 
 import { ProgressSpin } from "@consta/uikit/ProgressSpin";
 import { Button } from "@consta/uikit/Button";
+import { SnackBar } from "@consta/uikit/SnackBar";
 
 import { ShareModal } from "lit-access-control-conditions-modal";
 
 import "./Meetings.css";
+import { getResourceIdForMeeting, getSharingLink } from "../utils";
 
 export default function Meetings(props) {
   const [meetings, setMeetings] = useState(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [currentMeeting, setCurrentMeeting] = useState(null);
+  const [showSnackbar, setShowSnackbar] = useState(false);
 
   useEffect(() => {
     const go = async () => {
@@ -22,7 +27,10 @@ export default function Meetings(props) {
     go();
   }, []);
 
-  const addRequirements = (meeting) => {
+  const handleGrantAccess = async (meeting) => {
+    await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
     setCurrentMeeting(meeting);
     setShowShareModal(true);
   };
@@ -33,14 +41,37 @@ export default function Meetings(props) {
 
   const onAccessControlConditionsSelected = async (accessControlConditions) => {
     console.log("onAccessControlConditionsSelected", accessControlConditions);
+    const chain = accessControlConditions[0].chain;
+
     const resp = await createMeetingShare({
       meeting: currentMeeting,
       accessControlConditions,
     });
     console.log(resp);
+
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
+
+    const resourceId = getResourceIdForMeeting(currentMeeting);
+    await window.litNodeClient.saveSigningCondition({
+      accessControlConditions,
+      chain,
+      authSig,
+      resourceId,
+    });
   };
 
-  const getSharingLink = () => {};
+  const copyToClipboard = async (toCopy) => {
+    await navigator.clipboard.writeText(toCopy);
+    setShowSnackbar(true);
+    setTimeout(() => setShowSnackbar(false), 5000);
+  };
+
+  const handleCopyShareLink = (meeting) => {
+    const link = getSharingLink(meeting);
+    copyToClipboard(link);
+  };
 
   return (
     <div className="Meetings">
@@ -55,8 +86,14 @@ export default function Meetings(props) {
               <Button
                 view="secondary"
                 label="Grant Access"
-                onClick={() => addRequirements(m)}
+                onClick={() => handleGrantAccess(m)}
               />
+              {m.shares && m.shares.length > 0 ? (
+                <Button
+                  label="Copy share link"
+                  onClick={() => handleCopyShareLink(m)}
+                />
+              ) : null}
             </div>
           </div>
         ))
@@ -69,10 +106,15 @@ export default function Meetings(props) {
           onClose={() => closeShareModal()}
           sharingItems={[currentMeeting]}
           onAccessControlConditionsSelected={onAccessControlConditionsSelected}
-          getSharingLink={getSharingLink}
+          getSharingLink={() => getSharingLink(currentMeeting)}
           onlyAllowCopySharingLink={false}
           copyLinkText="Only authorized users will be able to enter this Zoom meeting"
+          showStep="ableToAccess"
         />
+      ) : null}
+
+      {showSnackbar ? (
+        <SnackBar items={[{ key: 1, message: "Copied!" }]} />
       ) : null}
     </div>
   );
