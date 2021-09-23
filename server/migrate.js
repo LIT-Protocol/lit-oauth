@@ -19,7 +19,7 @@ const main = async () => {
   await client.query("create index on connected_services (service_name);");
 
   await client.query(
-    "CREATE TABLE IF NOT EXISTS shares (id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(), connected_service_id UUID, access_control_conditions text, asset_id_on_service text, name text, user_id text);"
+    "CREATE TABLE IF NOT EXISTS shares (id UUID PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(), connected_service_id UUID, access_control_conditions text, asset_id_on_service text, name text, user_id text, asset_type text);"
   );
   await client.query("create index on shares (user_id);");
 

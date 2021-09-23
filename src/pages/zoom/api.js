@@ -3,8 +3,8 @@ import LitJsSdk from "lit-js-sdk";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const getMeetings = async ({ authSig }) => {
-  const resp = await axios.post(`${API_HOST}/api/zoom/meetings`, {
+export const getMeetingsAndWebinars = async ({ authSig }) => {
+  const resp = await axios.post(`${API_HOST}/api/zoom/meetingsAndWebinars`, {
     authSig,
   });
 

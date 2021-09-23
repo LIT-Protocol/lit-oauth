@@ -30,7 +30,7 @@ export default function ZoomGranting() {
           label="Connect your Zoom account"
           onClick={() => connect("zoom")}
         />
-        <h3>Zoom Meetings</h3>
+        <h3>Zoom Meetings and Webinars</h3>
         <Meetings />
       </div>
     </Theme>

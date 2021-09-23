@@ -37,7 +37,7 @@ export const getUser = async ({ accessToken, refreshToken }) => {
   return user.data;
 };
 
-export const getMeetings = async ({
+export const getMeetingsAndWebinars = async ({
   accessToken,
   refreshToken,
   connectedServiceId,
@@ -51,14 +51,15 @@ export const getMeetings = async ({
     connectedServiceId,
     shares,
     req: async (accessToken) => {
-      const q = {
+      // pull meetings
+      let q = {
         type: "scheduled",
         page_size: 300,
       };
-      const url =
+      let url =
         "https://api.zoom.us/v2/users/me/meetings?" +
         new URLSearchParams(q).toString();
-      const resp = await axios.get(url, {
+      let resp = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -67,9 +68,31 @@ export const getMeetings = async ({
       const meetingsWithServiceId = resp.data.meetings.map((d) => ({
         ...d,
         connectedServiceId,
-        shares,
+        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
+        type: "meeting",
       }));
-      return { meetings: meetingsWithServiceId };
+
+      // pull webinars
+      q = {
+        page_size: 300,
+      };
+      url =
+        "https://api.zoom.us/v2/users/me/webinars?" +
+        new URLSearchParams(q).toString();
+      resp = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      const webinarsWithServiceId = resp.data.webinars.map((d) => ({
+        ...d,
+        connectedServiceId,
+        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
+        type: "webinar",
+      }));
+
+      return [...meetingsWithServiceId, ...webinarsWithServiceId];
     },
   });
 };
@@ -81,6 +104,7 @@ export const createMeetingInvite = async ({
   fastify,
   userId,
   meetingId,
+  assetType,
 }) => {
   return refreshTokenIfNeeded({
     accessToken,
@@ -88,7 +112,13 @@ export const createMeetingInvite = async ({
     fastify,
     connectedServiceId,
     req: async (accessToken) => {
-      const url = `https://api.zoom.us/v2/meetings/${meetingId}/invite_links`;
+      let url;
+      if (assetType === "meeting") {
+        url = `https://api.zoom.us/v2/meetings/${meetingId}/invite_links`;
+      } else {
+        // must be webinar
+        url = `https://api.zoom.us/v2/webinars/${meetingId}/invite_links`;
+      }
       const resp = await axios.post(
         url,
         {

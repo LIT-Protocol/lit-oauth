@@ -10,6 +10,7 @@
     "migrate": "node migrate.js"
   },
   "dependencies": {
+    "@bugsnag/js": "^7.11.0",
     "axios": "^0.21.4",
     "eth-sig-util": "^3.0.1",
     "fastify": "^3.21.3",

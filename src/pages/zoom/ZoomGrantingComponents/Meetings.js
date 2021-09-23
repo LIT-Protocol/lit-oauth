@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { getMeetings, createMeetingShare } from "../api";
+import { getMeetingsAndWebinars, createMeetingShare } from "../api";
 import { useAppContext } from "../../../context";
 
 import LitJsSdk from "lit-js-sdk";
@@ -29,11 +29,12 @@ export default function Meetings(props) {
   }, []);
 
   const loadMeetings = async () => {
-    await performWithAuthSig(async (authSig) => {
-      const resp = await getMeetings({ authSig });
-      const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
-      setMeetings(flatMeetings);
-      return flatMeetings;
+    return await performWithAuthSig(async (authSig) => {
+      const resp = await getMeetingsAndWebinars({ authSig });
+      // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
+      // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
+      setMeetings(resp.meetingsAndWebinars);
+      return resp.meetingsAndWebinars;
     });
   };
 
@@ -64,6 +65,7 @@ export default function Meetings(props) {
       // reload meeting with share so that when the user clicks "copy link"
       // in the access control modal, it actually works
       const meetings = await loadMeetings();
+      console.log("meetings after sharing", meetings);
       const meeting = meetings.find((m) => m.id === currentMeeting.id);
       setCurrentMeeting(meeting);
       const share = meeting.shares[0];

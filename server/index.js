@@ -14,11 +14,11 @@ import { getSharingLinkPath } from "../src/pages/zoom/utils.js";
 
 const __dirname = path.resolve();
 
-// import Bugsnag from "@bugsnag/js";
-// Bugsnag.start({
-//   apiKey: "f1e11c9bf8115a600106376040bc50cc",
-//   releaseStage: process.env.LIT_GATEWAY_ENVIRONMENT,
-// });
+import Bugsnag from "@bugsnag/js";
+Bugsnag.start({
+  apiKey: "0596bd3230222ad050c4533cfa5c0393",
+  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
+});
 
 const fastify = Fastify();
 
@@ -139,7 +139,7 @@ fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
   reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
 });
 
-fastify.post("/api/zoom/meetings", async (request, reply) => {
+fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
   const { authSig } = request.body;
 
   if (!authUser(authSig)) {
@@ -169,20 +169,26 @@ fastify.post("/api/zoom/meetings", async (request, reply) => {
     })
   );
 
-  const meetings = await Promise.all(
-    services.map((s) =>
-      zoom.getMeetings({
-        accessToken: s.access_token,
-        refreshToken: s.refresh_token,
-        connectedServiceId: s.id,
-        fastify,
-        shares: s.shares,
-      })
+  const meetingsAndWebinars = (
+    await Promise.all(
+      services.map((s) =>
+        zoom.getMeetingsAndWebinars({
+          accessToken: s.access_token,
+          refreshToken: s.refresh_token,
+          connectedServiceId: s.id,
+          fastify,
+          shares: s.shares,
+        })
+      )
     )
-  );
+  )
+    .flat()
+    .filter((mw) => new Date(mw.start_time) > new Date());
+
+  console.log("meetingsAndWebinars", meetingsAndWebinars);
 
   return {
-    meetings,
+    meetingsAndWebinars,
   };
 });
 
@@ -269,6 +275,7 @@ fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
     fastify,
     userId,
     meetingId,
+    assetType: meeting.asset_type,
   });
 
   return {
@@ -288,8 +295,8 @@ fastify.post("/api/zoom/shareMeeting", async (request, reply) => {
   await fastify.pg.transact(async (client) => {
     // will resolve to an id, or reject with an error
     const id = await client.query(
-      "DELETE FROM shares WHERE user_id=$1 AND connected_service_id=$2",
-      [meeting.connectedServiceId, meeting.connectedServiceId]
+      "DELETE FROM shares WHERE user_id=$1 AND asset_id_on_service=$2",
+      [userId, meeting.id]
     );
 
     // potentially do something with id
@@ -300,13 +307,14 @@ fastify.post("/api/zoom/shareMeeting", async (request, reply) => {
   await fastify.pg.transact(async (client) => {
     // will resolve to an id, or reject with an error
     const id = await client.query(
-      "INSERT INTO shares(user_id, connected_service_id, asset_id_on_service, access_control_conditions, name) VALUES($1, $2, $3, $4, $5) RETURNING id",
+      "INSERT INTO shares(user_id, connected_service_id, asset_id_on_service, access_control_conditions, name, asset_type) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
       [
         authSig.address,
         meeting.connectedServiceId,
         meeting.id,
         JSON.stringify(accessControlConditions),
         meeting.topic,
+        meeting.type,
       ]
     );
 
