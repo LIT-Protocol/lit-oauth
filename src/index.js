@@ -6,6 +6,11 @@ import reportWebVitals from "./reportWebVitals";
 import LitJsSdk from "lit-js-sdk";
 import Bugsnag from "@bugsnag/js";
 import BugsnagPluginReact from "@bugsnag/plugin-react";
+import dotenv from 'dotenv';
+
+dotenv.config({
+  path: '../.env'
+});
 
 import { AppContextProvider } from "./context/app";
 
