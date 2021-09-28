@@ -11,6 +11,11 @@ import { getAccessToken, getUser } from "./oauth/zoom.js";
 import { keysToCamel } from "./utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../src/pages/zoom/utils.js";
+import dotenv from 'dotenv';
+
+dotenv.config({
+  path: '../.env'
+});
 
 const __dirname = path.resolve();
 
