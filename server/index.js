@@ -12,6 +12,7 @@ import { keysToCamel } from "./utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../src/pages/zoom/utils.js";
 import dotenv from 'dotenv';
+import { google } from 'googleapis';
 
 dotenv.config({
   path: '../.env'
@@ -355,11 +356,27 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 // GOOGLE STUFF
 
-fastify.post("/api/oauth/google/login", async (request, reply) => {
-  console.log('TEST')
+fastify.post('/api/oauth/google/login', async(req, res) => {
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_KEY, process.env.CLIENT_SECRET, process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST
+  );
+  google.options({auth: oauth2Client});
+  const authorizeUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file',
+  });
+  console.log('AUTH URL', authorizeUrl)
+  res.send({
+    redirectTo:
+      authorizeUrl
+  });
 });
 
-fastify.listen(process.env.PORT || 8080, "0.0.0.0", (err) => {
+fastify.get("/api/oauth/google/callback", async (request, reply) => {
+  reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+});
+
+fastify.listen(process.env.PORT || 3000, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
 });

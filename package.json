@@ -2,7 +2,7 @@
   "name": "lit-oauth",
   "version": "0.1.0",
   "private": false,
-  "proxy": "http://localhost:8080",
+  "proxy": "http://localhost:3000",
   "license": "MIT",
   "type": "module",
   "dependencies": {
