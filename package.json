@@ -2,7 +2,7 @@
   "name": "lit-oauth",
   "version": "0.1.0",
   "private": false,
-  "proxy": "http://localhost:4000",
+  "proxy": "http://localhost:8080",
   "license": "MIT",
   "type": "module",
   "dependencies": {
@@ -14,7 +14,7 @@
     "@testing-library/user-event": "^12.1.10",
     "axios": "^0.21.4",
     "dotenv": "^10.0.0",
-    "lit-access-control-conditions-modal": "^1.1.9",
+    "lit-access-control-conditions-modal": "^1.1.10",
     "lit-js-sdk": "^1.1.71",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

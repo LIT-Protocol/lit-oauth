@@ -353,7 +353,13 @@ fastify.post("/api/connectedServices", async (request, reply) => {
   };
 });
 
-fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
+// GOOGLE STUFF
+
+fastify.post("/api/oauth/google/login", async (request, reply) => {
+  console.log('TEST')
+});
+
+fastify.listen(process.env.PORT || 8080, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
 });

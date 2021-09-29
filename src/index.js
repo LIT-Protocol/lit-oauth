@@ -7,12 +7,11 @@ import LitJsSdk from "lit-js-sdk";
 import Bugsnag from "@bugsnag/js";
 import BugsnagPluginReact from "@bugsnag/plugin-react";
 import dotenv from 'dotenv';
+import { AppContextProvider } from "./context/app";
 
 dotenv.config({
   path: '../.env'
 });
-
-import { AppContextProvider } from "./context/app";
 
 Bugsnag.start({
   apiKey: "cf16e209b17501304af19b24e1a89eb6",
