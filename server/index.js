@@ -28,6 +28,7 @@ Bugsnag.start({
 
 const fastify = Fastify();
 
+
 const dbConfig = {
   connectionString: process.env.LIT_PROTOCOL_OAUTH_DB_URL,
 };
@@ -373,7 +374,7 @@ fastify.post('/api/oauth/google/login', async(request, reply) => {
 
 fastify.get("/api/oauth/google/callback", async (request, reply) => {
   // reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
-  console.log('REQ REQ REQ', reply.code)
+  console.log('REQ REQ REQ')
 });
 
 fastify.listen(process.env.PORT || 3000, "0.0.0.0", (err) => {

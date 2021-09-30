@@ -8,6 +8,13 @@ const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export default function GoogleGranting() {
   const { performWithAuthSig } = useAppContext();
+  // const [litNodeClient, setLitNodeClient] = useState({});
+  // const [link, setLink] = useState("");
+  // const [shareLink, setShareLink] = useState("");
+  // const [role, setRole] = useState(0);
+  // const [modalOpen, setModalOpen] = useState(false);
+  // const [token, setToken] = useState("");
+  // const [accessControlConditions, setAccessControlConditions] = useState([]);
 
   const connect = async (service) => {
     await performWithAuthSig(async (authSig) => {
