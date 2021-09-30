@@ -356,24 +356,24 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 // GOOGLE STUFF
 
-fastify.post('/api/oauth/google/login', async(req, res) => {
+fastify.post('/api/oauth/google/login', async(request, reply) => {
   const oauth2Client = new google.auth.OAuth2(
-    process.env.CLIENT_KEY, process.env.CLIENT_SECRET, process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST
+    process.env.CLIENT_KEY, process.env.CLIENT_SECRET, `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
   );
   google.options({auth: oauth2Client});
   const authorizeUrl = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file',
   });
-  console.log('AUTH URL', authorizeUrl)
-  res.send({
+  reply.send({
     redirectTo:
       authorizeUrl
   });
 });
 
 fastify.get("/api/oauth/google/callback", async (request, reply) => {
-  reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+  // reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+  console.log('REQ REQ REQ', reply.code)
 });
 
 fastify.listen(process.env.PORT || 3000, "0.0.0.0", (err) => {
