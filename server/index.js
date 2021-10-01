@@ -21,6 +21,7 @@ dotenv.config({
 const __dirname = path.resolve();
 
 import Bugsnag from "@bugsnag/js";
+import querystring from "querystring";
 Bugsnag.start({
   apiKey: "0596bd3230222ad050c4533cfa5c0393",
   releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
@@ -58,6 +59,41 @@ fastify.setErrorHandler((error, request, reply) => {
   }
   reply.send({ error });
 });
+
+// GOOGLE STUFF
+
+const TOKEN_PATH = 'token.json';
+
+const googleRedirectUri = 'api/oauth/google/callback';
+
+const oauth2GoogleClient = new google.auth.OAuth2(
+  process.env.CLIENT_KEY, process.env.CLIENT_SECRET, `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
+);
+
+fastify.post('/api/oauth/google/login', async(request, reply) => {
+  google.options({auth: oauth2GoogleClient});
+  const authorizeUrl = oauth2GoogleClient.generateAuthUrl({
+    access_type: 'offline',
+    prompt: 'consent',
+    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file',
+  });
+  reply.send({
+    redirectTo:
+      authorizeUrl
+  });
+});
+
+fastify.get(`/${googleRedirectUri}`, async (request, reply) => {
+  const code = request.query.code;
+
+  const {tokens} = await oauth2GoogleClient.getToken(code);
+  oauth2GoogleClient.credentials = tokens;
+  console.log('tokens', tokens)
+
+  reply.redirect(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+});
+
+// ZOOM STUFF
 
 fastify.post("/api/oauth/zoom/login", async (request, reply) => {
   const { authSig } = request.body;
@@ -353,28 +389,6 @@ fastify.post("/api/connectedServices", async (request, reply) => {
   return {
     services: services.map((s) => keysToCamel(s)),
   };
-});
-
-// GOOGLE STUFF
-
-fastify.post('/api/oauth/google/login', async(request, reply) => {
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.CLIENT_KEY, process.env.CLIENT_SECRET, `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
-  );
-  google.options({auth: oauth2Client});
-  const authorizeUrl = oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: 'https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file',
-  });
-  reply.send({
-    redirectTo:
-      authorizeUrl
-  });
-});
-
-fastify.get("/api/oauth/google/callback", async (request, reply) => {
-  // reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
-  console.log('REQ REQ REQ')
 });
 
 fastify.listen(process.env.PORT || 3000, "0.0.0.0", (err) => {

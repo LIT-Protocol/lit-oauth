@@ -1,4 +1,5 @@
 import { Button } from "@consta/uikit/Button";
+import { useState } from 'react'
 import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
@@ -7,6 +8,7 @@ import { useAppContext } from "../../context";
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export default function GoogleGranting() {
+
   const { performWithAuthSig } = useAppContext();
   // const [litNodeClient, setLitNodeClient] = useState({});
   // const [link, setLink] = useState("");
@@ -22,6 +24,7 @@ export default function GoogleGranting() {
         const resp = await axios.post(`${API_HOST}/api/oauth/google/login`, {
           authSig,
         });
+        console.log('RES0', resp)
         if (resp.data.redirectTo) {
           window.location = resp.data.redirectTo;
         }
