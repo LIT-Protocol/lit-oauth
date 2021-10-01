@@ -2,11 +2,8 @@ import { Button } from "@consta/uikit/Button";
 import { useState } from 'react'
 import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import { ShareModal } from "lit-access-control-conditions-modal";
-import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
-import { useAppContext } from "../../context";
 import dotenv from 'dotenv';
-// import GoogleAuth from "google-auth";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
@@ -16,7 +13,6 @@ export default function GoogleGranting() {
   dotenv.config();
   const gapi = window.gapi;
 
-  const {performWithAuthSig} = useAppContext();
   const [litNodeClient, setLitNodeClient] = useState({});
   const [link, setLink] = useState("");
   const [shareLink, setShareLink] = useState("");
@@ -31,7 +27,7 @@ export default function GoogleGranting() {
       .grantOfflineAccess()
       .then(async (authResult) => {
         if (authResult.code) {
-          var litNodeClient = new LitJsSdk.LitNodeClient();
+          let litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
           setLitNodeClient(litNodeClient);
           setToken(authResult.code);
@@ -152,9 +148,7 @@ export default function GoogleGranting() {
             <p>Added Access Control Conditions (click to delete)</p>
             {accessControlConditions.map((r, i) => (
               <>
-                <Button onClick={() => removeIthAccessControlCondition(i)}>
-                  {JSON.stringify(r)}
-                </Button>
+                <Button label={JSON.stringify(r)} onClick={() => removeIthAccessControlCondition(i)}/>
               </>
             ))}
             <Button className="top-margin-buffer" label="Add access control conditions" type="button" onClick={() => setModalOpen(true)}/>
