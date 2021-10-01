@@ -70,7 +70,7 @@ fastify.setErrorHandler((error, request, reply) => {
   reply.send({ error });
 });
 
-// GOOGLE STUFF
+// BEGIN GOOGLE STUFF
 
 const googleRedirectUri = 'api/oauth/google/callback';
 
@@ -264,7 +264,7 @@ fastify.post("/sharelink", async (req, res) => {
   res.end(drive_id);
 });
 
-// ZOOM STUFF
+// BEGIN ZOOM STUFF
 
 fastify.post("/api/oauth/zoom/login", async (request, reply) => {
   const { authSig } = request.body;
