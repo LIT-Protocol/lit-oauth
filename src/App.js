@@ -14,25 +14,25 @@ function App() {
       <span>
         <GoogleGranting></GoogleGranting>
       </span>
-      {/*<BrowserRouter>*/}
-      {/*  <Theme preset={presetGpnDefault}>*/}
-      {/*    <div className="App">*/}
-      {/*      {globalError ? (*/}
-      {/*        <div className="GlobalError">*/}
-      {/*          <div style={{ height: 24 }} />*/}
-      {/*          <Informer*/}
-      {/*            status="alert"*/}
-      {/*            view="filled"*/}
-      {/*            title={globalError.title}*/}
-      {/*            label={globalError.details}*/}
-      {/*          />*/}
-      {/*          <div style={{ height: 24 }} />*/}
-      {/*        </div>*/}
-      {/*      ) : null}*/}
-      {/*      <Routes />*/}
-      {/*    </div>*/}
-      {/*  </Theme>*/}
-      {/*</BrowserRouter>*/}
+      <BrowserRouter>
+        <Theme preset={presetGpnDefault}>
+          <div className="App">
+            {globalError ? (
+              <div className="GlobalError">
+                <div style={{ height: 24 }} />
+                <Informer
+                  status="alert"
+                  view="filled"
+                  title={globalError.title}
+                  label={globalError.details}
+                />
+                <div style={{ height: 24 }} />
+              </div>
+            ) : null}
+            <Routes />
+          </div>
+        </Theme>
+      </BrowserRouter>
     </div>
   );
 }
