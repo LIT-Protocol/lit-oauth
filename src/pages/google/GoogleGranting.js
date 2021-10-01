@@ -6,6 +6,7 @@ import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
 import { useAppContext } from "../../context";
 import dotenv from 'dotenv';
+// import GoogleAuth from "google-auth";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
@@ -29,7 +30,6 @@ export default function GoogleGranting() {
       .getAuthInstance()
       .grantOfflineAccess()
       .then(async (authResult) => {
-        console.log('AUTH RESULT', authResult)
         if (authResult.code) {
           var litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
@@ -42,13 +42,15 @@ export default function GoogleGranting() {
   }
 
   const signOut = () => {
-    gapi.auth2.signOut();
+    const auth2 = gapi.auth2.getAuthInstance();
+    auth2.signOut().then(function () {
+      auth2.disconnect();
+    });
+    setToken("");
   }
 
   const loadGoogleAuth = () => {
     gapi.load("client:auth2", function () {
-      console.log("LOAD", process.env.REACT_APP_CLIENT_KEY)
-      console.log('DOTENV', process.env)
       gapi.auth2.init({
         client_id: GOOGLE_CLIENT_KEY,
         scope:
@@ -153,9 +155,6 @@ export default function GoogleGranting() {
                 <Button onClick={() => removeIthAccessControlCondition(i)}>
                   {JSON.stringify(r)}
                 </Button>
-                {/*<button onClick={() => removeIthAccessControlCondition(i)}>*/}
-                {/*  {JSON.stringify(r)}*/}
-                {/*</button>*/}
               </>
             ))}
             <Button className="top-margin-buffer" label="Add access control conditions" type="button" onClick={() => setModalOpen(true)}/>
