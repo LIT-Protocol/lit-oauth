@@ -7,3 +7,11 @@
   display: flex;
   justify-content: space-around;
 }
+
+.top-margin-buffer {
+  margin-top: 1rem;
+}
+
+.left-margin-buffer {
+  margin-left: 1rem;
+}

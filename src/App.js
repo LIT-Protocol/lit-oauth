@@ -8,6 +8,7 @@ import GoogleGranting from "./pages/google/GoogleGranting";
 
 function App() {
   const { globalError } = useAppContext();
+
   return (
     <div className='split'>
       <span>
