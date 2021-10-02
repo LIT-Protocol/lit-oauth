@@ -94,19 +94,22 @@ async function runQuery(query, subfield) {
   }
 }
 
-fastify.post("/share", async (req, res) => {
+fastify.post("/api/google/share", async (req, res) => {
   // First - get Google Drive refresh token (given acct email and drive)
+  console.log('LINE 99')
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.BASE_URL}/${googleRedirectUri}`
+    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
   );
+  console.log('LINE 105', `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`)
   const { tokens } = await oauth_client.getToken(req.body.token);
   oauth_client.setCredentials(tokens);
   let refresh_token = "";
   if (tokens.refresh_token) {
     refresh_token = tokens.refresh_token;
   }
+  console.log("LINE 112")
 
   // Now, get email + save information
   const drive = google.drive({
@@ -117,10 +120,12 @@ fastify.post("/share", async (req, res) => {
   const about_info = await drive.about.get({
     fields: "user",
   });
+  console.log('LINE 123')
 
   let id = "";
   // Write to DB
   if (refresh_token !== "") {
+    console.log('NO REFRESH TOKEN')
     const query = {
       text:
         "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
@@ -129,6 +134,7 @@ fastify.post("/share", async (req, res) => {
 
     id = await runQuery(query, "id");
   } else {
+    console.log('REFRESH TOKEN')
     const query = {
       text: "SELECT id FROM sharers WHERE email = $1",
       values: [about_info.data.user.emailAddress],
@@ -136,6 +142,7 @@ fastify.post("/share", async (req, res) => {
 
     id = await runQuery(query, "id");
   }
+  console.log('LINE 145')
 
   const query = {
     text:
@@ -147,6 +154,7 @@ fastify.post("/share", async (req, res) => {
       req.body.role,
     ],
   };
+  console.log('LINE 157')
 
   let uuid = await runQuery(query, "id");
   res.end(
@@ -163,7 +171,7 @@ fastify.post("/delete", async (req, res) => {
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.BASE_URL}/${googleRedirectUri}`
+    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
   );
   const { tokens } = await oauth_client.getToken(req.body.token);
   oauth_client.setCredentials(tokens);
@@ -204,7 +212,7 @@ fastify.post("/conditions", async (req, res) => {
   res.end(JSON.stringify(data));
 });
 
-fastify.post("/sharelink", async (req, res) => {
+fastify.post("/api/share", async (req, res) => {
   // Check the supplied JWT
   const requested_email = req.body.email;
   const role = req.body.role.toString();
@@ -213,7 +221,7 @@ fastify.post("/sharelink", async (req, res) => {
   const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
   if (
     !verified ||
-    payload.baseUrl !== `${process.env.BASE_URL}/${googleRedirectUri}` ||
+    payload.baseUrl !== `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}` ||
     payload.path !== "/l/" + uuid ||
     payload.orgId !== "" ||
     payload.role !== role ||
@@ -238,7 +246,7 @@ fastify.post("/sharelink", async (req, res) => {
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.BASE_URL}/${googleRedirectUri}`
+    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
   );
 
   oauth_client.setCredentials({ refresh_token });
@@ -262,6 +270,10 @@ fastify.post("/sharelink", async (req, res) => {
 
   // Send drive ID back and redirect
   res.end(drive_id);
+});
+
+fastify.get("/api/oauth/google/callback", async (request, response) => {
+  response.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
 });
 
 // BEGIN ZOOM STUFF

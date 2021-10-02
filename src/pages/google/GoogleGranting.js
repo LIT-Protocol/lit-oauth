@@ -4,6 +4,7 @@ import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from 'dotenv';
+import axios from 'axios';
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
@@ -42,6 +43,7 @@ export default function GoogleGranting() {
     auth2.signOut().then(function () {
       auth2.disconnect();
     });
+    setAccessControlConditions([]);
     setToken("");
   }
 
@@ -62,6 +64,7 @@ export default function GoogleGranting() {
   };
 
   const removeIthAccessControlCondition = (i) => {
+    console.log('accessControl', accessControlConditions)
     let slice1 = accessControlConditions.slice(0, i);
     let slice2 = accessControlConditions.slice(
       i + 1,
@@ -77,20 +80,17 @@ export default function GoogleGranting() {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        driveId: id,
-        role: role,
-        token: token,
-        accessControlConditions: accessControlConditions,
-      }),
     };
-    fetch(API_HOST+"/api/share", requestOptions)
-      .then((response) => response.json())
+    axios.post(API_HOST+"/api/google/share", {
+      driveId: id,
+      role: role,
+      token: token,
+      accessControlConditions: accessControlConditions,
+    }, requestOptions)
       .then(async (data) => {
-        console.log(data);
+        console.log('AFTER THE CALL', data)
         const accessControlConditions = data["authorizedControlConditions"];
         const uuid = data["uuid"];
-        console.log(accessControlConditions);
         const chain = accessControlConditions[0].chain;
         const authSig = await LitJsSdk.checkAndSignAuthMessage({
           chain,
@@ -147,9 +147,7 @@ export default function GoogleGranting() {
 
             <p>Added Access Control Conditions (click to delete)</p>
             {accessControlConditions.map((r, i) => (
-              <>
-                <Button label={JSON.stringify(r)} onClick={() => removeIthAccessControlCondition(i)}/>
-              </>
+                <Button key={i} label={JSON.stringify(r)} onClick={() => removeIthAccessControlCondition(i)}/>
             ))}
             <Button className="top-margin-buffer" label="Add access control conditions" type="button" onClick={() => setModalOpen(true)}/>
             {modalOpen && (
