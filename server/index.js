@@ -136,7 +136,7 @@ fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
     });
   }
 
-  reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+  reply.redirect(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
 });
 
 fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
