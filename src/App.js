@@ -5,6 +5,8 @@ import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import Routes from "./Routes";
 import { useAppContext } from "./context/app";
 import GoogleGranting from "./pages/google/GoogleGranting";
+import GoogleLink from "./pages/google/GoogleLink";
+import GoogleContainer from "./pages/google/GoogleContainer";
 
 function App() {
   const { globalError } = useAppContext();
@@ -12,7 +14,7 @@ function App() {
   return (
     <div className='split'>
       <span>
-        <GoogleGranting></GoogleGranting>
+        <GoogleContainer />
       </span>
       {/*<BrowserRouter>*/}
       {/*  <Theme preset={presetGpnDefault}>*/}

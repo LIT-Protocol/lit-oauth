@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
+const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
 
 export default function GoogleGranting() {
@@ -71,6 +72,7 @@ export default function GoogleGranting() {
   };
 
   const handleSubmit = () => {
+    console.log('DOUBLE CHECK TOKEN', token)
     const regex = /d\/(.{44})/g;
     let id = link.match(regex)[0];
     id = id.slice(2, id.length);
@@ -114,7 +116,7 @@ export default function GoogleGranting() {
           authSig,
           resourceId,
         });
-        setShareLink(API_HOST + "/l/" + uuid);
+        setShareLink(FRONT_END_HOST + "/l/" + uuid);
       });
   };
 

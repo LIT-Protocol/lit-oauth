@@ -8,6 +8,11 @@
   justify-content: space-around;
 }
 
+.vertical-flex {
+  display: flex;
+  flex-direction: column;
+}
+
 .top-margin-buffer {
   margin-top: 1rem;
 }
