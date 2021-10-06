@@ -117,7 +117,7 @@ export default function GoogleGranting() {
           resourceId,
         });
         setShareLink(FRONT_END_HOST + "/l/" + uuid);
-        window.location.href = shareLink;
+        window.location.href = `${FRONT_END_HOST}/l/${uuid}`;
       });
   };
 
