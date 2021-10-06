@@ -1,5 +1,5 @@
 #!/bin/bash
-PUSER=postgres
+PUSER=zane
 PDB=oauth_lit_db
 psql -v ON_ERROR_STOP=1 --username $PUSER --dbname $PDB <<-EOSQL
   BEGIN;
