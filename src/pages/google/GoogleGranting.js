@@ -117,12 +117,9 @@ export default function GoogleGranting() {
           resourceId,
         });
         setShareLink(FRONT_END_HOST + "/l/" + uuid);
+        window.location.href = shareLink;
       });
   };
-
-  if (shareLink !== "") {
-    return <div>Share link: {shareLink}</div>;
-  }
 
   if (token === "") {
     return (
