@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon index.js",
-    "migrate": "node migrate.js"
+    "migrate": "node migrate.js & ../db/db_init.sh"
   },
   "dependencies": {
     "@bugsnag/js": "^7.11.0",

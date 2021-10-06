@@ -105,14 +105,12 @@ fastify.post("/api/google/share", async (req, res) => {
   let refresh_token = "";
   if (tokens.refresh_token) {
     refresh_token = tokens.refresh_token;
-  }
-
+  };
   // Now, get email + save information
   const drive = google.drive({
     version: "v3",
     auth: oauth_client,
   });
-
   const about_info = await drive.about.get({
     fields: "user",
   });
@@ -124,8 +122,8 @@ fastify.post("/api/google/share", async (req, res) => {
       text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
       values: [about_info.data.user.emailAddress, refresh_token],
     };
-
     id = await runQuery(query, "id");
+
   } else {
     const query = {
       text: "SELECT id FROM sharers WHERE email = $1",
@@ -134,7 +132,6 @@ fastify.post("/api/google/share", async (req, res) => {
 
     id = await runQuery(query, "id");
   }
-
   const query = {
     text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
     values: [
@@ -144,8 +141,13 @@ fastify.post("/api/google/share", async (req, res) => {
       req.body.role,
     ],
   };
-
   let uuid = await runQuery(query, "id");
+
+  console.log('STRINGIFY', JSON.stringify({
+    authorizedControlConditions: req.body.accessControlConditions,
+    uuid: uuid,
+  }))
+
   res.send(
     JSON.stringify({
       authorizedControlConditions: req.body.accessControlConditions,
@@ -154,7 +156,7 @@ fastify.post("/api/google/share", async (req, res) => {
   );
 });
 
-fastify.post("/delete", async (req, res) => {
+fastify.post("/api/google/delete", async (req, res) => {
   const uuid = req.body.uuid;
   // get email from token
   const oauth_client = new google.auth.OAuth2(
@@ -189,7 +191,7 @@ fastify.post("/delete", async (req, res) => {
   }
 });
 
-fastify.post("/conditions", async (req, res) => {
+fastify.post("/api/google/conditions", async (req, res) => {
   const uuid = req.body.uuid;
   const query = {
     text: "SELECT requirements, role FROM links WHERE id = $1",
@@ -200,7 +202,7 @@ fastify.post("/conditions", async (req, res) => {
   res.send(JSON.stringify(data));
 });
 
-fastify.post("/api/share", async (req, res) => {
+fastify.post("/api/google/shareLink", async (req, res) => {
   // Check the supplied JWT
   const requested_email = req.body.email;
   const role = req.body.role.toString();
@@ -210,7 +212,7 @@ fastify.post("/api/share", async (req, res) => {
   if (
     !verified ||
     payload.baseUrl !==
-      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
     payload.path !== "/l/" + uuid ||
     payload.orgId !== "" ||
     payload.role !== role ||
