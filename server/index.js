@@ -11,15 +11,15 @@ import { getAccessToken, getUser } from "./oauth/zoom.js";
 import { keysToCamel } from "./utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../src/pages/zoom/utils.js";
-import dotenv from 'dotenv';
-import { google } from 'googleapis';
+import dotenv from "dotenv";
+import { google } from "googleapis";
 import Bugsnag from "@bugsnag/js";
 import querystring from "querystring";
-import pkg from 'pg';
+import pkg from "pg";
 const { Pool } = pkg;
 
 dotenv.config({
-  path: '../.env'
+  path: "../.env",
 });
 
 const pool = new Pool({
@@ -38,7 +38,6 @@ Bugsnag.start({
 });
 
 const fastify = Fastify();
-
 
 const dbConfig = {
   connectionString: process.env.LIT_PROTOCOL_OAUTH_DB_URL,
@@ -72,7 +71,7 @@ fastify.setErrorHandler((error, request, reply) => {
 
 // BEGIN GOOGLE STUFF
 
-const googleRedirectUri = 'api/oauth/google/callback';
+const googleRedirectUri = "api/oauth/google/callback";
 
 async function runQuery(query, subfield) {
   const data = await (async () => {
@@ -99,7 +98,7 @@ fastify.post("/api/google/share", async (req, res) => {
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
+    "postmessage"
   );
   const { tokens } = await oauth_client.getToken(req.body.token);
   oauth_client.setCredentials(tokens);
@@ -122,8 +121,7 @@ fastify.post("/api/google/share", async (req, res) => {
   // Write to DB
   if (refresh_token !== "") {
     const query = {
-      text:
-        "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
+      text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
       values: [about_info.data.user.emailAddress, refresh_token],
     };
 
@@ -138,8 +136,7 @@ fastify.post("/api/google/share", async (req, res) => {
   }
 
   const query = {
-    text:
-      "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
+    text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
     values: [
       req.body.driveId,
       JSON.stringify(req.body.accessControlConditions),
@@ -149,7 +146,7 @@ fastify.post("/api/google/share", async (req, res) => {
   };
 
   let uuid = await runQuery(query, "id");
-  res.end(
+  res.send(
     JSON.stringify({
       authorizedControlConditions: req.body.accessControlConditions,
       uuid: uuid,
@@ -163,7 +160,7 @@ fastify.post("/delete", async (req, res) => {
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
+    "postmessage"
   );
   const { tokens } = await oauth_client.getToken(req.body.token);
   oauth_client.setCredentials(tokens);
@@ -179,8 +176,7 @@ fastify.post("/delete", async (req, res) => {
 
   let email = about_info.data.user.emailAddress;
   const query = {
-    text:
-      "DELETE FROM links USING links AS l LEFT OUTER JOIN sharers ON l.sharer_id = sharers.id WHERE links.id = l.id AND links.id = $1 AND sharers.email = $2",
+    text: "DELETE FROM links USING links AS l LEFT OUTER JOIN sharers ON l.sharer_id = sharers.id WHERE links.id = l.id AND links.id = $1 AND sharers.email = $2",
     values: [uuid, email],
   };
 
@@ -201,7 +197,7 @@ fastify.post("/conditions", async (req, res) => {
   };
 
   let data = await runQuery(query);
-  res.end(JSON.stringify(data));
+  res.send(JSON.stringify(data));
 });
 
 fastify.post("/api/share", async (req, res) => {
@@ -213,7 +209,8 @@ fastify.post("/api/share", async (req, res) => {
   const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
   if (
     !verified ||
-    payload.baseUrl !== `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}` ||
+    payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}` ||
     payload.path !== "/l/" + uuid ||
     payload.orgId !== "" ||
     payload.role !== role ||
@@ -226,8 +223,7 @@ fastify.post("/api/share", async (req, res) => {
   // Ping google drive to share the file using the refresh token
   // Get latest refresh token
   const query = {
-    text:
-      "select sharers.latest_refresh_token as token, links.drive_id as drive_id from links left join sharers on links.sharer_id = sharers.id WHERE links.id = $1",
+    text: "select sharers.latest_refresh_token as token, links.drive_id as drive_id from links left join sharers on links.sharer_id = sharers.id WHERE links.id = $1",
     values: [uuid],
   };
 
@@ -238,7 +234,7 @@ fastify.post("/api/share", async (req, res) => {
   const oauth_client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/${googleRedirectUri}`
+    "postmessage"
   );
 
   oauth_client.setCredentials({ refresh_token });
@@ -261,10 +257,11 @@ fastify.post("/api/share", async (req, res) => {
   });
 
   // Send drive ID back and redirect
-  res.end(drive_id);
+  res.send(drive_id);
 });
 
 fastify.get("/api/oauth/google/callback", async (request, response) => {
+  console.log("/api/oauth/google/callback query params", request.query);
   response.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
 });
 
@@ -566,7 +563,7 @@ fastify.post("/api/connectedServices", async (request, reply) => {
   };
 });
 
-fastify.listen(process.env.PORT || 3000, "0.0.0.0", (err) => {
+fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
 });
