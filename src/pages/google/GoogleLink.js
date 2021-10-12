@@ -5,7 +5,7 @@ import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
 
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
-const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
+const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_URI = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
 function GoogleLink() {
@@ -32,9 +32,10 @@ function GoogleLink() {
       setUuid(uuid);
       const body = JSON.stringify({ uuid: uuid });
       const headers = { "Content-Type": "application/json" };
-      axios.post(`${BASE_URL}/api/google/conditions`, body, { headers })
+      axios
+        .post(`${API_HOST}/api/google/conditions`, body, { headers })
         .then(async (data) => {
-          console.log("OUT THROUGH CONDITIONS")
+          console.log("OUT THROUGH CONDITIONS");
           setConditionsFetched(true);
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -52,10 +53,10 @@ function GoogleLink() {
   }, []);
 
   async function provisionAccess() {
-    console.log('LINK DATA', linkData)
+    console.log("LINK DATA", linkData);
     const chain = linkData.data.requirements[0].chain;
     const resourceId = {
-      baseUrl: FRONT_END_URI,
+      baseUrl: API_HOST,
       path: "/l/" + uuid,
       orgId: "",
       role: linkData.data["role"].toString(),
@@ -81,11 +82,12 @@ function GoogleLink() {
       .then(async (authResult) => {
         if (authResult.code) {
           const body = JSON.stringify({
-                uuid: uuid,
-                token: authResult.code,
-              })
+            uuid: uuid,
+            token: authResult.code,
+          });
           const headers = { "Content-Type": "application/json" };
-          axios.post(`${BASE_URL}/api/google/delete`, body, { headers })
+          axios
+            .post(`${API_HOST}/api/google/delete`, body, { headers })
             .then((res) => {
               if (res.status === 500) {
                 setError(
@@ -108,12 +110,14 @@ function GoogleLink() {
 
   const handleSubmit = () => {
     provisionAccess().then((jwt) => {
-      const role = linkData["role"];
+      const role = linkData.data["role"];
       const body = JSON.stringify({ email, role, uuid, jwt });
       const headers = { "Content-Type": "application/json" };
-      axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers })
-        .then((data) =>
-            (window.location = `https://docs.google.com/document/d/${data}`)
+      axios
+        .post(`${API_HOST}/api/google/shareLink`, body, { headers })
+        .then(
+          (data) =>
+            (window.location = `https://docs.google.com/document/d/${data.data}`)
         );
     });
   };
@@ -135,8 +139,18 @@ function GoogleLink() {
             id="email-input"
             onChange={(e) => setEmail(e.target.value)}
           />
-          <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit} />
-          <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
+          <Button
+            label="Request Access"
+            className="top-margin-buffer"
+            type="button"
+            onClick={handleSubmit}
+          />
+          <Button
+            label="Delete This Link"
+            className="top-margin-buffer"
+            type="button"
+            onClick={handleDelete}
+          />
         </div>
       </Theme>
     );

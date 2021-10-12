@@ -105,7 +105,7 @@ fastify.post("/api/google/share", async (req, res) => {
   let refresh_token = "";
   if (tokens.refresh_token) {
     refresh_token = tokens.refresh_token;
-  };
+  }
   // Now, get email + save information
   const drive = google.drive({
     version: "v3",
@@ -123,7 +123,6 @@ fastify.post("/api/google/share", async (req, res) => {
       values: [about_info.data.user.emailAddress, refresh_token],
     };
     id = await runQuery(query, "id");
-
   } else {
     const query = {
       text: "SELECT id FROM sharers WHERE email = $1",
@@ -143,10 +142,13 @@ fastify.post("/api/google/share", async (req, res) => {
   };
   let uuid = await runQuery(query, "id");
 
-  console.log('STRINGIFY', JSON.stringify({
-    authorizedControlConditions: req.body.accessControlConditions,
-    uuid: uuid,
-  }))
+  console.log(
+    "STRINGIFY",
+    JSON.stringify({
+      authorizedControlConditions: req.body.accessControlConditions,
+      uuid: uuid,
+    })
+  );
 
   res.send(
     JSON.stringify({
@@ -209,16 +211,16 @@ fastify.post("/api/google/shareLink", async (req, res) => {
   const uuid = req.body.uuid;
   const jwt = req.body.jwt;
   const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
+  console.log("jwt payload", payload);
   if (
     !verified ||
-    payload.baseUrl !==
-      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
+    payload.baseUrl !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST ||
     payload.path !== "/l/" + uuid ||
     payload.orgId !== "" ||
     payload.role !== role ||
     payload.extraData !== ""
   ) {
-    res.end("JWT verification failed.");
+    res.send("JWT verification failed.");
     return;
   }
 
