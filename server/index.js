@@ -8,11 +8,8 @@ import googleOauthEndpoints from "./oauth/google.js";
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
-// import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
-// import { google } from "googleapis";
 import Bugsnag from "@bugsnag/js";
-// import pkg from "pg";
 
 
 dotenv.config({

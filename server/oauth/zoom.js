@@ -1,7 +1,7 @@
-import { authUser } from "../auth";
-import { keysToCamel } from "../utils";
+import { authUser } from "../auth.js";
+import { keysToCamel } from "../utils.js";
 import LitJsSdk from "lit-js-sdk";
-import { getSharingLinkPath } from "../../src/pages/zoom/utils";
+import { getSharingLinkPath } from "../../src/pages/zoom/utils.js";
 import { getAccessToken, getUser, getMeetingsAndWebinars, createMeetingInvite } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
