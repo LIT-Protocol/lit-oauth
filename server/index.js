@@ -23,11 +23,11 @@ dotenv.config({
 });
 
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB,
-  password: process.env.DB_PASS,
-  port: process.env.DB_PORT,
+  user: process.env.LIT_PROTOCOL_OAUTH_DB_USER,
+  host: process.env.LIT_PROTOCOL_OAUTH_DB_HOST,
+  database: process.env.LIT_PROTOCOL_OAUTH_DB,
+  password: process.env.LIT_PROTOCOL_OAUTH_DB_PASS,
+  port: process.env.LIT_PROTOCOL_OAUTH_DB_PORT,
 });
 
 const __dirname = path.resolve();
@@ -96,8 +96,8 @@ async function runQuery(query, subfield) {
 fastify.post("/api/google/share", async (req, res) => {
   // First - get Google Drive refresh token (given acct email and drive)
   const oauth_client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
     "postmessage"
   );
   const { tokens } = await oauth_client.getToken(req.body.token);
@@ -160,8 +160,8 @@ fastify.post("/api/google/delete", async (req, res) => {
   const uuid = req.body.uuid;
   // get email from token
   const oauth_client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
     "postmessage"
   );
   const { tokens } = await oauth_client.getToken(req.body.token);
@@ -234,8 +234,8 @@ fastify.post("/api/google/shareLink", async (req, res) => {
   const drive_id = data.drive_id;
 
   const oauth_client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+    process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
     "postmessage"
   );
 
