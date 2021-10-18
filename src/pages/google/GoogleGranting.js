@@ -8,10 +8,10 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
-const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
+const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
 export default function GoogleGranting() {
-  dotenv.config();
+  const parsedEnv = dotenv.config();
 
   const [link, setLink] = useState("");
   const [shareLink, setShareLink] = useState("");
@@ -23,6 +23,8 @@ export default function GoogleGranting() {
   useEffect(() => {
     loadGoogleAuth();
   }, []);
+
+  console.log('PROCES', process.env)
 
   function authenticate() {
     return window.gapi.auth2
