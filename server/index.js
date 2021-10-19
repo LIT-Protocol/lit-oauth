@@ -2,15 +2,20 @@ import Fastify from "fastify";
 import fastifyPostgres from "fastify-postgres";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
+import fastifyObjectionJS from "fastify-objectionjs";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
+import knexConfig from './knexfile.js';
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
 import Bugsnag from "@bugsnag/js";
-
+// import ConnectedServices from "./models/ConnectedServices";
+// import Links from "./models/Links";
+// import Shares from "./models/Shares";
+// import Sharers from "./models/Sharers";
 
 dotenv.config({
   path: "../.env",
@@ -40,6 +45,11 @@ fastify.register(fastifyPostgres, dbConfig);
 fastify.register(fastifyCors, {
   origin: "*",
   methods: ["POST", "GET", "DELETE", "PUT", "PATCH"],
+});
+
+fastify.register(fastifyObjectionJS, {
+  knexConfig: knexConfig[process.env.NODE_ENV || "development"],
+  // models: [ConnectedServices, Links, Shares, Sharers],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");

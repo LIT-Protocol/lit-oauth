@@ -1,43 +1,20 @@
 import { google } from "googleapis";
 import LitJsSdk from "lit-js-sdk";
-import pkg from "pg";
-const { Pool } = pkg;
-
-const pool = new Pool({
-  user: process.env.LIT_PROTOCOL_OAUTH_DB_USER,
-  host: process.env.LIT_PROTOCOL_OAUTH_DB_HOST,
-  database: process.env.LIT_PROTOCOL_OAUTH_DB,
-  password: process.env.LIT_PROTOCOL_OAUTH_DB_PASS,
-  port: process.env.LIT_PROTOCOL_OAUTH_DB_PORT,
-});
 
 export default async function (fastify, opts) {
   const googleRedirectUri = "api/oauth/google/callback";
 
   async function runQuery(query, subfield) {
-    const data = await (async () => {
-      const client = await pool.connect();
-      try {
-        const res = await client.query(query);
-        return res.rows[0];
-      } finally {
-        client.release();
-      }
-    })().catch((err) => {
-      console.log(err.stack);
-      throw err;
-    });
-    if (subfield) {
-      return data[subfield];
-    } else {
-      return data;
-    }
+    await fastify.pg.transact(async (client) => {
+      const id = await client.query(query.text, query.values)
+      return id;
+    })
   }
 
   fastify.post("/api/google/share", async (req, res) => {
     // First - get Google Drive refresh token (given acct email and drive)
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -60,7 +37,8 @@ export default async function (fastify, opts) {
     // Write to DB
     if (refresh_token !== "") {
       const query = {
-        text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
+        text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) RETURNING *",
+        // TODO: text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
         values: [about_info.data.user.emailAddress, refresh_token],
       };
       id = await runQuery(query, "id");
