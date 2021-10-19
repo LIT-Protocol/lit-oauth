@@ -2,3 +2,21 @@
   text-align: center;
   margin-top: 24px;
 }
+
+.split {
+  display: flex;
+  justify-content: space-around;
+}
+
+.vertical-flex {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-margin-buffer {
+  margin-top: 1rem;
+}
+
+.left-margin-buffer {
+  margin-left: 1rem;
+}
