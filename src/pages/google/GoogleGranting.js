@@ -24,8 +24,6 @@ export default function GoogleGranting() {
     loadGoogleAuth();
   }, []);
 
-  console.log('PROCES', process.env)
-
   function authenticate() {
     return window.gapi.auth2
       .getAuthInstance()
