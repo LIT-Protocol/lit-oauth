@@ -12,10 +12,10 @@ import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
 import Bugsnag from "@bugsnag/js";
-// import ConnectedServices from "./models/ConnectedServices";
-// import Links from "./models/Links";
-// import Shares from "./models/Shares";
-// import Sharers from "./models/Sharers";
+import ConnectedServices from "./models/ConnectedServices.js";
+import Links from "./models/Links.js";
+import Shares from "./models/Shares.js";
+import Sharers from "./models/Sharers.js";
 
 dotenv.config({
   path: "../.env",
@@ -49,7 +49,7 @@ fastify.register(fastifyCors, {
 
 fastify.register(fastifyObjectionJS, {
   knexConfig: knexConfig[process.env.NODE_ENV || "development"],
-  // models: [ConnectedServices, Links, Shares, Sharers],
+  models: [ConnectedServices, Links, Shares, Sharers],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");
