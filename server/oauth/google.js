@@ -18,16 +18,13 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    console.log('WHERE')
     const { tokens } = await oauth_client.getToken(req.body.token);
-    console.log('WHERE ELSE?')
     oauth_client.setCredentials(tokens);
     let refresh_token = "";
     if (tokens.refresh_token) {
       refresh_token = tokens.refresh_token;
     };
     // Now, get email + save information
-    console.log('IN')
     const drive = google.drive({
       version: "v3",
       auth: oauth_client,
@@ -36,7 +33,6 @@ export default async function (fastify, opts) {
       fields: "user",
     });
 
-    console.log('THE')
     let id = "";
 
     if (refresh_token !== "") {
@@ -44,24 +40,21 @@ export default async function (fastify, opts) {
         email: about_info.data.user.emailAddress,
         latest_refresh_token: refresh_token,
       })
-      id = query[0].id;
+      id = query.id;
     } else {
       const query = await fastify.objection.models.sharers.query().where('email', '=', about_info.data.user.emailAddress)
-      id = query[0].id;
+      id = query.id;
     }
 
-    console.log('WORLD')
-
-    const insertToLinksQuery = await fastify.objection.models.links.insert({
-      drive_id: res.body.driveId,
+    const insertToLinksQuery = await fastify.objection.models.links.query().insert({
+      drive_id: res.request.body.driveId,
       requirements: JSON.stringify(req.body.accessControlConditions),
       sharer_id: id,
       role: req.body.role
     })
 
-    let uuid = insertToLinksQuery[0].id;
-    console.log('UUID YO!', uuid)
-    //
+    let uuid = insertToLinksQuery.id;
+
     // let id = "";
     // // Write to DB
     // if (refresh_token !== "") {

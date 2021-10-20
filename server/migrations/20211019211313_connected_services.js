@@ -1,7 +1,10 @@
 
 export const up = (knex) => {
   return knex.schema.createTable('connected_services', (table) => {
-    table.uuid('id').notNullable();
+    table.uuid('id')
+      .unique()
+      .primary()
+      .defaultTo(knex.raw("gen_random_uuid()"));
     table.text('service_name');
     table.text('access_token');
     table.text('refresh_token');
