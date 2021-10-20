@@ -18,13 +18,16 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
+    console.log('WHERE')
     const { tokens } = await oauth_client.getToken(req.body.token);
+    console.log('WHERE ELSE?')
     oauth_client.setCredentials(tokens);
     let refresh_token = "";
     if (tokens.refresh_token) {
       refresh_token = tokens.refresh_token;
     };
     // Now, get email + save information
+    console.log('IN')
     const drive = google.drive({
       version: "v3",
       auth: oauth_client,
@@ -33,40 +36,66 @@ export default async function (fastify, opts) {
       fields: "user",
     });
 
+    console.log('THE')
     let id = "";
-    // Write to DB
+
     if (refresh_token !== "") {
-      const query = {
-        text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) RETURNING *",
-        // TODO: text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
-        values: [about_info.data.user.emailAddress, refresh_token],
-      };
-      id = await runQuery(query, "id");
-
+      const query = await fastify.objection.models.sharers.query().insert({
+        email: about_info.data.user.emailAddress,
+        latest_refresh_token: refresh_token,
+      })
+      id = query[0].id;
     } else {
-      const query = {
-        text: "SELECT id FROM sharers WHERE email = $1",
-        values: [about_info.data.user.emailAddress],
-      };
-
-      id = await runQuery(query, "id");
+      const query = await fastify.objection.models.sharers.query().where('email', '=', about_info.data.user.emailAddress)
+      id = query[0].id;
     }
-    const query = {
-      text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
-      values: [
-        req.body.driveId,
-        JSON.stringify(req.body.accessControlConditions),
-        id,
-        req.body.role,
-      ],
-    };
-    let uuid = await runQuery(query, "id");
 
-    console.log('STRINGIFY', JSON.stringify({
-      authorizedControlConditions: req.body.accessControlConditions,
-      uuid: uuid,
-    }))
+    console.log('WORLD')
 
+    const insertToLinksQuery = await fastify.objection.models.links.insert({
+      drive_id: res.body.driveId,
+      requirements: JSON.stringify(req.body.accessControlConditions),
+      sharer_id: id,
+      role: req.body.role
+    })
+
+    let uuid = insertToLinksQuery[0].id;
+    console.log('UUID YO!', uuid)
+    //
+    // let id = "";
+    // // Write to DB
+    // if (refresh_token !== "") {
+    //   const query = {
+    //     text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) RETURNING *",
+    //     // TODO: text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
+    //     values: [about_info.data.user.emailAddress, refresh_token],
+    //   };
+    //   id = await runQuery(query, "id");
+    //
+    // } else {
+    //   const query = {
+    //     text: "SELECT id FROM sharers WHERE email = $1",
+    //     values: [about_info.data.user.emailAddress],
+    //   };
+    //
+    //   id = await runQuery(query, "id");
+    // }
+    // const query = {
+    //   text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
+    //   values: [
+    //     req.body.driveId,
+    //     JSON.stringify(req.body.accessControlConditions),
+    //     id,
+    //     req.body.role,
+    //   ],
+    // };
+    // let uuid = await runQuery(query, "id");
+    //
+    // console.log('STRINGIFY', JSON.stringify({
+    //   authorizedControlConditions: req.body.accessControlConditions,
+    //   uuid: uuid,
+    // }))
+    //
     res.send(
       JSON.stringify({
         authorizedControlConditions: req.body.accessControlConditions,
@@ -182,7 +211,6 @@ export default async function (fastify, opts) {
   });
 
   fastify.get("/api/oauth/google/callback", async (request, response) => {
-    console.log("/api/oauth/google/callback query params", request.query);
     response.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
   });
 }
