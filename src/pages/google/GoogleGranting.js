@@ -5,10 +5,30 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import axios from "axios";
+import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
+import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
+
+const sampleLinks = [
+  {
+    fileName: 'Communist Manifesto',
+    requirements: 'the hungry masses',
+    fileType: 'Doc',
+    permission: 'revolution',
+    dateCreated: '1848'
+  },
+  {
+    fileName: 'Das Kapital',
+    requirements: 'exploitation of labor',
+    fileType: 'Doc',
+    permission: 'burn it all down',
+    dateCreated: '1867'
+  }
+]
+
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
@@ -137,6 +157,12 @@ export default function GoogleGranting() {
 
   return (
     <Theme preset={presetGpnDefault}>
+      <ServiceHeader
+        serviceName={'Google Drive App'}
+        oauthServiceProvider={'Google'}
+        currentUser={'Comrade Marx'}
+        signOut={signOut}/>
+      <span style={{width: '3rem', height: '5rem'}}></span>
       <div className="App">
         <header className="App-header">
           <p>Enter the link to the drive file below.</p>
@@ -193,12 +219,15 @@ export default function GoogleGranting() {
             />
           </form>
         </header>
-        <Button
-          className="top-margin-buffer"
-          label="Sign Out Of Google"
-          onClick={signOut}
-        />
+        {/*<Button*/}
+        {/*  className="top-margin-buffer"*/}
+        {/*  label="Sign Out Of Google"*/}
+        {/*  onClick={signOut}*/}
+        {/*/>*/}
       </div>
+      <ServiceLinks
+        serviceName={'Drive'}
+        listOfLinks={sampleLinks}/>
     </Theme>
   );
 }

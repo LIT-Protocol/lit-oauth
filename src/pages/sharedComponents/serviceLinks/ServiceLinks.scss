@@ -1,0 +1,25 @@
+.links-card {
+  border: 0px solid transparent;
+  width: 81rem;
+  margin: 0 auto;
+}
+
+.links-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3rem;
+}
+
+.links-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.links-actions-buttons {
+  background-color: #fff;
+  color: rgba(0, 5, 51, 0.6);
+  margin-left: 0.3rem;
+}
