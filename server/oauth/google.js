@@ -41,8 +41,8 @@ export default async function (fastify, opts) {
         .where("email", "=", about_info.data.user.emailAddress);
       if (existingRows.length > 0) {
         // okay the token already exists, just update it
-        existingRow[0].patch({ latest_refresh_token: refresh_token });
-        id = existingRow[0].id;
+        existingRows[0].patch({ latest_refresh_token: refresh_token });
+        id = existingRows[0].id;
       } else {
         // insert
 
