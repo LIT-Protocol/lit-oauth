@@ -31,6 +31,7 @@ export default function GoogleGranting() {
       .then(async (authResult) => {
         console.log("authResult: ", authResult);
         if (authResult.code) {
+          console.log("AUTH RESULT", authResult.code)
           setToken(authResult.code);
         } else {
           console.log("Error logging in");

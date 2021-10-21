@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon index.js",
-    "migrate": "node migrate.js & ../db/db_init.sh"
+    "migrate": "node migrate.js",
+    "knexMigrate": "knex migrate:latest --esm --knexfile=./knexfile.js"
   },
   "dependencies": {
     "@bugsnag/js": "^7.11.0",
@@ -18,11 +19,14 @@
     "eth-sig-util": "^3.0.1",
     "fastify": "^3.21.3",
     "fastify-cors": "^6.0.2",
+    "fastify-objectionjs": "^0.4.0",
     "fastify-postgres": "^3.6.0",
     "fastify-static": "^4.2.3",
     "gapi-script": "^1.2.0",
     "googleapis": "^87.0.0",
     "http2": "^3.3.7",
+    "knex": "^0.95.11",
+    "objection": "^2.2.17",
     "pg": "^8.7.1"
   }
 }

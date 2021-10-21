@@ -1,43 +1,20 @@
 import { google } from "googleapis";
 import LitJsSdk from "lit-js-sdk";
-import pkg from "pg";
-const { Pool } = pkg;
-
-const pool = new Pool({
-  user: process.env.LIT_PROTOCOL_OAUTH_DB_USER,
-  host: process.env.LIT_PROTOCOL_OAUTH_DB_HOST,
-  database: process.env.LIT_PROTOCOL_OAUTH_DB,
-  password: process.env.LIT_PROTOCOL_OAUTH_DB_PASS,
-  port: process.env.LIT_PROTOCOL_OAUTH_DB_PORT,
-});
 
 export default async function (fastify, opts) {
   const googleRedirectUri = "api/oauth/google/callback";
 
   async function runQuery(query, subfield) {
-    const data = await (async () => {
-      const client = await pool.connect();
-      try {
-        const res = await client.query(query);
-        return res.rows[0];
-      } finally {
-        client.release();
-      }
-    })().catch((err) => {
-      console.log(err.stack);
-      throw err;
+    await fastify.pg.transact(async (client) => {
+      const id = await client.query(query.text, query.values);
+      return id;
     });
-    if (subfield) {
-      return data[subfield];
-    } else {
-      return data;
-    }
   }
 
   fastify.post("/api/google/share", async (req, res) => {
     // First - get Google Drive refresh token (given acct email and drive)
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -46,7 +23,7 @@ export default async function (fastify, opts) {
     let refresh_token = "";
     if (tokens.refresh_token) {
       refresh_token = tokens.refresh_token;
-    };
+    }
     // Now, get email + save information
     const drive = google.drive({
       version: "v3",
@@ -57,38 +34,76 @@ export default async function (fastify, opts) {
     });
 
     let id = "";
-    // Write to DB
+
     if (refresh_token !== "") {
-      const query = {
-        text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
-        values: [about_info.data.user.emailAddress, refresh_token],
-      };
-      id = await runQuery(query, "id");
+      const existingRows = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
+      if (existingRows.length > 0) {
+        // okay the token already exists, just update it
+        existingRow[0].patch({ latest_refresh_token: refresh_token });
+        id = existingRow[0].id;
+      } else {
+        // insert
 
+        const query = await fastify.objection.models.sharers.query().insert({
+          email: about_info.data.user.emailAddress,
+          latest_refresh_token: refresh_token,
+        });
+        id = query.id;
+      }
     } else {
-      const query = {
-        text: "SELECT id FROM sharers WHERE email = $1",
-        values: [about_info.data.user.emailAddress],
-      };
-
-      id = await runQuery(query, "id");
+      const query = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
+      id = query.id;
     }
-    const query = {
-      text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
-      values: [
-        req.body.driveId,
-        JSON.stringify(req.body.accessControlConditions),
-        id,
-        req.body.role,
-      ],
-    };
-    let uuid = await runQuery(query, "id");
 
-    console.log('STRINGIFY', JSON.stringify({
-      authorizedControlConditions: req.body.accessControlConditions,
-      uuid: uuid,
-    }))
+    const insertToLinksQuery = await fastify.objection.models.links
+      .query()
+      .insert({
+        drive_id: res.request.body.driveId,
+        requirements: JSON.stringify(req.body.accessControlConditions),
+        sharer_id: id,
+        role: req.body.role,
+      });
 
+    let uuid = insertToLinksQuery.id;
+
+    // let id = "";
+    // // Write to DB
+    // if (refresh_token !== "") {
+    //   const query = {
+    //     text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) RETURNING *",
+    //     // TODO: text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
+    //     values: [about_info.data.user.emailAddress, refresh_token],
+    //   };
+    //   id = await runQuery(query, "id");
+    //
+    // } else {
+    //   const query = {
+    //     text: "SELECT id FROM sharers WHERE email = $1",
+    //     values: [about_info.data.user.emailAddress],
+    //   };
+    //
+    //   id = await runQuery(query, "id");
+    // }
+    // const query = {
+    //   text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
+    //   values: [
+    //     req.body.driveId,
+    //     JSON.stringify(req.body.accessControlConditions),
+    //     id,
+    //     req.body.role,
+    //   ],
+    // };
+    // let uuid = await runQuery(query, "id");
+    //
+    // console.log('STRINGIFY', JSON.stringify({
+    //   authorizedControlConditions: req.body.accessControlConditions,
+    //   uuid: uuid,
+    // }))
+    //
     res.send(
       JSON.stringify({
         authorizedControlConditions: req.body.accessControlConditions,
@@ -153,7 +168,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
+        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
       payload.path !== "/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
@@ -204,7 +219,6 @@ export default async function (fastify, opts) {
   });
 
   fastify.get("/api/oauth/google/callback", async (request, response) => {
-    console.log("/api/oauth/google/callback query params", request.query);
     response.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
   });
 }
