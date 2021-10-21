@@ -6,9 +6,9 @@ export default async function (fastify, opts) {
 
   async function runQuery(query, subfield) {
     await fastify.pg.transact(async (client) => {
-      const id = await client.query(query.text, query.values)
+      const id = await client.query(query.text, query.values);
       return id;
-    })
+    });
   }
 
   fastify.post("/api/google/share", async (req, res) => {
@@ -23,7 +23,7 @@ export default async function (fastify, opts) {
     let refresh_token = "";
     if (tokens.refresh_token) {
       refresh_token = tokens.refresh_token;
-    };
+    }
     // Now, get email + save information
     const drive = google.drive({
       version: "v3",
@@ -36,22 +36,37 @@ export default async function (fastify, opts) {
     let id = "";
 
     if (refresh_token !== "") {
-      const query = await fastify.objection.models.sharers.query().insert({
-        email: about_info.data.user.emailAddress,
-        latest_refresh_token: refresh_token,
-      })
-      id = query.id;
+      const existingRows = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
+      if (existingRows.length > 0) {
+        // okay the token already exists, just update it
+        existingRow[0].patch({ latest_refresh_token: refresh_token });
+        id = existingRow[0].id;
+      } else {
+        // insert
+
+        const query = await fastify.objection.models.sharers.query().insert({
+          email: about_info.data.user.emailAddress,
+          latest_refresh_token: refresh_token,
+        });
+        id = query.id;
+      }
     } else {
-      const query = await fastify.objection.models.sharers.query().where('email', '=', about_info.data.user.emailAddress)
+      const query = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
       id = query.id;
     }
 
-    const insertToLinksQuery = await fastify.objection.models.links.query().insert({
-      drive_id: res.request.body.driveId,
-      requirements: JSON.stringify(req.body.accessControlConditions),
-      sharer_id: id,
-      role: req.body.role
-    })
+    const insertToLinksQuery = await fastify.objection.models.links
+      .query()
+      .insert({
+        drive_id: res.request.body.driveId,
+        requirements: JSON.stringify(req.body.accessControlConditions),
+        sharer_id: id,
+        role: req.body.role,
+      });
 
     let uuid = insertToLinksQuery.id;
 
@@ -153,7 +168,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
+        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${googleRedirectUri}` ||
       payload.path !== "/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
