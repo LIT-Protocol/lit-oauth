@@ -3,8 +3,9 @@ import LitJsSdk from "lit-js-sdk";
 import { Button } from "@consta/uikit/Button";
 import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
+import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 
-const GOOGLE_CLIENT_KEY = process.env.REACT_APP_CLIENT_KEY;
+const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_URI = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
@@ -33,17 +34,17 @@ function GoogleLink() {
       const body = JSON.stringify({ uuid: uuid });
       const headers = { "Content-Type": "application/json" };
       axios.post(`${BASE_URL}/api/google/conditions`, body, { headers })
-        .then(async (data) => {
-          console.log("OUT THROUGH CONDITIONS")
+        .then(async (res) => {
+          console.log("OUT THROUGH CONDITIONS", res.data)
           setConditionsFetched(true);
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
           setLitNodeClient(litNodeClient);
-          console.log(data["requirements"]);
-          console.log(typeof data["role"]);
-          setLinkData(data);
-          console.log(data);
+          console.log(res.data["requirements"]);
+          console.log(typeof res.data["role"]);
+          setLinkData(res.data);
+          console.log(res.data);
         })
         .catch((err) => {
           setError("Invalid link");
@@ -53,19 +54,19 @@ function GoogleLink() {
 
   async function provisionAccess() {
     console.log('LINK DATA', linkData)
-    const chain = linkData.data.requirements[0].chain;
+    const chain = linkData.requirements[0].chain;
     const resourceId = {
       baseUrl: FRONT_END_URI,
       path: "/l/" + uuid,
       orgId: "",
-      role: linkData.data["role"].toString(),
+      role: linkData["role"].toString(),
       extraData: "",
     };
 
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
 
     const jwt = await litNodeClient.getSignedToken({
-      accessControlConditions: linkData.data["requirements"],
+      accessControlConditions: linkData["requirements"],
       chain,
       authSig: authSig,
       resourceId: resourceId,
@@ -127,14 +128,15 @@ function GoogleLink() {
   } else {
     return (
       <Theme preset={presetGpnDefault}>
-        <div class="vertical-flex top-margin-buffer">
-          <label for="email-input">Enter your Google Account email here</label>
-          <input
-            type="text"
-            name="email-input"
-            id="email-input"
-            onChange={(e) => setEmail(e.target.value)}
-          />
+        <div className={"vertical-flex top-margin-buffer"}>
+          <label>Enter your Google Account email here
+            <input
+              type="text"
+              name="email-input"
+              id="email-input"
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </label>
           <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit} />
           <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
         </div>

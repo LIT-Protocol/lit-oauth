@@ -1,0 +1,36 @@
+.header-card {
+  border-radius: 0 0 2rem 2rem;
+  background-color: #E5E5E5;
+  width: 53rem;
+  //width: 844px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-service-provider {
+  background-color: transparent;
+  color: red;
+  margin-right: 0.5rem;
+  padding: 0;
+  height: 3rem;
+  width: 3rem;
+}
+
+.header-user-status-text {
+  margin-right: 0.5rem;
+}
+
+.header-user-options {
+  background-color: #fff;
+  border: 1px solid #ECECEC;
+  color: #000;
+  border-radius: 10px;
+}

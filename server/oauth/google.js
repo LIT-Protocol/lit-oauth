@@ -36,22 +36,37 @@ export default async function (fastify, opts) {
     let id = "";
 
     if (refresh_token !== "") {
-      const query = await fastify.objection.models.sharers.query().insert({
-        email: about_info.data.user.emailAddress,
-        latest_refresh_token: refresh_token,
-      })
-      id = query.id;
+      const existingRows = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
+      if (existingRows.length > 0) {
+        // okay the token already exists, just update it
+        existingRows[0].patch({ latest_refresh_token: refresh_token });
+        id = existingRows[0].id;
+      } else {
+        // insert
+
+        const query = await fastify.objection.models.sharers.query().insert({
+          email: about_info.data.user.emailAddress,
+          latest_refresh_token: refresh_token,
+        });
+        id = query.id;
+      }
     } else {
-      const query = await fastify.objection.models.sharers.query().where('email', '=', about_info.data.user.emailAddress)
+      const query = await fastify.objection.models.sharers
+        .query()
+        .where("email", "=", about_info.data.user.emailAddress);
       id = query.id;
     }
 
-    const insertToLinksQuery = await fastify.objection.models.links.query().insert({
-      drive_id: res.request.body.driveId,
-      requirements: JSON.stringify(req.body.accessControlConditions),
-      sharer_id: id,
-      role: req.body.role
-    })
+    const insertToLinksQuery = await fastify.objection.models.links
+      .query()
+      .insert({
+        drive_id: res.request.body.driveId,
+        requirements: JSON.stringify(req.body.accessControlConditions),
+        sharer_id: id,
+        role: req.body.role,
+      });
 
     let uuid = insertToLinksQuery.id;
 
@@ -133,14 +148,9 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/conditions", async (req, res) => {
-    const uuid = req.body.uuid;
-    const query = {
-      text: "SELECT requirements, role FROM links WHERE id = $1",
-      values: [uuid],
-    };
+    const data = await fastify.objection.models.links.query().where('id', '=', req.body.uuid)
 
-    let data = await runQuery(query);
-    res.send(JSON.stringify(data));
+    res.send(JSON.stringify(data[0]));
   });
 
   fastify.post("/api/google/shareLink", async (req, res) => {
