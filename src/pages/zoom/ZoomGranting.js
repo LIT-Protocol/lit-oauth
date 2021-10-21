@@ -1,9 +1,9 @@
-import { Button } from "@consta/uikit/Button";
-import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
+// import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
 import Meetings from "./ZoomGrantingComponents/Meetings";
 import { useAppContext } from "../../context";
+import { Button } from "@mui/material";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -24,15 +24,18 @@ export default function ZoomGranting() {
   };
 
   return (
-    <Theme preset={presetGpnDefault}>
-      <div className="App">
-        <Button
-          label="Connect your Zoom account"
-          onClick={() => connect("zoom")}
-        />
-        <h3>Zoom Meetings and Webinars</h3>
-        <Meetings />
-      </div>
-    </Theme>
+    <section>
+      <Button onClick={() => connect("zoom")}>Connect your Zoom account</Button>
+      <h3>Zoom Meetings and Webinars</h3>
+      <Meetings />
+    </section>
+    // <Theme preset={presetGpnDefault}>
+    //   <div className="App">
+    //     <Button
+    //       label="Connect your Zoom account"
+    //       onClick={() => connect("zoom")}
+    //     />
+    //   </div>
+    // </Theme>
   );
 }

@@ -1,13 +1,22 @@
 import { BrowserRouter } from "react-router-dom";
-import { Informer } from "@consta/uikit/Informer";
-import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import Routes from "./Routes";
 import { useAppContext } from "./context/app";
+import { ThemeProvider, createTheme } from '@mui/material/styles';
 
 import "./App.css";
 import GoogleContainer from "./pages/google/GoogleContainer";
-import ServiceHeader from "./pages/sharedComponents/serviceHeader/ServiceHeader";
-import ServiceLinks from "./pages/sharedComponents/serviceLinks/ServiceLinks";
+
+const theme = createTheme({
+  components: {
+    MuiInput: {
+      styleOverrides: {
+        root: {
+          padding: '0.75rem'
+        }
+      }
+    }
+  }
+})
 
 function App() {
   const { globalError } = useAppContext();

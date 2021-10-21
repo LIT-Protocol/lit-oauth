@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import LitJsSdk from "lit-js-sdk";
-import { Button } from "@consta/uikit/Button";
-import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import axios from "axios";
+
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
@@ -127,20 +126,23 @@ function GoogleLink() {
     return <div>Getting data...</div>;
   } else {
     return (
-      <Theme preset={presetGpnDefault}>
-        <div className={"vertical-flex top-margin-buffer"}>
-          <label>Enter your Google Account email here
-            <input
-              type="text"
-              name="email-input"
-              id="email-input"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit} />
-          <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
-        </div>
-      </Theme>
+      <section>
+
+      </section>
+      // <Theme preset={presetGpnDefault}>
+      //   <div className={"vertical-flex top-margin-buffer"}>
+      //     <label>Enter your Google Account email here
+      //       <input
+      //         type="text"
+      //         name="email-input"
+      //         id="email-input"
+      //         onChange={(e) => setEmail(e.target.value)}
+      //       />
+      //     </label>
+      //     <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit} />
+      //     <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
+      //   </div>
+      // </Theme>
     );
   }
 }

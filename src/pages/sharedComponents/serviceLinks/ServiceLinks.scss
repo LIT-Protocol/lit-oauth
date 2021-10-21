@@ -2,13 +2,15 @@
   border: 0px solid transparent;
   width: 81rem;
   margin: 0 auto;
+  box-shadow: none;
 }
 
 .links-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 3rem;
+  width: 90%;
+  margin: 0 auto;
 }
 
 .links-actions {
@@ -16,10 +18,4 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-}
-
-.links-actions-buttons {
-  background-color: #fff;
-  color: rgba(0, 5, 51, 0.6);
-  margin-left: 0.3rem;
 }
