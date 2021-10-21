@@ -1,12 +1,12 @@
-import { Button } from "@consta/uikit/Button";
 import { useEffect, useState } from "react";
-import { Theme, presetGpnDefault } from "@consta/uikit/Theme";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import axios from "axios";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
+import ProvisionAccess from "../sharedComponents/provisionAccess/ProvisionAccess";
+import { Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -14,6 +14,7 @@ const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT
 
 const sampleLinks = [
   {
+    id: 1,
     fileName: 'Communist Manifesto',
     requirements: 'the hungry masses',
     fileType: 'Doc',
@@ -21,6 +22,7 @@ const sampleLinks = [
     dateCreated: '1848'
   },
   {
+    id: 2,
     fileName: 'Das Kapital',
     requirements: 'exploitation of labor',
     fileType: 'Doc',
@@ -39,6 +41,16 @@ export default function GoogleGranting() {
   const [modalOpen, setModalOpen] = useState(false);
   const [token, setToken] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
+  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
+
+  const handleOpenProvisionAccessDialog = () => {
+    console.log('WOAH!')
+    setOpenProvisionAccessDialog(true);
+  };
+
+  const handleCloseProvisionAccessDialog = () => {
+    setOpenProvisionAccessDialog(false);
+  };
 
   useEffect(() => {
     loadGoogleAuth();
@@ -144,90 +156,109 @@ export default function GoogleGranting() {
 
   if (token === "") {
     return (
-      <Theme preset={presetGpnDefault}>
-        <div className="App">
-          <Button
-            label="Connect your Google account"
-            onClick={() => authenticate("google")}
-          />
-        </div>
-      </Theme>
+      <section>
+        <Button onClick={() => authenticate("google")}>Connect your Google account</Button>
+      </section>
+      // <Theme preset={presetGpnDefault}>
+      //   <div className="App">
+      //     <Button
+      //       label="Connect your Google account"
+      //       onClick={() => authenticate("google")}
+      //     />
+      //   </div>
+      // </Theme>
     );
   }
 
   return (
-    <Theme preset={presetGpnDefault}>
-      <ServiceHeader
-        serviceName={'Google Drive App'}
-        oauthServiceProvider={'Google'}
-        currentUser={'Comrade Marx'}
-        signOut={signOut}/>
-      <span style={{width: '3rem', height: '5rem'}}></span>
-      <div className="App">
-        <header className="App-header">
-          <p>Enter the link to the drive file below.</p>
-          <form>
-            <label for="drive-link">Drive Link</label>
-            <input
-              type="text"
-              name="drive-link"
-              id="drive-link"
-              onChange={(e) => setLink(e.target.value)}
-            />
+    <section className={'vertical-flex'}>
+       {/*TODO: remove 'vertical-flex' from class*/}
+        <ServiceHeader
+          serviceName={'Google Drive App'}
+          oauthServiceProvider={'Google'}
+          currentUser={'Comrade Marx'}
+          currentUserEmail={'karl@ru.ru'}
+          signOut={signOut}/>
+    {/*TODO: remove span spacer and orient with html grid*/}
+        <span style={{height: '8rem'}}></span>
+        <ServiceLinks
+          className={'top-large-margin-buffer'}
+          serviceName={'Drive'}
+          handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
+          listOfLinks={sampleLinks}/>
+        <ProvisionAccess
+          handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
+          openProvisionAccessDialog={openProvisionAccessDialog}
+          setRole={setRole}
+          role={role}
+          setLink={setLink}/>
+    </section>
 
-            <p>Added Access Control Conditions (click to delete)</p>
-            {accessControlConditions.map((r, i) => (
-              <Button
-                key={i}
-                label={JSON.stringify(r)}
-                onClick={() => removeIthAccessControlCondition(i)}
-              />
-            ))}
-            <Button
-              className="top-margin-buffer"
-              label="Add access control conditions"
-              type="button"
-              onClick={() => setModalOpen(true)}
-            />
-            {modalOpen && (
-              <ShareModal
-                show={false}
-                onClose={() => setModalOpen(false)}
-                sharingItems={[{ name: link }]}
-                onAccessControlConditionsSelected={(restriction) => {
-                  addToAccessControlConditions(restriction);
-                  setModalOpen(false);
-                }}
-              />
-            )}
-            <br />
-            <label for="drive-role">Drive Role to share</label>
-            <select
-              name="drive-role"
-              id="drive-role"
-              onChange={(e) => setRole(parseInt(e.target.selectedIndex))}
-            >
-              <option value="read">Read</option>
-              <option value="comment">Comment</option>
-              <option value="write">Write</option>
-            </select>
-            <Button
-              className="top-margin-buffer left-margin-buffer"
-              label="Get share link"
-              type="button"
-              onClick={handleSubmit}
-            />
-          </form>
-        </header>
-        {/*<Button*/}
-        {/*  className="top-margin-buffer"*/}
-        {/*  label="Sign Out Of Google"*/}
-        {/*  onClick={signOut}*/}
-        {/*/>*/}
-      </div>
-      <ServiceLinks
-        serviceName={'Drive'}
-        listOfLinks={sampleLinks}/>
-    </Theme>
+
+
+  // <Theme preset={presetGpnDefault} className={'vertical-flex'}>
+  //   <div className="App">*/}
+  //     <header className="App-header">*/}
+  //       <p>Enter the link to the drive file below.</p>*/}
+  //       <form>*/}
+  //         <label htmlFor="drive-link">Drive Link</label>*/}
+  //         <input*/}
+  //           type="text"*/}
+  //           name="drive-link"*/}
+  //           id="drive-link"*/}
+  //           onChange={(e) => setLink(e.target.value)}*/}
+  //         />*/}
+  //
+  //         <p>Added Access Control Conditions (click to delete)</p>*/}
+  //         {accessControlConditions.map((r, i) => (*/}
+  //           <Button*/}
+  //             key={i}*/}
+  //             label={JSON.stringify(r)}*/}
+  //             onClick={() => removeIthAccessControlCondition(i)}*/}
+  //           />*/}
+  //         ))}*/}
+  //         <Button*/}
+  //           className="top-margin-buffer"*/}
+  //           label="Add access control conditions"*/}
+  //           type="button"*/}
+  //           onClick={() => setModalOpen(true)}*/}
+  //         />*/}
+  //         {modalOpen && (*/}
+  //           <ShareModal*/}
+  //             show={false}*/}
+  //             onClose={() => setModalOpen(false)}*/}
+  //             sharingItems={[{name: link}]}*/}
+  //             onAccessControlConditionsSelected={(restriction) => {*/}
+  //               addToAccessControlConditions(restriction);*/}
+  //               setModalOpen(false);*/}
+  //             }}*/}
+  //           />*/}
+  //         )}*/}
+  //         <br/>*/}
+  //         <label htmlFor="drive-role">Drive Role to share</label>*/}
+  //         <select*/}
+  //           name="drive-role"*/}
+  //           id="drive-role"*/}
+  //           onChange={(e) => setRole(parseInt(e.target.selectedIndex))}*/}
+  //         >*/}
+  //           <option value="read">Read</option>*/}
+  //           <option value="comment">Comment</option>*/}
+  //           <option value="write">Write</option>*/}
+  //         </select>*/}
+  //         <Button*/}
+  //           className="top-margin-buffer left-margin-buffer"*/}
+  //           label="Get share link"*/}
+  //           type="button"*/}
+  //           onClick={handleSubmit}*/}
+  //         />*/}
+  //       </form>*/}
+  //     </header>*/}
+  //     <Button*/}
+  //       className="top-margin-buffer"*/}
+  //       label="Sign Out Of Google"*/}
+  //       onClick={signOut}*/}
+  //     />*/}
+  //   </div>*/}
+  // </Theme>*/}
   );
 }

@@ -1,71 +1,83 @@
 import { useState, useRef } from "react";
-import { presetGpnDefault, Theme } from "@consta/uikit/Theme";
-import { Card } from "@consta/uikit/Card";
-import { Text } from "@consta/uikit/Text";
-import { ContextMenu } from "@consta/uikit/ContextMenu";
-import { Button } from "@consta/uikit/Button";
-import { IconArrowDown } from '@consta/uikit/IconArrowDown';
-import { IconPhoto } from '@consta/uikit/IconPhoto';
-import { IconSmile } from '@consta/uikit/IconSmile';
-
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { Avatar, Button, Card, Menu, MenuItem } from "@mui/material";
 import './ServiceHeader.scss';
 
 export default function ServiceHeader(props) {
   const serviceName = props.serviceName;
   const oauthServiceProvider = props.oauthServiceProvider;
   const currentUser = props.currentUser;
+  const currentUserEmail = props.currentUserEmail;
   const [userOptionsAreOpen, setUserOptionsAreOpen] = useState(false);
-  const userOptionsRef = useRef(null);
+  const open = Boolean(userOptionsAreOpen);
 
-  const accounts = {};
-  const dropdownOptions = [
+  const handleUserMenuClick = (event) => {
+    setUserOptionsAreOpen(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setUserOptionsAreOpen(null);
+  };
+
+  const accounts = [
     {
-      label: 'Add Account',
-      action: 'addAccount',
-      id: 1
-    },
-    {
-      label: 'Logout',
-      action: 'signOut',
-      id: 2
+      accountName: 'karl@forbes.com'
     }
-  ]
+  ];
 
-  const handleDropdownActions = (event) => {
+  const handleMenuItemClick = (event) => {
+    setUserOptionsAreOpen(null);
     if (event.target.innerText === 'Logout') {
       props.signOut();
     }
   }
 
   return (
-    <Theme preset={presetGpnDefault}>
-      <Card className={"header-card"} verticalSpace={"l"} horizontalSpace={"4xl"}>
-        <span className={'header-left'}>
-          <IconPhoto className={'header-service-provider'}/>
-          <Text spacing={'m'}>{ serviceName }</Text>
-        </span>
-        <span className={'header-right'}>
-          <Text iconLeft={IconPhoto} className={'header-user-status-text'} size={'xs'} spacing={'s'}>Logged in with { oauthServiceProvider }</Text>
-          <span>
-            <Button className={'header-user-options'}
-                    label={currentUser}
-                    iconRight={IconArrowDown}
-                    iconLeft={IconSmile}
-                    ref={userOptionsRef}
-                    onClick={() => setUserOptionsAreOpen(!userOptionsAreOpen)}/>
-            { userOptionsAreOpen && (
-              <ContextMenu items={dropdownOptions}
-                           size={'s'}
-                           anchorRef={userOptionsRef}
-                           getLabel={(item) => item.label}
-                           direction="downStartRight"
-                           getOnClick={() => handleDropdownActions}
-                           onClickOutside={() => setUserOptionsAreOpen(false)}
-              />
-            )}
-          </span>
-        </span>
-      </Card>
-    </Theme>
+    <Card class={'header-card'}>
+      <span className={'header-left'}>
+        <Avatar className={'right-buffer'}>G</Avatar>
+        <h2>{serviceName}</h2>
+      </span>
+      <span className={'header-right'}>
+        <p class={'service-text right-buffer'}>
+          Logged in with {oauthServiceProvider}
+        </p>
+        <Button variant="contained"
+          onClick={handleUserMenuClick}
+          className={'header-user-menu'}
+        >
+          <Avatar className={'right-buffer'}>KM</Avatar>
+          <div className={'user-info right-buffer'}>
+            <span className={'user-name'}>
+              {currentUser}
+            </span>
+            <span className={'user-email'}>
+              {currentUserEmail}
+            </span>
+          </div>
+          <KeyboardArrowDownIcon />
+        </Button>
+        <Menu
+          className={'header-user-menu-options'}
+          anchorEl={userOptionsAreOpen}
+          open={open}
+          onClose={handleClose}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'right',
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'right',
+          }}
+        >
+          <MenuItem key={0} onClick={handleMenuItemClick}>Add Account</MenuItem>
+          {accounts.map((account, i) => {
+            <MenuItem key={i + 2} onClick={handleMenuItemClick}>{account.accountName}</MenuItem>
+          })}
+          <MenuItem key={1} onClick={handleMenuItemClick}>Logout</MenuItem>
+        </Menu>
+      </span>
+    </Card>
   )
 }

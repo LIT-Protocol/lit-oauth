@@ -1,99 +1,114 @@
-import { presetGpnDefault, Theme } from "@consta/uikit/Theme";
-import { Card } from "@consta/uikit/Card";
-import { Text } from "@consta/uikit/Text";
-import { Table } from "@consta/uikit/__internal__/src/components/Table/Table";
-import { Button } from "@consta/uikit/Button";
-import { IconEdit } from '@consta/uikit/IconEdit';
-import { IconAttach } from '@consta/uikit/IconAttach';
-import { IconCopy } from '@consta/uikit/IconCopy';
-import { IconTrash } from '@consta/uikit/IconTrash';
-
 import './ServiceLinks.scss';
+import {
+  Button,
+  Card, IconButton,
+} from "@mui/material";
+// import MUIDataTable from "mui-datatables";
+import EditIcon from '@mui/icons-material/Edit';
+import LinkIcon from '@mui/icons-material/Link';
+import DownloadIcon from '@mui/icons-material/Download';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function ServiceLinks(props) {
   const listOfLinks = props.listOfLinks;
   const serviceName = props.serviceName;
 
-  const cols = [
+  const columns = [
     {
-      title: 'File Name',
-      accessor: 'fileName',
-      align: 'left',
-      sortable: true
+      name: 'fileName',
+      label: 'File Name',
+      options: {
+        filter: true,
+        sort: true
+      }
     },
     {
-      title: 'Requirements',
-      accessor: 'requirements',
-      align: 'left',
-      sortable: true
+      name: 'requirements',
+      label: 'Requirements',
+      options: {
+        filter: true,
+        sort: true
+      }
     },
     {
-      title: 'File Type',
-      accessor: 'fileType',
-      align: 'left',
-      sortable: true
+      name: 'fileType',
+      label: 'File Type',
+      options: {
+        filter: true,
+        sort: true
+      }
     },
     {
-      title: 'Permission',
-      accessor: 'permission',
-      align: 'left',
-      sortable: true
+      name: 'permission',
+      label: 'Permission',
+      options: {
+        filter: true,
+        sort: true
+      }
     },
     {
-      title: 'Date Created',
-      accessor: 'dateCreated',
-      align: 'left',
-      sortable: true
+      name: 'dateCreated',
+      label: 'Date Created',
+      options: {
+        filter: true,
+        sort: true
+      }
     },
     {
-      title: 'Actions',
-      accessor: 'actions',
-      align: 'left',
-      sortable: true,
-      renderCell: (row) => {
-        return (
-          <span className={'links-actions'}>
-            <Button className={'links-actions-buttons'}
-                    size={'m'}
-                    iconLeft={IconEdit}
-                    onlyIcon>
-            </Button>
-            <Button className={'links-actions-buttons'}
-                    size={'m'}
-                    iconLeft={IconAttach}
-                    onlyIcon>
-            </Button>
-            <Button className={'links-actions-buttons'}
-                    size={'m'}
-                    iconLeft={IconCopy}
-                    onlyIcon>
-            </Button>
-            <Button className={'links-actions-buttons'}
-                    size={'m'}
-                    iconLeft={IconTrash}
-                    onlyIcon>
-            </Button>
-          </span>
-        )
+      name: 'actions',
+      label: 'Actions',
+      options: {
+        filter: false,
+        sort: false,
+        customBodyRenderLite: (dataIndex, rowIndex) => {
+          return (
+            <span className={'links-actions'}>
+              <IconButton size={'small'}>
+                <EditIcon/>
+              </IconButton>
+              <IconButton size={'small'}>
+                <LinkIcon/>
+              </IconButton>
+              <IconButton size={'small'}>
+                <DownloadIcon/>
+              </IconButton>
+              <IconButton size={'small'}>
+                <DeleteIcon/>
+              </IconButton>
+            </span>
+          )
+        }
       }
     },
   ]
 
-  if (listOfLinks && cols) {
+  const tableOptions = {
+    selectableRowsHideCheckboxes: true,
+    download: false,
+    print: false,
+    viewColumns: false,
+  }
+
+  if (listOfLinks && columns) {
     return (
-      <Theme preset={presetGpnDefault}>
-        <Card className={'links-card'} shadow={false}>
-          <span class={'links-header'}>
-            <Text className={'links-service-title'} size={'xl'}>{`Your ${serviceName} Items`}</Text>
-            <Button label={'Provision Access'} view={'secondary'}></Button>
+      <section>
+        <Card className={'links-card'}>
+          <span className={'links-header'}>
+            <h3>Your {serviceName} Files</h3>
+            <Button variant='outlined' onClick={() => props.handleOpenProvisionAccessDialog()}>Provision Access</Button>
           </span>
-          <Table columns={cols} rows={listOfLinks}></Table>
+          {/*TODO: remove 'material-ui/icons' and 'material-ui/core' from package.json once MUI Datatables is updated to use v5*/}
+          {/*<MUIDataTable*/}
+          {/*  columns={columns}*/}
+          {/*  data={listOfLinks}*/}
+          {/*  options={tableOptions}*/}
+          {/*/>*/}
         </Card>
-      </Theme>
+      </section>
     )
   } else {
     return (
-      <Text label={'Loading Links'}></Text>
+      <span>Loading Links</span>
     )
   }
 }
