@@ -56,14 +56,17 @@ export default function GoogleGranting() {
     loadGoogleAuth();
   }, []);
 
-  function authenticate() {
+  async function authenticate() {
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
     return window.gapi.auth2
       .getAuthInstance()
       .grantOfflineAccess()
       .then(async (authResult) => {
         console.log("authResult: ", authResult);
         if (authResult.code) {
-          console.log("AUTH RESULT", authResult.code)
+          console.log("AUTH RESULT", authResult.code);
           setToken(authResult.code);
         } else {
           console.log("Error logging in");
@@ -104,8 +107,13 @@ export default function GoogleGranting() {
     setAccessControlConditions(slice1.concat(slice2));
   };
 
-  const handleSubmit = () => {
-    console.log('DOUBLE CHECK TOKEN', token)
+  const handleSubmit = async () => {
+    console.log("DOUBLE CHECK TOKEN", token);
+
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
+
     const regex = /d\/(.{44})/g;
     let id = link.match(regex)[0];
     id = id.slice(2, id.length);
@@ -121,6 +129,7 @@ export default function GoogleGranting() {
           role: role,
           token: token,
           accessControlConditions: accessControlConditions,
+          authSig,
         },
         requestOptions
       )

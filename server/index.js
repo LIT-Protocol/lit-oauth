@@ -1,12 +1,11 @@
 import Fastify from "fastify";
-import fastifyPostgres from "fastify-postgres";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
 import fastifyObjectionJS from "fastify-objectionjs";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
-import knexConfig from './knexfile.js';
+import knexConfig from "./knexfile.js";
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
@@ -30,18 +29,6 @@ Bugsnag.start({
 
 const fastify = Fastify();
 
-const dbConfig = {
-  connectionString: process.env.LIT_PROTOCOL_OAUTH_DB_URL,
-};
-
-if (
-  process.env.LIT_PROTOCOL_OAUTH_ZOOM_ENVIRONMENT === "production" ||
-  process.env.LIT_PROTOCOL_OAUTH_ZOOM_ENVIRONMENT === "development"
-) {
-  dbConfig.ssl = { rejectUnauthorized: false };
-}
-
-fastify.register(fastifyPostgres, dbConfig);
 fastify.register(fastifyCors, {
   origin: "*",
   methods: ["POST", "GET", "DELETE", "PUT", "PATCH"],
@@ -88,6 +75,26 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
+
+// http to https redirect
+if (process.env.NODE_ENV === "production") {
+  fastify.addHook("onRequest", (req, res, done) => {
+    // Some code
+    const {
+      headers: { host },
+      url,
+    } = req;
+    console.log("headers", req.headers);
+    if (host && req.headers["x-forwarded-proto"] !== "https") {
+      const redirectUrl = `https://${host.split(":")[0]}${url}`;
+      res.code(301);
+      res.header("Location", redirectUrl);
+      res.end();
+      return;
+    }
+    done();
+  });
+}
 
 fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;

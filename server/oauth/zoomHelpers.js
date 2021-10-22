@@ -38,12 +38,12 @@ export const getUser = async ({ accessToken, refreshToken }) => {
 };
 
 export const getMeetingsAndWebinars = async ({
-                                        accessToken,
-                                        refreshToken,
-                                        connectedServiceId,
-                                        fastify,
-                                        shares,
-                                      }) => {
+  accessToken,
+  refreshToken,
+  connectedServiceId,
+  fastify,
+  shares,
+}) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
@@ -68,29 +68,41 @@ export const getMeetingsAndWebinars = async ({
       const meetingsWithServiceId = resp.data.meetings.map((d) => ({
         ...d,
         connectedServiceId,
-        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
+        shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
         type: "meeting",
       }));
 
       // pull webinars
-      q = {
-        page_size: 300,
-      };
-      url =
-        "https://api.zoom.us/v2/users/me/webinars?" +
-        new URLSearchParams(q).toString();
-      resp = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      let webinarsWithServiceId = [];
+      try {
+        q = {
+          page_size: 300,
+        };
+        url =
+          "https://api.zoom.us/v2/users/me/webinars?" +
+          new URLSearchParams(q).toString();
+        resp = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
 
-      const webinarsWithServiceId = resp.data.webinars.map((d) => ({
-        ...d,
-        connectedServiceId,
-        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
-        type: "webinar",
-      }));
+        webinarsWithServiceId = resp.data.webinars.map((d) => ({
+          ...d,
+          connectedServiceId,
+          shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
+          type: "webinar",
+        }));
+      } catch (e) {
+        if (e?.response?.data?.message?.includes("Webinar plan is missing")) {
+          console.log(
+            `swallowing error retrieving webinars because the user doesnt have the webinar plan enabled:`,
+            e?.response?.data
+          );
+        } else {
+          throw e;
+        }
+      }
 
       return [...meetingsWithServiceId, ...webinarsWithServiceId];
     },
@@ -98,14 +110,14 @@ export const getMeetingsAndWebinars = async ({
 };
 
 export const createMeetingInvite = async ({
-                                     accessToken,
-                                     refreshToken,
-                                     connectedServiceId,
-                                     fastify,
-                                     userId,
-                                     meetingId,
-                                     assetType,
-                                   }) => {
+  accessToken,
+  refreshToken,
+  connectedServiceId,
+  fastify,
+  userId,
+  meetingId,
+  assetType,
+}) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
@@ -143,10 +155,10 @@ export const createMeetingInvite = async ({
 };
 
 const refreshAccessToken = async ({
-                                    connectedServiceId,
-                                    refreshToken,
-                                    fastify,
-                                  }) => {
+  connectedServiceId,
+  refreshToken,
+  fastify,
+}) => {
   console.log("Refreshing zoom access token");
   const q = {
     refresh_token: refreshToken,
@@ -170,24 +182,24 @@ const refreshAccessToken = async ({
     }
   );
 
-  await fastify.pg.transact(async (client) => {
-    // will resolve to an id, or reject with an error
-    await client.query(
-      "UPDATE connected_services SET access_token=$1, refresh_token=$2 WHERE id=$3",
-      [resp.data.access_token, resp.data.refresh_token, connectedServiceId]
-    );
-  });
+  await fastify.objection.models.connectedServices
+    .query()
+    .update({
+      accessToken: resp.data.access_token,
+      refreshToken: resp.data.refresh_token,
+    })
+    .where("id", "=", connectedServiceId);
 
   return resp.data.access_token;
 };
 
 const refreshTokenIfNeeded = async ({
-                                      accessToken,
-                                      refreshToken,
-                                      fastify,
-                                      connectedServiceId,
-                                      req,
-                                    }) => {
+  accessToken,
+  refreshToken,
+  fastify,
+  connectedServiceId,
+  req,
+}) => {
   try {
     const resp = await req(accessToken);
     return resp;
