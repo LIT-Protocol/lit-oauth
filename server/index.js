@@ -89,7 +89,7 @@ if (process.env.NODE_ENV === "production") {
       const redirectUrl = `https://${host.split(":")[0]}${url}`;
       res.code(301);
       res.header("Location", redirectUrl);
-      res.end();
+      res.send();
       return;
     }
     done();
