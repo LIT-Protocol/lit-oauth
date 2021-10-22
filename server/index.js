@@ -78,7 +78,7 @@ fastify.register(googleOauthEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
-  fastify.addHook("onRequest", (request, reply, done) => {
+  fastify.addHook("onRequest", (req, res, done) => {
     // Some code
     const {
       headers: { host },
