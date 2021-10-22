@@ -32,18 +32,6 @@
   }
 }
 
-.header-user-menu-options ul{
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-
-  li {
-    min-width: 15rem;
-    padding: 0.5rem;
-  }
-}
-
 .right-buffer {
   margin-right: 1rem;
 }
