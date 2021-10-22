@@ -170,13 +170,13 @@ const refreshAccessToken = async ({
     }
   );
 
-  await fastify.pg.transact(async (client) => {
-    // will resolve to an id, or reject with an error
-    await client.query(
-      "UPDATE connected_services SET access_token=$1, refresh_token=$2 WHERE id=$3",
-      [resp.data.access_token, resp.data.refresh_token, connectedServiceId]
-    );
-  });
+  await fastify.objection.models.connectedServices
+    .query()
+    .update({
+      accessToken: resp.data.access_token,
+      refreshToken: resp.data.refresh_token,
+    })
+    .where("id", "=", connectedServiceId);
 
   return resp.data.access_token;
 };

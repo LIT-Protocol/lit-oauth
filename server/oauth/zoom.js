@@ -105,12 +105,9 @@ export default async function (fastify, opts) {
         const shares = await fastify.objection.models.shares
           .query()
           .where("connected_service_id", "=", service.id);
-        console.log("got shares", shares);
         return { ...service, shares };
       })
     );
-
-    console.log("services", services);
 
     const meetingsAndWebinars = (
       await Promise.all(
