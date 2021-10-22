@@ -81,7 +81,7 @@ fastify.register(googleOauthEndpoints);
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
   fastify.register(middie);
-  fastify.use(herokuSslRedirect);
+  fastify.use(herokuSslRedirect());
   // fastify.addHook("onRequest", (req, res, done) => {
   //   // Some code
   //   const {
