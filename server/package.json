@@ -7,8 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon index.js",
-    "migrate": "node migrate.js",
-    "knexMigrate": "knex migrate:latest --esm --knexfile=./knexfile.js"
+    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js"
   },
   "dependencies": {
     "@bugsnag/js": "^7.11.0",

@@ -2,10 +2,14 @@ import { authUser } from "../auth.js";
 import { keysToCamel } from "../utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../../src/pages/zoom/utils.js";
-import { getAccessToken, getUser, getMeetingsAndWebinars, createMeetingInvite } from "./zoomHelpers.js";
+import {
+  getAccessToken,
+  getUser,
+  getMeetingsAndWebinars,
+  createMeetingInvite,
+} from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
-
   fastify.post("/api/oauth/zoom/login", async (request, reply) => {
     const { authSig } = request.body;
 
@@ -49,48 +53,36 @@ export default async function (fastify, opts) {
 
     // check for existing access token
     const service = (
-      await fastify.pg.query(
-        "SELECT id FROM connected_services WHERE user_id=$1 AND id_on_service=$2",
-        [userId, user.id]
-      )
-    ).rows[0];
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("user_id", "=", userId)
+        .where("id_on_service", "=", user.id)
+    )[0];
 
     if (service) {
       // update
       // store access token and user info
-      await fastify.pg.transact(async (client) => {
-        // will resolve to an id, or reject with an error
-        await client.query(
-          "UPDATE connected_services SET access_token=$1, refresh_token=$2 WHERE id=$3",
-          [data.access_token, data.refresh_token, service.id]
-        );
+      service.patch({
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
       });
     } else {
       // insert
       // store access token and user info
-      await fastify.pg.transact(async (client) => {
-        // will resolve to an id, or reject with an error
-        const id = await client.query(
-          "INSERT INTO connected_services(user_id, service_name, id_on_service, email, created_at, access_token, refresh_token, extra_data, scope) VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
-          [
-            authSig.address,
-            "zoom",
-            user.id,
-            user.email,
-            new Date(),
-            data.access_token,
-            data.refresh_token,
-            JSON.stringify({ token: data, user }),
-            data.scope,
-          ]
-        );
 
-        // potentially do something with id
-        return id;
+      await fastify.objection.models.connectedServices.query().insert({
+        userId: authSig.address,
+        serviceName: "zoom",
+        idOnService: user.id,
+        email: user.email,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        scope: data.scope,
+        extraData: JSON.stringify({ token: data, user }),
       });
     }
 
-    reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+    reply.redirect(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
@@ -102,23 +94,17 @@ export default async function (fastify, opts) {
     }
     const userId = authSig.address;
 
-    let services = (
-      await fastify.pg.query(
-        "SELECT * FROM connected_services WHERE user_id=$1 and service_name=$2",
-        [userId, "zoom"]
-      )
-    ).rows;
+    let services = await fastify.objection.models.connectedServices
+      .query()
+      .where("user_id", "=", userId)
+      .where("service_name", "=", "zoom");
 
     // add shares
     services = await Promise.all(
       services.map(async (service) => {
-        const shares = (
-          await fastify.pg.query(
-            "SELECT * FROM shares WHERE connected_service_id=$1",
-            [service.id]
-          )
-        ).rows;
-        // console.log("got shares", shares);
+        const shares = await fastify.objection.models.shares
+          .query()
+          .where("connected_service_id", "=", service.id);
         return { ...service, shares };
       })
     );
@@ -127,8 +113,8 @@ export default async function (fastify, opts) {
       await Promise.all(
         services.map((s) =>
           getMeetingsAndWebinars({
-            accessToken: s.access_token,
-            refreshToken: s.refresh_token,
+            accessToken: s.accessToken,
+            refreshToken: s.refreshToken,
             connectedServiceId: s.id,
             fastify,
             shares: s.shares,
@@ -139,14 +125,14 @@ export default async function (fastify, opts) {
       .flat()
       .filter((mw) => new Date(mw.start_time) > new Date());
 
-    console.log("meetingsAndWebinars", meetingsAndWebinars);
+    // console.log("meetingsAndWebinars", meetingsAndWebinars);
 
     return {
       meetingsAndWebinars,
     };
   });
 
-// get shares for a given meeting
+  // get shares for a given meeting
   fastify.post("/api/zoom/shares", async (request, reply) => {
     const { authSig, meetingId } = request.body;
 
@@ -156,17 +142,16 @@ export default async function (fastify, opts) {
     }
     const userId = authSig.address;
 
-    let shares = (
-      await fastify.pg.query(
-        "SELECT * FROM shares WHERE asset_id_on_service=$1",
-        [meetingId]
-      )
-    ).rows;
+    const shares = await fastify.objection.models.shares
+      .query()
+      .where("asset_id_on_service", "=", meetingId);
 
     return {
       shares: shares.map((s) => {
         const share = keysToCamel(s);
-        share.accessControlConditions = JSON.parse(share.accessControlConditions);
+        share.accessControlConditions = JSON.parse(
+          share.accessControlConditions
+        );
         return share;
       }),
     };
@@ -197,7 +182,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
+        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
       payload.path !== sharedLinkPath ||
       payload.orgId !== "" ||
       payload.role !== "" ||
@@ -208,23 +193,22 @@ export default async function (fastify, opts) {
     }
 
     // get the meeting and oauth creds
-    let meeting = (
-      await fastify.pg.query(
-        "SELECT * FROM shares WHERE asset_id_on_service=$1",
-        [meetingId]
-      )
-    ).rows[0];
+    const meeting = (
+      await fastify.objection.models.shares
+        .query()
+        .where("asset_id_on_service", "=", meetingId)
+    )[0];
 
-    let service = (
-      await fastify.pg.query("SELECT * FROM connected_services WHERE id=$1", [
-        meeting.connected_service_id,
-      ])
-    ).rows[0];
+    const service = (
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("id", "=", meeting.connectedServiceId)
+    )[0];
 
     // grant access on zoom api
     const { joinUrl } = await createMeetingInvite({
-      accessToken: service.access_token,
-      refreshToken: service.refresh_token,
+      accessToken: service.accessToken,
+      refreshToken: service.refreshToken,
       connectedServiceId: service.id,
       fastify,
       userId,
@@ -246,39 +230,26 @@ export default async function (fastify, opts) {
     }
     const userId = authSig.address;
 
-    await fastify.pg.transact(async (client) => {
-      // will resolve to an id, or reject with an error
-      const id = await client.query(
-        "DELETE FROM shares WHERE user_id=$1 AND asset_id_on_service=$2",
-        [userId, meeting.id]
-      );
+    // delete old shares
+    await fastify.objection.models.shares
+      .query()
+      .delete()
+      .where("user_id", "=", userId)
+      .where("asset_id_on_service", "=", meeting.id)
+      .where("connected_service_id", "=", meeting.connectedServiceId);
 
-      // potentially do something with id
-      return id;
-    });
-
-    // store the share
-    await fastify.pg.transact(async (client) => {
-      // will resolve to an id, or reject with an error
-      const id = await client.query(
-        "INSERT INTO shares(user_id, connected_service_id, asset_id_on_service, access_control_conditions, name, asset_type) VALUES($1, $2, $3, $4, $5, $6) RETURNING id",
-        [
-          authSig.address,
-          meeting.connectedServiceId,
-          meeting.id,
-          JSON.stringify(accessControlConditions),
-          meeting.topic,
-          meeting.type,
-        ]
-      );
-
-      // potentially do something with id
-      return id;
+    // store the new share
+    await fastify.objection.models.shares.query().insert({
+      userId,
+      connectedServiceId: meeting.connectedServiceId,
+      asset_id_on_service: meeting.id,
+      access_control_conditions: JSON.stringify(accessControlConditions),
+      name: meeting.topic,
+      asset_type: meeting.type,
     });
 
     return {
       success: true,
     };
   });
-
 }
