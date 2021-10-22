@@ -2,6 +2,8 @@ import Fastify from "fastify";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
 import fastifyObjectionJS from "fastify-objectionjs";
+import herokuSslRedirect from "heroku-ssl-redirect";
+import middie from "middie";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
@@ -78,22 +80,24 @@ fastify.register(googleOauthEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
-  fastify.addHook("onRequest", (req, res, done) => {
-    // Some code
-    const {
-      headers: { host },
-      url,
-    } = req;
-    console.log("headers", req.headers);
-    if (host && req.headers["x-forwarded-proto"] !== "https") {
-      const redirectUrl = `https://${host.split(":")[0]}${url}`;
-      res.code(301);
-      res.header("Location", redirectUrl);
-      res.send();
-      return;
-    }
-    done();
-  });
+  fastify.register(middie);
+  fastify.use(herokuSslRedirect);
+  // fastify.addHook("onRequest", (req, res, done) => {
+  //   // Some code
+  //   const {
+  //     headers: { host },
+  //     url,
+  //   } = req;
+  //   console.log("headers", req.headers);
+  //   if (host && req.headers["x-forwarded-proto"] !== "https") {
+  //     const redirectUrl = `https://${host.split(":")[0]}${url}`;
+  //     res.code(301);
+  //     res.header("Location", redirectUrl);
+  //     res.send();
+  //     return;
+  //   }
+  //   done();
+  // });
 }
 
 fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
