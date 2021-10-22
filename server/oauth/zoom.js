@@ -2,10 +2,14 @@ import { authUser } from "../auth.js";
 import { keysToCamel } from "../utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../../src/pages/zoom/utils.js";
-import { getAccessToken, getUser, getMeetingsAndWebinars, createMeetingInvite } from "./zoomHelpers.js";
+import {
+  getAccessToken,
+  getUser,
+  getMeetingsAndWebinars,
+  createMeetingInvite,
+} from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
-
   fastify.post("/api/oauth/zoom/login", async (request, reply) => {
     const { authSig } = request.body;
 
@@ -90,7 +94,7 @@ export default async function (fastify, opts) {
       });
     }
 
-    reply.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+    reply.redirect(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
@@ -102,22 +106,17 @@ export default async function (fastify, opts) {
     }
     const userId = authSig.address;
 
-    let services = (
-      await fastify.pg.query(
-        "SELECT * FROM connected_services WHERE user_id=$1 and service_name=$2",
-        [userId, "zoom"]
-      )
-    ).rows;
+    let services = await fastify.objection.models.connectedServices
+      .query()
+      .where("user_id", "=", userId)
+      .where("service_name", "=", "zoom");
 
     // add shares
     services = await Promise.all(
       services.map(async (service) => {
-        const shares = (
-          await fastify.pg.query(
-            "SELECT * FROM shares WHERE connected_service_id=$1",
-            [service.id]
-          )
-        ).rows;
+        const shares = await fastify.objection.models.shares
+          .query()
+          .where("connected_service_id", "=", service.id);
         // console.log("got shares", shares);
         return { ...service, shares };
       })
@@ -127,8 +126,8 @@ export default async function (fastify, opts) {
       await Promise.all(
         services.map((s) =>
           getMeetingsAndWebinars({
-            accessToken: s.access_token,
-            refreshToken: s.refresh_token,
+            accessToken: s.accessToken,
+            refreshToken: s.refreshToken,
             connectedServiceId: s.id,
             fastify,
             shares: s.shares,
@@ -146,7 +145,7 @@ export default async function (fastify, opts) {
     };
   });
 
-// get shares for a given meeting
+  // get shares for a given meeting
   fastify.post("/api/zoom/shares", async (request, reply) => {
     const { authSig, meetingId } = request.body;
 
@@ -166,7 +165,9 @@ export default async function (fastify, opts) {
     return {
       shares: shares.map((s) => {
         const share = keysToCamel(s);
-        share.accessControlConditions = JSON.parse(share.accessControlConditions);
+        share.accessControlConditions = JSON.parse(
+          share.accessControlConditions
+        );
         return share;
       }),
     };
@@ -197,7 +198,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
+        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
       payload.path !== sharedLinkPath ||
       payload.orgId !== "" ||
       payload.role !== "" ||
@@ -280,5 +281,4 @@ export default async function (fastify, opts) {
       success: true,
     };
   });
-
 }
