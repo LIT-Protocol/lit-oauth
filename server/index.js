@@ -1,9 +1,7 @@
 import Fastify from "fastify";
-import fastifyPostgres from "fastify-postgres";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
 import fastifyObjectionJS from "fastify-objectionjs";
-import fastifyHttpsRedirect from "fastify-https-redirect";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
@@ -78,9 +76,26 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 
+// http to https redirect
 if (process.env.NODE_ENV === "production") {
-  fastify.register(fastifyHttpsRedirect, { httpPort: process.env.PORT });
-} else {
+  fastify.addHook('onRequest', (request, reply, done) => {
+    // Some code
+    const {
+      headers: { host },
+      url
+    } = req
+    if (host) {
+      const redirectUrl = `https://${host.split(':')[0]}${url}`
+      res.writeHead(301, {
+        Location: redirectUrl
+      })
+      res.end()
+    }
+    done()
+  })
+}
+
+
   fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
     if (err) throw err;
     console.log(`server listening on ${fastify.server.address().port}`);

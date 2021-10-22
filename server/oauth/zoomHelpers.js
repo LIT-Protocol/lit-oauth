@@ -73,24 +73,36 @@ export const getMeetingsAndWebinars = async ({
       }));
 
       // pull webinars
-      q = {
-        page_size: 300,
-      };
-      url =
-        "https://api.zoom.us/v2/users/me/webinars?" +
-        new URLSearchParams(q).toString();
-      resp = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      let webinarsWithServiceId = [];
+      try {
+        q = {
+          page_size: 300,
+        };
+        url =
+          "https://api.zoom.us/v2/users/me/webinars?" +
+          new URLSearchParams(q).toString();
+        resp = await axios.get(url, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
 
-      const webinarsWithServiceId = resp.data.webinars.map((d) => ({
-        ...d,
-        connectedServiceId,
-        shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
-        type: "webinar",
-      }));
+        webinarsWithServiceId = resp.data.webinars.map((d) => ({
+          ...d,
+          connectedServiceId,
+          shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
+          type: "webinar",
+        }));
+      } catch (e) {
+        if (e?.response?.data?.message?.includes("Webinar plan is missing")) {
+          console.log(
+            `swallowing error retrieving webinars because the user doesnt have the webinar plan enabled:`,
+            e?.response?.data
+          );
+        } else {
+          throw e;
+        }
+      }
 
       return [...meetingsWithServiceId, ...webinarsWithServiceId];
     },

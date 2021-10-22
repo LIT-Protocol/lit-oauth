@@ -18,7 +18,6 @@
     "eth-sig-util": "^3.0.1",
     "fastify": "^3.21.3",
     "fastify-cors": "^6.0.2",
-    "fastify-https-redirect": "^1.0.4",
     "fastify-objectionjs": "^0.4.0",
     "fastify-postgres": "^3.6.0",
     "fastify-static": "^4.2.3",
