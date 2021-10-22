@@ -6,7 +6,7 @@ import fastifyObjectionJS from "fastify-objectionjs";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
-import knexConfig from './knexfile.js';
+import knexConfig from "./knexfile.js";
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
@@ -88,6 +88,10 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
+
+fastify.register(fastifyStatic, {
+  root: path.join(__dirname, "../build"),
+});
 
 fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;
