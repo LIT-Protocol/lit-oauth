@@ -31,11 +31,12 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "PORT=4001 react-scripts start",
+    "start": "cd server && yarn start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "startDev": "concurrently \"yarn start\" \"cd server && yarn startDev\""
+    "startDev": "concurrently \"PORT=4001 react-scripts start\" \"cd server && yarn startDev\"",
+    "heroku-postbuild": "./build.sh"
   },
   "eslintConfig": {
     "extends": [
