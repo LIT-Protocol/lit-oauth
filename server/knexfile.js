@@ -17,13 +17,13 @@ export default {
 
   production: {
     client: "pg",
-    connection: process.env.DATABASE_URL + "?ssl=true",
+    connection: {
+      connectionString: process.env.DATABASE_URL + "?ssl=true",
+      ssl: { rejectUnauthorized: false },
+    },
     pool: {
       min: 2,
       max: 10,
-    },
-    ssl: {
-      rejectUnauthorized: false,
     },
     migrations: {
       tableName: "knex_migrations",
