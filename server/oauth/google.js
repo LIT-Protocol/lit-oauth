@@ -10,7 +10,7 @@ export default async function (fastify, opts) {
   fastify.post("/api/google/connect", async (req, res) => {
     const { authSig } = req.body;
     if (!authUser(authSig)) {
-      reply.code(400);
+      res.code(400);
       return { error: "Invalid signature" };
     }
 
@@ -38,6 +38,9 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", idOnService);
+
+    let connected_service_id;
+
     if (existingRows.length > 0) {
       // okay the token already exists, just update it
       existingRows[0].patch({
@@ -61,6 +64,8 @@ export default async function (fastify, opts) {
       connected_service_id = query.id;
     }
 
+    console.log('CONNECTED SERVICE DECLARE', connected_service_id)
+
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -76,9 +81,10 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/share", async (req, res) => {
+    console.log('REQ BODY', req.body)
     const { authSig, connectedServiceId } = req.body;
     if (!authUser(authSig)) {
-      reply.code(400);
+      res.code(400);
       return { error: "Invalid signature" };
     }
 

@@ -197,77 +197,75 @@ export default function GoogleGranting() {
           listOfLinks={sampleLinks}/>
         <ProvisionAccess
           handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
+          modalOpen={modalOpen}
+          link={link}
           openProvisionAccessDialog={openProvisionAccessDialog}
+          addToAccessControlConditions={addToAccessControlConditions}
+          setModalOpen={setModalOpen}
           setRole={setRole}
           role={role}
           setLink={setLink}/>
+
+      <div className="App">
+        <header className="App-header">
+          <p>Enter the link to the drive file below.</p>
+          <form>
+            <label htmlFor="drive-link">Drive Link</label>
+            <input
+              type="text"
+              name="drive-link"
+              id="drive-link"
+              onChange={(e) => setLink(e.target.value)}
+            />
+
+            <p>Added Access Control Conditions (click to delete)</p>
+            {accessControlConditions.map((r, i) => (
+              <Button
+                key={i}
+                label={JSON.stringify(r)}
+                onClick={() => removeIthAccessControlCondition(i)}
+              >{JSON.stringify(r)}</Button>
+            ))}
+            <Button
+              className="top-margin-buffer"
+              label="Add access control conditions"
+              type="button"
+              onClick={() => setModalOpen(true)}
+            >Add Access Control Conditions</Button>
+            {modalOpen && (
+              <ShareModal
+                show={false}
+                onClose={() => setModalOpen(false)}
+                sharingItems={[{name: link}]}
+                onAccessControlConditionsSelected={(restriction) => {
+                  addToAccessControlConditions(restriction);
+                  setModalOpen(false);
+                }}
+              />
+            )}
+            <br/>
+            <label htmlFor="drive-role">Drive Role to share</label>
+            <select
+              name="drive-role"
+              id="drive-role"
+              onChange={(e) => setRole(parseInt(e.target.selectedIndex))}
+            >
+              <option value="read">Read</option>
+              <option value="comment">Comment</option>
+              <option value="write">Write</option>
+            </select>
+            <Button
+              className="top-margin-buffer left-margin-buffer"
+              label="Get share link"
+              type="button"
+              onClick={handleSubmit}
+            >Get Share Link</Button>
+          </form>
+        </header>
+      </div>
     </section>
 
 
 
-  // <Theme preset={presetGpnDefault} className={'vertical-flex'}>
-  //   <div className="App">*/}
-  //     <header className="App-header">*/}
-  //       <p>Enter the link to the drive file below.</p>*/}
-  //       <form>*/}
-  //         <label htmlFor="drive-link">Drive Link</label>*/}
-  //         <input*/}
-  //           type="text"*/}
-  //           name="drive-link"*/}
-  //           id="drive-link"*/}
-  //           onChange={(e) => setLink(e.target.value)}*/}
-  //         />*/}
-  //
-  //         <p>Added Access Control Conditions (click to delete)</p>*/}
-  //         {accessControlConditions.map((r, i) => (*/}
-  //           <Button*/}
-  //             key={i}*/}
-  //             label={JSON.stringify(r)}*/}
-  //             onClick={() => removeIthAccessControlCondition(i)}*/}
-  //           />*/}
-  //         ))}*/}
-  //         <Button*/}
-  //           className="top-margin-buffer"*/}
-  //           label="Add access control conditions"*/}
-  //           type="button"*/}
-  //           onClick={() => setModalOpen(true)}*/}
-  //         />*/}
-  //         {modalOpen && (*/}
-  //           <ShareModal*/}
-  //             show={false}*/}
-  //             onClose={() => setModalOpen(false)}*/}
-  //             sharingItems={[{name: link}]}*/}
-  //             onAccessControlConditionsSelected={(restriction) => {*/}
-  //               addToAccessControlConditions(restriction);*/}
-  //               setModalOpen(false);*/}
-  //             }}*/}
-  //           />*/}
-  //         )}*/}
-  //         <br/>*/}
-  //         <label htmlFor="drive-role">Drive Role to share</label>*/}
-  //         <select*/}
-  //           name="drive-role"*/}
-  //           id="drive-role"*/}
-  //           onChange={(e) => setRole(parseInt(e.target.selectedIndex))}*/}
-  //         >*/}
-  //           <option value="read">Read</option>*/}
-  //           <option value="comment">Comment</option>*/}
-  //           <option value="write">Write</option>*/}
-  //         </select>*/}
-  //         <Button*/}
-  //           className="top-margin-buffer left-margin-buffer"*/}
-  //           label="Get share link"*/}
-  //           type="button"*/}
-  //           onClick={handleSubmit}*/}
-  //         />*/}
-  //       </form>*/}
-  //     </header>*/}
-  //     <Button*/}
-  //       className="top-margin-buffer"*/}
-  //       label="Sign Out Of Google"*/}
-  //       onClick={signOut}*/}
-  //     />*/}
-  //   </div>*/}
-  // </Theme>*/}
   );
 }
