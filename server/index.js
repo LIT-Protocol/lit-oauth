@@ -84,12 +84,13 @@ if (process.env.NODE_ENV === "production") {
       headers: { host },
       url,
     } = req;
-    if (host) {
+    console.log("headers", req.headers);
+    if (host && req.headers["x-forwarded-proto"] !== "https") {
       const redirectUrl = `https://${host.split(":")[0]}${url}`;
-      res.writeHead(301, {
-        Location: redirectUrl,
-      });
+      res.code(301);
+      res.header("Location", redirectUrl);
       res.end();
+      return;
     }
     done();
   });
