@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
+import { Button } from "@mui/material";
 
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 
@@ -127,8 +128,22 @@ function GoogleLink() {
   } else {
     return (
       <section>
-
+        {/*<ServiceHeader/>*/}
+         <div className={"vertical-flex top-margin-buffer"}>
+           <label>Enter your Google Account email here
+             <input
+               type="text"
+               name="email-input"
+               id="email-input"
+               onChange={(e) => setEmail(e.target.value)}
+             />
+           </label>
+           <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit}>Request Access</Button>
+           <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete}>Delete This Link</Button>
+         </div>
       </section>
+    );
+
       // <Theme preset={presetGpnDefault}>
       //   <div className={"vertical-flex top-margin-buffer"}>
       //     <label>Enter your Google Account email here
@@ -143,7 +158,6 @@ function GoogleLink() {
       //     <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
       //   </div>
       // </Theme>
-    );
   }
 }
 
