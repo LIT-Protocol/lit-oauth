@@ -31,19 +31,6 @@ Bugsnag.start({
 
 const fastify = Fastify();
 
-const dbConfig = {
-  connectionString: process.env.LIT_PROTOCOL_OAUTH_DB_URL,
-};
-
-if (
-  process.env.LIT_PROTOCOL_OAUTH_ZOOM_ENVIRONMENT === "production" ||
-  process.env.LIT_PROTOCOL_OAUTH_ZOOM_ENVIRONMENT === "development"
-) {
-  dbConfig.ssl = { rejectUnauthorized: false };
-  fastify.register(fastifyHttpsRedirect);
-}
-
-fastify.register(fastifyPostgres, dbConfig);
 fastify.register(fastifyCors, {
   origin: "*",
   methods: ["POST", "GET", "DELETE", "PUT", "PATCH"],
@@ -91,7 +78,11 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 
-fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
-  if (err) throw err;
-  console.log(`server listening on ${fastify.server.address().port}`);
-});
+if (process.env.NODE_ENV === "production") {
+  fastify.register(fastifyHttpsRedirect, { httpPort: process.env.PORT });
+} else {
+  fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
+    if (err) throw err;
+    console.log(`server listening on ${fastify.server.address().port}`);
+  });
+}
