@@ -83,6 +83,10 @@ if (process.env.NODE_ENV === "production") {
   fastify.addHook("onRequest", async (request, reply) => {
     if (request.headers["x-forwarded-proto"]) {
       if (request.headers["x-forwarded-proto"] === "http") {
+        console.log(
+          "http redirecting to https url:",
+          `https://${request.headers.host}${request.raw.url}`
+        );
         return reply.redirect(
           `https://${request.headers.host}${request.raw.url}`
         );
