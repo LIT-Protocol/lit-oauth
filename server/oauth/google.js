@@ -1,17 +1,19 @@
 import { google } from "googleapis";
 import LitJsSdk from "lit-js-sdk";
+import { authUser } from "../auth.js";
+import { parseJwt } from "../utils.js";
 
 export default async function (fastify, opts) {
   const googleRedirectUri = "api/oauth/google/callback";
 
-  async function runQuery(query, subfield) {
-    await fastify.pg.transact(async (client) => {
-      const id = await client.query(query.text, query.values);
-      return id;
-    });
-  }
+  // store the user's access token
+  fastify.post("/api/google/connect", async (req, res) => {
+    const { authSig } = req.body;
+    if (!authUser(authSig)) {
+      reply.code(400);
+      return { error: "Invalid signature" };
+    }
 
-  fastify.post("/api/google/share", async (req, res) => {
     // First - get Google Drive refresh token (given acct email and drive)
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -20,11 +22,10 @@ export default async function (fastify, opts) {
     );
     const { tokens } = await oauth_client.getToken(req.body.token);
     oauth_client.setCredentials(tokens);
-    let refresh_token = "";
-    if (tokens.refresh_token) {
-      refresh_token = tokens.refresh_token;
-    }
-    // Now, get email + save information
+
+    const parsedJwt = parseJwt(tokens.id_token);
+    const idOnService = parsedJwt.sub;
+
     const drive = google.drive({
       version: "v3",
       auth: oauth_client,
@@ -33,85 +34,82 @@ export default async function (fastify, opts) {
       fields: "user",
     });
 
-    let id = "";
-
-    if (refresh_token !== "") {
-      const existingRows = await fastify.objection.models.sharers
-        .query()
-        .where("email", "=", about_info.data.user.emailAddress);
-      if (existingRows.length > 0) {
-        // okay the token already exists, just update it
-        existingRows[0].patch({ latest_refresh_token: refresh_token });
-        id = existingRows[0].id;
-      } else {
-        // insert
-
-        const query = await fastify.objection.models.sharers.query().insert({
-          email: about_info.data.user.emailAddress,
-          latest_refresh_token: refresh_token,
-        });
-        id = query.id;
-      }
+    const existingRows = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("id_on_service", "=", idOnService);
+    if (existingRows.length > 0) {
+      // okay the token already exists, just update it
+      existingRows[0].patch({
+        refresh_token: tokens.refresh_token,
+        access_token: tokens.access_token,
+      });
+      connected_service_id = existingRows[0].id;
     } else {
-      const query = await fastify.objection.models.sharers
+      // insert
+      const query = await fastify.objection.models.connectedServices
         .query()
-        .where("email", "=", about_info.data.user.emailAddress);
-      id = query.id;
+        .insert({
+          id_on_service: idOnService,
+          email: about_info.data.user.emailAddress,
+          refresh_token: tokens.refresh_token,
+          access_token: tokens.access_token,
+          extra_data: about_info.data.user,
+          user_id: authSig.address,
+          service_name: "google",
+        });
+      connected_service_id = query.id;
     }
 
-    const insertToLinksQuery = await fastify.objection.models.links
+    const connectedGoogleServices =
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("user_id", "=", authSig.address)
+        .where("service_name", "=", "google");
+    const serialized = connectedGoogleServices.map((s) => ({
+      id: s.id,
+      email: s.email,
+      idOnService: s.id_on_service,
+    }));
+
+    return { connectedServices: serialized };
+  });
+
+  fastify.post("/api/google/share", async (req, res) => {
+    const { authSig, connectedServiceId } = req.body;
+    if (!authUser(authSig)) {
+      reply.code(400);
+      return { error: "Invalid signature" };
+    }
+
+    const connectedService = (
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("user_id", "=", authSig.address)
+        .where("id", "=", connectedServiceId)
+    )[0];
+
+    const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
-        drive_id: res.request.body.driveId,
-        requirements: JSON.stringify(req.body.accessControlConditions),
-        sharer_id: id,
+        asset_id_on_service: req.body.driveId,
+        access_control_conditions: JSON.stringify(
+          req.body.accessControlConditions
+        ),
+        connected_service_id: connectedService.id,
         role: req.body.role,
+        user_id: authSig.address,
       });
 
     let uuid = insertToLinksQuery.id;
 
-    // let id = "";
-    // // Write to DB
-    // if (refresh_token !== "") {
-    //   const query = {
-    //     text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) RETURNING *",
-    //     // TODO: text: "INSERT INTO sharers(email, latest_refresh_token) VALUES($1, $2) ON CONFLICT (email) DO UPDATE SET latest_refresh_token = $2 RETURNING *",
-    //     values: [about_info.data.user.emailAddress, refresh_token],
-    //   };
-    //   id = await runQuery(query, "id");
-    //
-    // } else {
-    //   const query = {
-    //     text: "SELECT id FROM sharers WHERE email = $1",
-    //     values: [about_info.data.user.emailAddress],
-    //   };
-    //
-    //   id = await runQuery(query, "id");
-    // }
-    // const query = {
-    //   text: "INSERT INTO links(drive_id, requirements, sharer_id, role) VALUES($1, $2, $3, $4) RETURNING *",
-    //   values: [
-    //     req.body.driveId,
-    //     JSON.stringify(req.body.accessControlConditions),
-    //     id,
-    //     req.body.role,
-    //   ],
-    // };
-    // let uuid = await runQuery(query, "id");
-    //
-    // console.log('STRINGIFY', JSON.stringify({
-    //   authorizedControlConditions: req.body.accessControlConditions,
-    //   uuid: uuid,
-    // }))
-    //
-    res.send(
-      JSON.stringify({
-        authorizedControlConditions: req.body.accessControlConditions,
-        uuid: uuid,
-      })
-    );
+    return {
+      authorizedControlConditions: req.body.accessControlConditions,
+      uuid,
+    };
   });
 
+  // TODO make this use objectionjs models
   fastify.post("/api/google/delete", async (req, res) => {
     const uuid = req.body.uuid;
     // get email from token
@@ -149,18 +147,17 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/conditions", async (req, res) => {
     const uuid = req.body.uuid;
-    const query = {
-      text: "SELECT requirements, role FROM links WHERE id = $1",
-      values: [uuid],
-    };
 
-    let data = await runQuery(query);
-    res.send(JSON.stringify(data));
+    const share = (
+      await fastify.objection.models.shares.query().where("id", "=", uuid)
+    )[0];
+
+    return { share };
   });
 
   fastify.post("/api/google/shareLink", async (req, res) => {
     // Check the supplied JWT
-    const requested_email = req.body.email;
+    const requestedEmail = req.body.email;
     const role = req.body.role.toString();
     const uuid = req.body.uuid;
     const jwt = req.body.jwt;
@@ -178,16 +175,15 @@ export default async function (fastify, opts) {
       return;
     }
 
-    // Ping google drive to share the file using the refresh token
-    // Get latest refresh token
-    const query = {
-      text: "select sharers.latest_refresh_token as token, links.drive_id as drive_id from links left join sharers on links.sharer_id = sharers.id WHERE links.id = $1",
-      values: [uuid],
-    };
+    const share = (
+      await fastify.objection.models.shares.query().where("id", "=", uuid)
+    )[0];
 
-    let data = await runQuery(query);
-    const refresh_token = data.token;
-    const drive_id = data.drive_id;
+    const connectedService = (
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("id", "=", share.connectedServiceId)
+    )[0];
 
     const oauth_client = new google.auth.OAuth2(
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -195,13 +191,20 @@ export default async function (fastify, opts) {
       "postmessage"
     );
 
-    oauth_client.setCredentials({ refresh_token });
-    const roles = ["reader", "commenter", "writer"];
+    oauth_client.setCredentials({
+      access_token: connectedService.accessToken,
+      refresh_token: connectedService.refreshToken,
+    });
+    const roleMap = {
+      read: "reader",
+      comment: "commenter",
+      write: "writer",
+    };
 
     const permission = {
       type: "user",
-      role: roles[role],
-      emailAddress: requested_email,
+      role: roleMap[share.role],
+      emailAddress: requestedEmail,
     };
     const drive = google.drive({
       version: "v3",
@@ -210,12 +213,12 @@ export default async function (fastify, opts) {
 
     await drive.permissions.create({
       resource: permission,
-      fileId: drive_id,
+      fileId: share.asset_id_on_service,
       fields: "id",
     });
 
     // Send drive ID back and redirect
-    res.send(drive_id);
+    return { fileId: share.asset_id_on_service };
   });
 
   fastify.get("/api/oauth/google/callback", async (request, response) => {

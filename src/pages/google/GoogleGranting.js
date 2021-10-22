@@ -8,14 +8,15 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
-const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_KEY =
+  process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
 
   const [link, setLink] = useState("");
   const [shareLink, setShareLink] = useState("");
-  const [role, setRole] = useState(0);
+  const [role, setRole] = useState("read");
   const [modalOpen, setModalOpen] = useState(false);
   const [token, setToken] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
@@ -24,14 +25,17 @@ export default function GoogleGranting() {
     loadGoogleAuth();
   }, []);
 
-  function authenticate() {
+  async function authenticate() {
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
     return window.gapi.auth2
       .getAuthInstance()
       .grantOfflineAccess()
       .then(async (authResult) => {
         console.log("authResult: ", authResult);
         if (authResult.code) {
-          console.log("AUTH RESULT", authResult.code)
+          console.log("AUTH RESULT", authResult.code);
           setToken(authResult.code);
         } else {
           console.log("Error logging in");
@@ -72,8 +76,13 @@ export default function GoogleGranting() {
     setAccessControlConditions(slice1.concat(slice2));
   };
 
-  const handleSubmit = () => {
-    console.log('DOUBLE CHECK TOKEN', token)
+  const handleSubmit = async () => {
+    console.log("DOUBLE CHECK TOKEN", token);
+
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
+
     const regex = /d\/(.{44})/g;
     let id = link.match(regex)[0];
     id = id.slice(2, id.length);
@@ -89,6 +98,7 @@ export default function GoogleGranting() {
           role: role,
           token: token,
           accessControlConditions: accessControlConditions,
+          authSig,
         },
         requestOptions
       )
@@ -127,7 +137,7 @@ export default function GoogleGranting() {
       <Theme preset={presetGpnDefault}>
         <div className="App">
           <Button
-            label="Connect your Google account"
+            label="Connect your Wallet and Google account"
             onClick={() => authenticate("google")}
           />
         </div>
@@ -179,7 +189,7 @@ export default function GoogleGranting() {
             <select
               name="drive-role"
               id="drive-role"
-              onChange={(e) => setRole(parseInt(e.target.selectedIndex))}
+              onChange={(e) => setRole(e.target.value)}
             >
               <option value="read">Read</option>
               <option value="comment">Comment</option>
