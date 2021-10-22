@@ -38,12 +38,12 @@ export const getUser = async ({ accessToken, refreshToken }) => {
 };
 
 export const getMeetingsAndWebinars = async ({
-                                        accessToken,
-                                        refreshToken,
-                                        connectedServiceId,
-                                        fastify,
-                                        shares,
-                                      }) => {
+  accessToken,
+  refreshToken,
+  connectedServiceId,
+  fastify,
+  shares,
+}) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
@@ -68,7 +68,7 @@ export const getMeetingsAndWebinars = async ({
       const meetingsWithServiceId = resp.data.meetings.map((d) => ({
         ...d,
         connectedServiceId,
-        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
+        shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
         type: "meeting",
       }));
 
@@ -88,7 +88,7 @@ export const getMeetingsAndWebinars = async ({
       const webinarsWithServiceId = resp.data.webinars.map((d) => ({
         ...d,
         connectedServiceId,
-        shares: shares.filter((s) => s.asset_id_on_service === d.id.toString()),
+        shares: shares.filter((s) => s.assetIdOnService === d.id.toString()),
         type: "webinar",
       }));
 
@@ -98,14 +98,14 @@ export const getMeetingsAndWebinars = async ({
 };
 
 export const createMeetingInvite = async ({
-                                     accessToken,
-                                     refreshToken,
-                                     connectedServiceId,
-                                     fastify,
-                                     userId,
-                                     meetingId,
-                                     assetType,
-                                   }) => {
+  accessToken,
+  refreshToken,
+  connectedServiceId,
+  fastify,
+  userId,
+  meetingId,
+  assetType,
+}) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
@@ -143,10 +143,10 @@ export const createMeetingInvite = async ({
 };
 
 const refreshAccessToken = async ({
-                                    connectedServiceId,
-                                    refreshToken,
-                                    fastify,
-                                  }) => {
+  connectedServiceId,
+  refreshToken,
+  fastify,
+}) => {
   console.log("Refreshing zoom access token");
   const q = {
     refresh_token: refreshToken,
@@ -182,12 +182,12 @@ const refreshAccessToken = async ({
 };
 
 const refreshTokenIfNeeded = async ({
-                                      accessToken,
-                                      refreshToken,
-                                      fastify,
-                                      connectedServiceId,
-                                      req,
-                                    }) => {
+  accessToken,
+  refreshToken,
+  fastify,
+  connectedServiceId,
+  req,
+}) => {
   try {
     const resp = await req(accessToken);
     return resp;
