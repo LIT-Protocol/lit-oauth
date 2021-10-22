@@ -579,6 +579,13 @@ fastify-error@^0.3.0:
   resolved "https://registry.yarnpkg.com/fastify-error/-/fastify-error-0.3.1.tgz#8eb993e15e3cf57f0357fc452af9290f1c1278d2"
   integrity sha512-oCfpcsDndgnDVgiI7bwFKAun2dO+4h84vBlkWsWnz/OUK9Reff5UFoFl241xTiLeHWX/vU9zkDVXqYUxjOwHcQ==
 
+fastify-https-redirect@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/fastify-https-redirect/-/fastify-https-redirect-1.0.4.tgz#34a3c00512964a7ce8f1b963d1423d1e93248604"
+  integrity sha512-tQLhY59lwnHN9YYidrcnQyJdNFb7ecG0co4jMqJAwDSQ/OpVLrR4gkBqutBQGid/8ra+obqRisrenhuWNqH1Dg==
+  dependencies:
+    fastify-plugin "^1.4.0"
+
 fastify-objectionjs@^0.4.0:
   version "0.4.0"
   resolved "https://registry.yarnpkg.com/fastify-objectionjs/-/fastify-objectionjs-0.4.0.tgz#988f25244188202e12ec6edb24bfe3337c85a5a3"
@@ -587,6 +594,13 @@ fastify-objectionjs@^0.4.0:
     fastify-plugin "^3.0.0"
     knex "^0.95.4"
     objection "^2.2.15"
+
+fastify-plugin@^1.4.0:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-1.6.1.tgz#122f5a5eeb630d55c301713145a9d188e6d5dd5b"
+  integrity sha512-APBcb27s+MjaBIerFirYmBLatoPCgmHZM6XP0K+nDL9k0yX8NJPWDY1RAC3bh6z+AB5ULS2j31BUfLMT3uaZ4A==
+  dependencies:
+    semver "^6.3.0"
 
 fastify-plugin@^3.0.0:
   version "3.0.0"
@@ -1345,6 +1359,11 @@ semver-store@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/semver-store/-/semver-store-0.3.0.tgz#ce602ff07df37080ec9f4fb40b29576547befbe9"
   integrity sha512-TcZvGMMy9vodEFSse30lWinkj+JgOBvPn8wRItpQRSayhc+4ssDs335uklkfvQQJgL/WvmHLVj4Ycv2s7QCQMg==
+
+semver@^6.3.0:
+  version "6.3.0"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.0.tgz#ee0a64c8af5e8ceea67687b133761e1becbd1d3d"
+  integrity sha512-b39TBaTSfV6yBrapU89p5fKekE2m/NwnDocOVruQFS1/veMgdzuPcnOM34M6CwxW8jH/lxEa5rBoDeUwu5HHTw==
 
 semver@^7.3.2:
   version "7.3.5"

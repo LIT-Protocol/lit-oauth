@@ -3,6 +3,7 @@ import fastifyPostgres from "fastify-postgres";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
 import fastifyObjectionJS from "fastify-objectionjs";
+import fastifyHttpsRedirect from "fastify-https-redirect";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
@@ -39,6 +40,7 @@ if (
   process.env.LIT_PROTOCOL_OAUTH_ZOOM_ENVIRONMENT === "development"
 ) {
   dbConfig.ssl = { rejectUnauthorized: false };
+  fastify.register(fastifyHttpsRedirect);
 }
 
 fastify.register(fastifyPostgres, dbConfig);
