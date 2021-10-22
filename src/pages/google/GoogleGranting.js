@@ -6,7 +6,8 @@ import axios from "axios";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
 import ProvisionAccess from "../sharedComponents/provisionAccess/ProvisionAccess";
-import { Button, Dialog, DialogContent, DialogTitle } from "@mui/material";
+import { Button } from "@mui/material";
+import litJsSdk from "lit-js-sdk";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -40,11 +41,15 @@ export default function GoogleGranting() {
   const [role, setRole] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [token, setToken] = useState("");
+  const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
   const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
 
+  const [currentUser, setCurrentUser] = useState({});
+
+
+
   const handleOpenProvisionAccessDialog = () => {
-    console.log('WOAH!')
     setOpenProvisionAccessDialog(true);
   };
 
@@ -56,10 +61,76 @@ export default function GoogleGranting() {
     loadGoogleAuth();
   }, []);
 
-  async function authenticate() {
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({
+  async function loadGoogleAuth() {
+    window.gapi.load("client:auth2", function () {
+      window.gapi.auth2.init({
+        client_id: GOOGLE_CLIENT_KEY,
+        scope:
+          "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+      }).then(googleObject => {
+        if(googleObject.isSignedIn.get()) {
+          const currentUserObject = window.gapi.auth2.getAuthInstance().currentUser.get();
+          getLatestRefreshToken(currentUserObject);
+        }
+      });
+    })
+  };
+
+  async function getAuthSig() {
+    return await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
+  }
+
+  async function getLatestRefreshToken(currentUserObject) {
+    const id_token = currentUserObject.getAuthResponse().id_token;
+    const authSig = await getAuthSig();
+    await axios
+      .post(
+        API_HOST + "/api/google/verifyToken",
+        {
+          authSig,
+          id_token
+        },
+      ).then(res => {
+        getGetCurrentUserProfile(res.data)
+      }).catch(err => console.log('Error loading user:', err))
+  }
+
+  // const saveGoogleUserObject = (googleUserObject) => {
+  //   console.log('WINDOW', googleUserObject.getAuthResponse())
+  //   setToken(googleUserObject.getAuthResponse().id_token);
+  //   const currentUserObject = {
+  //     name: googleUserObject.getBasicProfile().getName(),
+  //     email: googleUserObject.getBasicProfile().getEmail(),
+  //   }
+  // }
+
+  async function getGetCurrentUserProfile(uniqueId) {
+    const authSig = await getAuthSig();
+    await axios
+      .post(
+        API_HOST + "/api/google/getUserProfile",
+        {
+          authSig,
+          uniqueId
+        },
+      ).then(res => {
+        console.log('PROFILE EVERYWHER!', res)
+        if (res.data[0]) {
+          const userProfile = res.data[0];
+          setToken(userProfile.refreshToken);
+          setCurrentUser({
+            email: userProfile.email,
+
+          })
+        }
+      })
+  }
+
+  async function authenticate() {
+    const authSig = await getAuthSig();
+    console.log('AUTH SIG', authSig)
     return window.gapi.auth2
       .getAuthInstance()
       .grantOfflineAccess()
@@ -68,10 +139,26 @@ export default function GoogleGranting() {
         if (authResult.code) {
           console.log("AUTH RESULT", authResult.code);
           setToken(authResult.code);
+          await storeToken(authSig, authResult.code)
         } else {
           console.log("Error logging in");
         }
       });
+  }
+
+  async function storeToken (authSig, token) {
+    await axios
+      .post(
+        API_HOST + "/api/google/connect",
+        {
+          authSig,
+          token
+        },
+      ).then(res => {
+        if (!!res.data['connectedServices']) {
+          setConnectedServiceId(res.data.connectedServices[0].id);
+        }
+      })
   }
 
   const signOut = () => {
@@ -81,16 +168,6 @@ export default function GoogleGranting() {
     });
     setAccessControlConditions([]);
     setToken("");
-  };
-
-  const loadGoogleAuth = () => {
-    window.gapi.load("client:auth2", function () {
-      window.gapi.auth2.init({
-        client_id: GOOGLE_CLIENT_KEY,
-        scope:
-          "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
-      });
-    });
   };
 
   const addToAccessControlConditions = (r) => {
@@ -128,6 +205,7 @@ export default function GoogleGranting() {
           driveId: id,
           role: role,
           token: token,
+          connectedServiceId: connectedServiceId,
           accessControlConditions: accessControlConditions,
           authSig,
         },
@@ -158,8 +236,11 @@ export default function GoogleGranting() {
           authSig,
           resourceId,
         });
-        setShareLink(FRONT_END_HOST + "/l/" + uuid);
-        window.location.href = `${FRONT_END_HOST}/l/${uuid}`;
+        console.log('ACCESS CONTROL', window.litNodeClient.humanizeAccessControlConditions(accessControlConditions[0]))
+        // litJsSdk.humanizeAccessControlConditions()
+        // window.litNodeClient.humanizeAccessControlConditions(accessControlConditions)
+        // setShareLink(FRONT_END_HOST + "/l/" + uuid);
+        // window.location.href = `${FRONT_END_HOST}/l/${uuid}`;
       });
   };
 
@@ -168,43 +249,45 @@ export default function GoogleGranting() {
       <section>
         <Button onClick={() => authenticate("google")}>Connect your Google account</Button>
       </section>
-      // <Theme preset={presetGpnDefault}>
-      //   <div className="App">
-      //     <Button
-      //       label="Connect your Google account"
-      //       onClick={() => authenticate("google")}
-      //     />
-      //   </div>
-      // </Theme>
     );
   }
 
   return (
     <section className={'vertical-flex'}>
        {/*TODO: remove 'vertical-flex' from class*/}
-        <ServiceHeader
-          serviceName={'Google Drive App'}
-          oauthServiceProvider={'Google'}
-          currentUser={'Comrade Marx'}
-          currentUserEmail={'karl@ru.ru'}
-          signOut={signOut}/>
+      <ServiceHeader
+        serviceName={'Google Drive App'}
+        oauthServiceProvider={'Google'}
+        currentUser={'Comrade Marx'}
+        currentUserEmail={currentUser.email}
+        signOut={signOut}/>
     {/*TODO: remove span spacer and orient with html grid*/}
-        <span style={{height: '8rem'}}></span>
-        <ServiceLinks
-          className={'top-large-margin-buffer'}
-          serviceName={'Drive'}
-          handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-          listOfLinks={sampleLinks}/>
-        <ProvisionAccess
-          handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
-          modalOpen={modalOpen}
-          link={link}
-          openProvisionAccessDialog={openProvisionAccessDialog}
-          addToAccessControlConditions={addToAccessControlConditions}
-          setModalOpen={setModalOpen}
-          setRole={setRole}
-          role={role}
-          setLink={setLink}/>
+      <span style={{height: '8rem'}}></span>
+      <ServiceLinks
+        className={'top-large-margin-buffer'}
+        serviceName={'Drive'}
+        handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
+        listOfLinks={sampleLinks}/>
+      <ProvisionAccess
+        handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
+        link={link}
+        openProvisionAccessDialog={openProvisionAccessDialog}
+        setModalOpen={setModalOpen}
+        setRole={setRole}
+        role={role}
+        setLink={setLink}/>
+      {modalOpen && (
+        <ShareModal
+          className={'share-modal'}
+          show={false}
+          onClose={() => setModalOpen(false)}
+          sharingItems={[{ name: link }]}
+          onAccessControlConditionsSelected={(restriction) => {
+            addToAccessControlConditions(restriction);
+            setModalOpen(false);
+          }}
+      />)}
+
 
       <div className="App">
         <header className="App-header">

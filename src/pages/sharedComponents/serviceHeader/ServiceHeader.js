@@ -33,13 +33,13 @@ export default function ServiceHeader(props) {
   }
 
   return (
-    <Card class={'header-card'}>
+    <Card className={'header-card'}>
       <span className={'header-left'}>
         <Avatar className={'right-buffer'}>G</Avatar>
         <h2>{serviceName}</h2>
       </span>
       <span className={'header-right'}>
-        <p class={'service-text right-buffer'}>
+        <p className={'service-text right-buffer'}>
           Logged in with {oauthServiceProvider}
         </p>
         <Button variant="contained"
