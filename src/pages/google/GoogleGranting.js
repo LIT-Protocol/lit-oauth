@@ -97,15 +97,6 @@ export default function GoogleGranting() {
       }).catch(err => console.log('Error loading user:', err))
   }
 
-  // const saveGoogleUserObject = (googleUserObject) => {
-  //   console.log('WINDOW', googleUserObject.getAuthResponse())
-  //   setToken(googleUserObject.getAuthResponse().id_token);
-  //   const currentUserObject = {
-  //     name: googleUserObject.getBasicProfile().getName(),
-  //     email: googleUserObject.getBasicProfile().getEmail(),
-  //   }
-  // }
-
   async function getGetCurrentUserProfile(uniqueId) {
     const authSig = await getAuthSig();
     await axios
