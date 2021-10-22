@@ -89,10 +89,6 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 
-fastify.register(fastifyStatic, {
-  root: path.join(__dirname, "../build"),
-});
-
 fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
