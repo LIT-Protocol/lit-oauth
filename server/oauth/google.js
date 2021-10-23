@@ -104,8 +104,9 @@ export default async function (fastify, opts) {
     const uniqueId = req.body.uniqueId.toString();
     const userProfile = await fastify.objection.models.connectedServices
       .query()
-      // .where('id_on_service', uniqueId)
-      // .where("user_id", req.body.authSig.address)
+      .where("service_name", "=", "google")
+      // .where("id_on_service", "=", uniqueId)
+      // .where("user_id", '=', req.body.authSig.address)
     return userProfile
   })
 
