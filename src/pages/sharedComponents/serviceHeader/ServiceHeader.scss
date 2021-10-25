@@ -1,0 +1,37 @@
+.header-card {
+  border-radius: 0 0 2rem 2rem;
+  background-color: #e7e3ee;
+  width: 53rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.service-text {
+  font-size: 12px;
+}
+
+.header-user-menu {
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: start !important;
+    justify-content: start;
+  }
+
+  .user-email {
+    font-size: 11px;
+  }
+}
+
+.right-buffer {
+  margin-right: 1rem;
+}

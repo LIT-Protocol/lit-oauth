@@ -10,7 +10,7 @@ export default async function (fastify, opts) {
   fastify.post("/api/google/connect", async (req, res) => {
     const { authSig } = req.body;
     if (!authUser(authSig)) {
-      reply.code(400);
+      res.code(400);
       return { error: "Invalid signature" };
     }
 
@@ -38,6 +38,9 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", idOnService);
+
+    let connected_service_id;
+
     if (existingRows.length > 0) {
       // okay the token already exists, just update it
       existingRows[0].patch({
@@ -61,6 +64,8 @@ export default async function (fastify, opts) {
       connected_service_id = query.id;
     }
 
+    console.log('CONNECTED SERVICE DECLARE', connected_service_id)
+
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -75,10 +80,41 @@ export default async function (fastify, opts) {
     return { connectedServices: serialized };
   });
 
+  fastify.post("/api/google/verifyToken", async (req, res) => {
+    const oauth_client = new google.auth.OAuth2(
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+    );
+
+    const ticket = await oauth_client.verifyIdToken({
+      idToken: req.body.id_token,
+      audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
+    })
+    const payload = ticket.getPayload();
+    const userId = payload['sub'];
+
+    if (payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID) {
+      res.code(400);
+      return { error: "Invalid signature" };
+    } else {
+      return userId;
+    }
+  });
+
+  fastify.post("/api/google/getUserProfile", async (req, res) => {
+    const uniqueId = req.body.uniqueId.toString();
+    const userProfile = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      // .where("id_on_service", "=", uniqueId)
+      // .where("user_id", '=', req.body.authSig.address)
+    return userProfile
+  })
+
   fastify.post("/api/google/share", async (req, res) => {
+    console.log('REQ BODY', req.body)
     const { authSig, connectedServiceId } = req.body;
     if (!authUser(authSig)) {
-      reply.code(400);
+      res.code(400);
       return { error: "Invalid signature" };
     }
 
