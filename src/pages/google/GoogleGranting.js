@@ -124,7 +124,10 @@ export default function GoogleGranting() {
     console.log("AUTH SIG", authSig);
     return window.gapi.auth2
       .getAuthInstance()
-      .grantOfflineAccess()
+      .grantOfflineAccess({
+        scope:
+          "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+      })
       .then(async (authResult) => {
         console.log("authResult: ", authResult);
         if (authResult.code) {
