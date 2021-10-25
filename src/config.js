@@ -9,6 +9,11 @@ export const URL_MAP = {
     componentName: "ZoomAccess",
     exact: false,
   },
+  google: {
+    path: "/google",
+    componentName: "GoogleContainer",
+    exact: true,
+  },
 };
 
 export const HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
