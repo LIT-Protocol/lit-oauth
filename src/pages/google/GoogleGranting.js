@@ -74,7 +74,7 @@ export default function GoogleGranting() {
         }
       });
     })
-  };
+  }
 
   async function getAuthSig() {
     return await LitJsSdk.checkAndSignAuthMessage({
@@ -83,7 +83,8 @@ export default function GoogleGranting() {
   }
 
   async function getLatestRefreshToken(currentUserObject) {
-    const id_token = currentUserObject.getAuthResponse().id_token;
+    const authResp = currentUserObject.getAuthResponse(true);
+    const id_token = authResp.id_token;
     const authSig = await getAuthSig();
     await axios
       .post(
@@ -93,6 +94,10 @@ export default function GoogleGranting() {
           id_token
         },
       ).then(res => {
+        // console.log('VERIFY TOKEN RES', res.data)
+        // currentUserObject.reloadAuthResponse().then(res => {
+        //   console.log('LOADED AUTH RES', res)
+        // })
         getGetCurrentUserProfile(res.data)
       }).catch(err => console.log('Error loading user:', err))
   }
@@ -110,11 +115,11 @@ export default function GoogleGranting() {
         console.log('PROFILE EVERYWHER!', res)
         if (res.data[0]) {
           const userProfile = res.data[0];
-          setToken(userProfile.refreshToken);
+          setToken(userProfile.accessToken);
           setCurrentUser({
             email: userProfile.email,
-
           })
+          // authenticate();
         }
       })
   }
@@ -138,6 +143,7 @@ export default function GoogleGranting() {
   }
 
   async function storeToken (authSig, token) {
+    console.log('SOTRE OKENT', authSig, token)
     await axios
       .post(
         API_HOST + "/api/google/connect",
@@ -146,6 +152,7 @@ export default function GoogleGranting() {
           token
         },
       ).then(res => {
+          console.log('CHECK STORE TOKEN', res.data)
         if (!!res.data['connectedServices']) {
           setConnectedServiceId(res.data.connectedServices[0].id);
         }
@@ -182,6 +189,8 @@ export default function GoogleGranting() {
       chain: "ethereum",
     });
 
+    console.log('CHECK LINK', connectedServiceId)
+
     const regex = /d\/(.{44})/g;
     let id = link.match(regex)[0];
     id = id.slice(2, id.length);
@@ -206,7 +215,6 @@ export default function GoogleGranting() {
         const { data } = resp;
         console.log("AFTER THE CALL", data);
         const accessControlConditions = data["authorizedControlConditions"];
-        console.log("access control conditions is ", accessControlConditions);
         const uuid = data["uuid"];
         const chain = accessControlConditions[0].chain;
         const authSig = await LitJsSdk.checkAndSignAuthMessage({
@@ -227,7 +235,7 @@ export default function GoogleGranting() {
           authSig,
           resourceId,
         });
-        console.log('ACCESS CONTROL', window.litNodeClient.humanizeAccessControlConditions(accessControlConditions[0]))
+        // console.log('ACCESS CONTROL', window.litNodeClient.humanizeAccessControlConditions(accessControlConditions[0]))
         // litJsSdk.humanizeAccessControlConditions()
         // window.litNodeClient.humanizeAccessControlConditions(accessControlConditions)
         // setShareLink(FRONT_END_HOST + "/l/" + uuid);

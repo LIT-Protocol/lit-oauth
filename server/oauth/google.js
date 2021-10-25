@@ -118,6 +118,9 @@ export default async function (fastify, opts) {
       return { error: "Invalid signature" };
     }
 
+    console.log('CHECK CONNECTED SERVICE CONNECTED', connectedServiceId)
+    console.log('CHECK CONNECTED SERVICE USER ID', authSig.address)
+
     const connectedService = (
       await fastify.objection.models.connectedServices
         .query()
@@ -125,6 +128,7 @@ export default async function (fastify, opts) {
         .where("id", "=", connectedServiceId)
     )[0];
 
+    console.log('CONNECTED SERVICES RETURN [0]', connectedService)
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
