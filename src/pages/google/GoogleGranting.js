@@ -11,27 +11,27 @@ import litJsSdk from "lit-js-sdk";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
-const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_KEY =
+  process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
 const sampleLinks = [
   {
     id: 1,
-    fileName: 'Communist Manifesto',
-    requirements: 'the hungry masses',
-    fileType: 'Doc',
-    permission: 'revolution',
-    dateCreated: '1848'
+    fileName: "Communist Manifesto",
+    requirements: "the hungry masses",
+    fileType: "Doc",
+    permission: "revolution",
+    dateCreated: "1848",
   },
   {
     id: 2,
-    fileName: 'Das Kapital',
-    requirements: 'exploitation of labor',
-    fileType: 'Doc',
-    permission: 'burn it all down',
-    dateCreated: '1867'
-  }
-]
-
+    fileName: "Das Kapital",
+    requirements: "exploitation of labor",
+    fileType: "Doc",
+    permission: "burn it all down",
+    dateCreated: "1867",
+  },
+];
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
@@ -43,11 +43,10 @@ export default function GoogleGranting() {
   const [token, setToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
+  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
+    useState(false);
 
   const [currentUser, setCurrentUser] = useState({});
-
-
 
   const handleOpenProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(true);
@@ -63,18 +62,22 @@ export default function GoogleGranting() {
 
   async function loadGoogleAuth() {
     window.gapi.load("client:auth2", function () {
-      window.gapi.auth2.init({
-        client_id: GOOGLE_CLIENT_KEY,
-        scope:
-          "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
-      }).then(googleObject => {
-        if(googleObject.isSignedIn.get()) {
-          const currentUserObject = window.gapi.auth2.getAuthInstance().currentUser.get();
-          getLatestRefreshToken(currentUserObject);
-        }
-      });
-    })
-  };
+      window.gapi.auth2
+        .init({
+          client_id: GOOGLE_CLIENT_KEY,
+          scope:
+            "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+        })
+        .then((googleObject) => {
+          if (googleObject.isSignedIn.get()) {
+            const currentUserObject = window.gapi.auth2
+              .getAuthInstance()
+              .currentUser.get();
+            getLatestRefreshToken(currentUserObject);
+          }
+        });
+    });
+  }
 
   async function getAuthSig() {
     return await LitJsSdk.checkAndSignAuthMessage({
@@ -86,42 +89,39 @@ export default function GoogleGranting() {
     const id_token = currentUserObject.getAuthResponse().id_token;
     const authSig = await getAuthSig();
     await axios
-      .post(
-        API_HOST + "/api/google/verifyToken",
-        {
-          authSig,
-          id_token
-        },
-      ).then(res => {
-        getGetCurrentUserProfile(res.data)
-      }).catch(err => console.log('Error loading user:', err))
+      .post(API_HOST + "/api/google/verifyToken", {
+        authSig,
+        id_token,
+      })
+      .then((res) => {
+        getGetCurrentUserProfile(res.data);
+      })
+      .catch((err) => console.log("Error loading user:", err));
   }
 
   async function getGetCurrentUserProfile(uniqueId) {
     const authSig = await getAuthSig();
     await axios
-      .post(
-        API_HOST + "/api/google/getUserProfile",
-        {
-          authSig,
-          uniqueId
-        },
-      ).then(res => {
-        console.log('PROFILE EVERYWHER!', res)
+      .post(API_HOST + "/api/google/getUserProfile", {
+        authSig,
+        uniqueId,
+      })
+      .then((res) => {
+        console.log("PROFILE EVERYWHER!", res);
         if (res.data[0]) {
           const userProfile = res.data[0];
           setToken(userProfile.refreshToken);
           setCurrentUser({
             email: userProfile.email,
-
-          })
+          });
+          setConnectedServiceId(userProfile.id);
         }
-      })
+      });
   }
 
   async function authenticate() {
     const authSig = await getAuthSig();
-    console.log('AUTH SIG', authSig)
+    console.log("AUTH SIG", authSig);
     return window.gapi.auth2
       .getAuthInstance()
       .grantOfflineAccess()
@@ -130,26 +130,25 @@ export default function GoogleGranting() {
         if (authResult.code) {
           console.log("AUTH RESULT", authResult.code);
           setToken(authResult.code);
-          await storeToken(authSig, authResult.code)
+          await storeToken(authSig, authResult.code);
         } else {
           console.log("Error logging in");
         }
       });
   }
 
-  async function storeToken (authSig, token) {
+  async function storeToken(authSig, token) {
     await axios
-      .post(
-        API_HOST + "/api/google/connect",
-        {
-          authSig,
-          token
-        },
-      ).then(res => {
-        if (!!res.data['connectedServices']) {
+      .post(API_HOST + "/api/google/connect", {
+        authSig,
+        token,
+      })
+      .then((res) => {
+        console.log("google connect res", res.data);
+        if (!!res.data["connectedServices"]) {
           setConnectedServiceId(res.data.connectedServices[0].id);
         }
-      })
+      });
   }
 
   const signOut = () => {
@@ -227,7 +226,11 @@ export default function GoogleGranting() {
           authSig,
           resourceId,
         });
-        console.log('ACCESS CONTROL', window.litNodeClient.humanizeAccessControlConditions(accessControlConditions[0]))
+        const humanized = await LitJsSdk.humanizeAccessControlConditions({
+          accessControlConditions,
+          myWalletAddress: authSig.address,
+        });
+        console.log("ACCESS CONTROL", humanized);
         // litJsSdk.humanizeAccessControlConditions()
         // window.litNodeClient.humanizeAccessControlConditions(accessControlConditions)
         // setShareLink(FRONT_END_HOST + "/l/" + uuid);
@@ -238,27 +241,31 @@ export default function GoogleGranting() {
   if (token === "") {
     return (
       <section>
-        <Button onClick={() => authenticate("google")}>Connect your Google account</Button>
+        <Button onClick={() => authenticate("google")}>
+          Connect your Google account
+        </Button>
       </section>
     );
   }
 
   return (
-    <section className={'vertical-flex'}>
-       {/*TODO: remove 'vertical-flex' from class*/}
+    <section className={"vertical-flex"}>
+      {/*TODO: remove 'vertical-flex' from class*/}
       <ServiceHeader
-        serviceName={'Google Drive App'}
-        oauthServiceProvider={'Google'}
-        currentUser={'Comrade Marx'}
+        serviceName={"Google Drive App"}
+        oauthServiceProvider={"Google"}
+        currentUser={"Comrade Marx"}
         currentUserEmail={currentUser.email}
-        signOut={signOut}/>
-    {/*TODO: remove span spacer and orient with html grid*/}
-      <span style={{height: '8rem'}}></span>
+        signOut={signOut}
+      />
+      {/*TODO: remove span spacer and orient with html grid*/}
+      <span style={{ height: "8rem" }}></span>
       <ServiceLinks
-        className={'top-large-margin-buffer'}
-        serviceName={'Drive'}
+        className={"top-large-margin-buffer"}
+        serviceName={"Drive"}
         handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-        listOfLinks={sampleLinks}/>
+        listOfLinks={sampleLinks}
+      />
       <ProvisionAccess
         handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
         link={link}
@@ -266,10 +273,11 @@ export default function GoogleGranting() {
         setModalOpen={setModalOpen}
         setRole={setRole}
         role={role}
-        setLink={setLink}/>
+        setLink={setLink}
+      />
       {modalOpen && (
         <ShareModal
-          className={'share-modal'}
+          className={"share-modal"}
           show={false}
           onClose={() => setModalOpen(false)}
           sharingItems={[{ name: link }]}
@@ -277,8 +285,8 @@ export default function GoogleGranting() {
             addToAccessControlConditions(restriction);
             setModalOpen(false);
           }}
-      />)}
-
+        />
+      )}
 
       <div className="App">
         <header className="App-header">
@@ -298,26 +306,30 @@ export default function GoogleGranting() {
                 key={i}
                 label={JSON.stringify(r)}
                 onClick={() => removeIthAccessControlCondition(i)}
-              >{JSON.stringify(r)}</Button>
+              >
+                {JSON.stringify(r)}
+              </Button>
             ))}
             <Button
               className="top-margin-buffer"
               label="Add access control conditions"
               type="button"
               onClick={() => setModalOpen(true)}
-            >Add Access Control Conditions</Button>
+            >
+              Add Access Control Conditions
+            </Button>
             {modalOpen && (
               <ShareModal
                 show={false}
                 onClose={() => setModalOpen(false)}
-                sharingItems={[{name: link}]}
+                sharingItems={[{ name: link }]}
                 onAccessControlConditionsSelected={(restriction) => {
                   addToAccessControlConditions(restriction);
                   setModalOpen(false);
                 }}
               />
             )}
-            <br/>
+            <br />
             <label htmlFor="drive-role">Drive Role to share</label>
             <select
               name="drive-role"
@@ -333,13 +345,12 @@ export default function GoogleGranting() {
               label="Get share link"
               type="button"
               onClick={handleSubmit}
-            >Get Share Link</Button>
+            >
+              Get Share Link
+            </Button>
           </form>
         </header>
       </div>
     </section>
-
-
-
   );
 }
