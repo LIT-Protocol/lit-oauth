@@ -28,6 +28,6 @@ export default {
     migrations: {
       tableName: "knex_migrations",
     },
-    debug: true,
   },
+  debug: true,
 };
