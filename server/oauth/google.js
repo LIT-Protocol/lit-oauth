@@ -62,7 +62,7 @@ export default async function (fastify, opts) {
       connected_service_id = query.id;
     }
 
-    console.log('CONNECTED SERVICE DECLARE', connected_service_id)
+    console.log("CONNECTED SERVICE DECLARE", connected_service_id);
 
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
@@ -90,17 +90,19 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/verifyToken", async (req, res) => {
     const oauth_client = new google.auth.OAuth2(
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
     );
 
     const ticket = await oauth_client.verifyIdToken({
       idToken: req.body.id_token,
-      audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
-    })
+      audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+    });
     const payload = ticket.getPayload();
-    const userId = payload['sub'];
+    const userId = payload["sub"];
 
-    if (payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID) {
+    if (
+      payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
+    ) {
       res.code(400);
       return { error: "Invalid signature" };
     } else {
@@ -118,13 +120,12 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig } = req.body;
+    console.log("REQ BODY", req.body);
+    const { authSig, connectedServiceId } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
     }
-
-    console.log('CHECK CONNECTED SERVICE USER ID', authSig.address)
 
     const connectedService = (
       await fastify.objection.models.connectedServices
@@ -132,6 +133,26 @@ export default async function (fastify, opts) {
         .where("user_id", "=", authSig.address)
         // .where("id", "=", connectedServiceId)
     )[0];
+
+    const oauth_client = new google.auth.OAuth2(
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      "postmessage"
+    );
+
+    oauth_client.setCredentials({
+      access_token: connectedService.accessToken,
+      refresh_token: connectedService.refreshToken,
+    });
+
+    const drive = google.drive({
+      version: "v3",
+      auth: oauth_client,
+    });
+    console.log("CONNECTED SERVICE", connectedService);
+    const fileInfo = await drive.files.get({
+      fileId: req.body.driveId,
+    });
 
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
@@ -143,6 +164,8 @@ export default async function (fastify, opts) {
         connected_service_id: connectedService.id,
         role: req.body.role,
         user_id: authSig.address,
+        name: fileInfo.data.name,
+        asset_type: fileInfo.data.mimeType,
       });
 
     let uuid = await insertToLinksQuery.id;

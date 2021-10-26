@@ -197,6 +197,8 @@ export default function GoogleGranting() {
       authSig,
     };
 
+    console.log('REQUEST DATA', requestData)
+
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
       const { data } = response;

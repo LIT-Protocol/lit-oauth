@@ -3,10 +3,12 @@ import { Route, Switch } from "react-router-dom";
 import { URL_MAP } from "./config";
 import ZoomAccess from "./pages/zoom/ZoomAccess";
 import ZoomGranting from "./pages/zoom/ZoomGranting";
+import GoogleContainer from "./pages/google/GoogleContainer";
 
 const ROUTING_COMPONENTS = {
   ZoomGranting: ZoomGranting,
   ZoomAccess: ZoomAccess,
+  GoogleContainer: GoogleContainer,
 };
 
 const Routes = () => {

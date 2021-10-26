@@ -78,21 +78,14 @@ fastify.register(googleOauthEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
-  fastify.addHook("onRequest", (req, res, done) => {
-    // Some code
-    const {
-      headers: { host },
-      url,
-    } = req;
-    console.log("headers", req.headers);
-    if (host && req.headers["x-forwarded-proto"] !== "https") {
-      const redirectUrl = `https://${host.split(":")[0]}${url}`;
-      res.code(301);
-      res.header("Location", redirectUrl);
-      res.end();
-      return;
+  fastify.addHook("onRequest", async (request, reply) => {
+    if (request.headers["x-forwarded-proto"]) {
+      if (request.headers["x-forwarded-proto"] === "http") {
+        return reply.redirect(
+          `https://${request.headers.host}${request.raw.url}`
+        );
+      }
     }
-    done();
   });
 }
 
