@@ -1,128 +1,118 @@
 import './ServiceLinks.scss';
 import {
   Button,
-  Card, IconButton, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody
+  Card,
+  IconButton,
+  Paper,
+  TableContainer,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Dialog,
+  DialogTitle,
+  DialogContent, DialogActions, Tooltip
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
-import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from "react";
 
 export default function ServiceLinks(props) {
-  const listOfLinks = props.listOfLinks;
-  const serviceName = props.serviceName;
 
-  // const columns = [
-  //   {
-  //     width: 200,
-  //     field: 'fileName',
-  //     headerName: 'File Name',
-  //   },
-  //   {
-  //     width: 200,
-  //     field: 'requirements',
-  //     headerName: 'Requirements',
-  //   },
-  //   {
-  //     width: 200,
-  //     field: 'fileType',
-  //     headerName: 'File Type',
-  //   },
-  //   {
-  //     width: 200,
-  //     field: 'permission',
-  //     headerName: 'Permission',
-  //   },
-  //   {
-  //     width: 200,
-  //     field: 'dateCreated',
-  //     headerName: 'Date Created',
-  //   },
-  //   {
-  //     width: 210,
-  //     field: 'actions',
-  //     headerName: 'Actions',
-  //     renderCell: (cellValues) => {
-  //       return (
-  //         <span className={'links-actions'}>
-  //             <IconButton size={'small'}>
-  //               <EditIcon/>
-  //             </IconButton>
-  //             <IconButton size={'small'}>
-  //               <LinkIcon/>
-  //             </IconButton>
-  //             <IconButton size={'small'}>
-  //               <DownloadIcon/>
-  //             </IconButton>
-  //             <IconButton size={'small'}>
-  //               <DeleteIcon/>
-  //             </IconButton>
-  //           </span>
-  //       )
-  //     }
-  //   },
-  // ]
+  const [openDeleteWarningModal, setOpenDeleteWarningModal] = useState(false);
+  const [deleteShareInfo, setDeleteShareInfo] = useState({});
 
-  if (listOfLinks) {
-    return (
-      <section>
-        <Card className={'links-card'}>
-          <span className={'links-header'}>
-            <h3>Your {serviceName} Files</h3>
-            <Button variant='outlined' onClick={() => props.handleOpenProvisionAccessDialog()}>Provision Access</Button>
-          </span>
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell align="left">File Name</TableCell>
-                  <TableCell align="left">Requirements</TableCell>
-                  <TableCell align="left">File Type</TableCell>
-                  <TableCell align="left">Permission</TableCell>
-                  <TableCell align="left">Date Created</TableCell>
-                  <TableCell align="left">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {listOfLinks.map((row, i) => (
-                  <TableRow
-                    key={i}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {row.fileName}
-                    </TableCell>
-                    <TableCell align="left">{row.requirements}</TableCell>
-                    <TableCell align="left">{row.fileType}</TableCell>
-                    <TableCell align="left">{row.permission}</TableCell>
-                    <TableCell align="left">{row.dateCreated}</TableCell>
-                    <TableCell align="left">
-                      <span className={'links-actions'}>
-                        <IconButton size={'small'}>
-                          <EditIcon/>
-                        </IconButton>
-                        <IconButton size={'small'}>
+  const handleOpenDeleteModal = (shareInfo) => {
+    console.log('Share Info', shareInfo)
+    setDeleteShareInfo(shareInfo);
+    setOpenDeleteWarningModal(true);
+  }
+
+  const handleConfirmDelete = () => {
+    props.handleDeleteLinkAction(deleteShareInfo);
+    setOpenDeleteWarningModal(false);
+  }
+
+  const getAccessControlConditions = (accessControl) => {
+    return JSON.parse(accessControl)[0].chain;
+  }
+
+  return (
+    <section>
+      <Card className={'links-card'}>
+        <span className={'links-header'}>
+          <h3>Your {props.serviceName} Files</h3>
+          <Button variant='outlined' onClick={() => props.handleOpenProvisionAccessDialog()}>Provision Access</Button>
+        </span>
+        {/*{props.listOfShares && props.listOfShares.length && (<TableContainer component={Paper}>*/}
+        <TableContainer component={Paper}>
+          <Table sx={{minWidth: 650}}>
+            <TableHead>
+              <TableRow>
+                <TableCell align="left">File Name</TableCell>
+                <TableCell align="left">Requirements</TableCell>
+                <TableCell align="left">File Type</TableCell>
+                <TableCell align="left">Permission</TableCell>
+                <TableCell align="left">Date Created</TableCell>
+                <TableCell align="left">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {props.listOfShares.map((share, i) => (
+                <TableRow
+                  key={i}
+                  sx={{'&:last-child td, &:last-child th': {border: 0}}}
+                >
+                  <TableCell component="th" scope="row">
+                    {share.name}
+                  </TableCell>
+                  <TableCell align="left">{getAccessControlConditions(share.accessControlConditions)}</TableCell>
+                  <TableCell align="left">{share.assetType}</TableCell>
+                  <TableCell align="left">{share.role}</TableCell>
+                  <TableCell align="left">{share.createdAt}</TableCell>
+                  <TableCell align="left">
+                    <span className={'links-actions'}>
+                      <IconButton size={'small'} onClick={props.handleEditLinkAction}>
+                        <EditIcon/>
+                      </IconButton>
+                      <Tooltip title={'Copy share link'}>
+                        <IconButton size={'small'} onClick={() => props.handleCopyLinkAction(share.id)}>
                           <LinkIcon/>
                         </IconButton>
-                        <IconButton size={'small'}>
-                          <DownloadIcon/>
-                        </IconButton>
-                        <IconButton size={'small'}>
+                      </Tooltip>
+                      {/*<IconButton size={'small'} onClick={props.handleDownloadLinkAction}>*/}
+                      {/*  <DownloadIcon/>*/}
+                      {/*</IconButton>*/}
+                      <Tooltip title={'Delete link'}>
+                        <IconButton size={'small'} onClick={() => handleOpenDeleteModal(share)}>
                           <DeleteIcon/>
                         </IconButton>
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Card>
-      </section>
-    )
-  } else {
-    return (
-      <span>Loading Links</span>
-    )
-  }
+                      </Tooltip>
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        {/*)}*/}
+      </Card>
+      <Dialog
+        open={openDeleteWarningModal}
+      >
+        <DialogTitle>Warning</DialogTitle>
+        <DialogContent>
+          Are you sure you want to delete link titles -name here eventually-?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteWarningModal(false)}>
+            Cancel
+          </Button>
+          <Button onClick={() => handleConfirmDelete()}>Yes</Button>
+        </DialogActions>
+      </Dialog>
+    </section>
+  )
 }

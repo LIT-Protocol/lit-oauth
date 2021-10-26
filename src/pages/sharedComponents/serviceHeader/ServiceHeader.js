@@ -19,12 +19,6 @@ export default function ServiceHeader(props) {
     setUserOptionsAreOpen(null);
   };
 
-  const accounts = [
-    {
-      accountName: 'karl@forbes.com'
-    }
-  ];
-
   const handleMenuItemClick = (event) => {
     setUserOptionsAreOpen(null);
     if (event.target.innerText === 'Logout') {
@@ -71,10 +65,10 @@ export default function ServiceHeader(props) {
             horizontal: 'right',
           }}
         >
-          <MenuItem key={0} onClick={handleMenuItemClick}>Add Account</MenuItem>
-          {accounts.map((account, i) => {
-            <MenuItem key={i + 2} onClick={handleMenuItemClick}>{account.accountName}</MenuItem>
-          })}
+          {/*<MenuItem key={0} onClick={handleMenuItemClick}>Add Account</MenuItem>*/}
+          {/*{accounts.map((account, i) => {*/}
+          {/*  <MenuItem key={i + 2} onClick={handleMenuItemClick}>{account.accountName}</MenuItem>*/}
+          {/*})}*/}
           <MenuItem key={1} onClick={handleMenuItemClick}>Logout</MenuItem>
         </Menu>
       </span>

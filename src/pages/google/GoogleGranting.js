@@ -2,161 +2,154 @@ import { useEffect, useState } from "react";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
-import axios from "axios";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
-import ProvisionAccess from "../sharedComponents/provisionAccess/ProvisionAccess";
-import { Button } from "@mui/material";
-import litJsSdk from "lit-js-sdk";
+import ProvisionAccessModal from "../sharedComponents/provisionAccessModal/ProvisionAccessModal";
+import {
+  Button, Snackbar,
+} from "@mui/material";
+
+import * as asyncHelpers from './googleAsyncHelpers.js';
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
-const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
+const GOOGLE_CLIENT_KEY =
+  process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
-const sampleLinks = [
-  {
-    id: 1,
-    fileName: 'Communist Manifesto',
-    requirements: 'the hungry masses',
-    fileType: 'Doc',
-    permission: 'revolution',
-    dateCreated: '1848'
-  },
-  {
-    id: 2,
-    fileName: 'Das Kapital',
-    requirements: 'exploitation of labor',
-    fileType: 'Doc',
-    permission: 'burn it all down',
-    dateCreated: '1867'
-  }
-]
-
+const googleRoleMap = {
+  Read: 'reader',
+  Comment: 'commenter',
+  Write: 'writer',
+}
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
 
   const [link, setLink] = useState("");
-  const [shareLink, setShareLink] = useState("");
-  const [role, setRole] = useState(0);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [allShares, setAllShares] = useState([]);
   const [token, setToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
-
+  const [role, setRole] = useState('reader');
   const [currentUser, setCurrentUser] = useState({});
 
-
+  const [openShareModal, setOpenShareModal] = useState(false);
+  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleOpenProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(true);
   };
 
-  const handleCloseProvisionAccessDialog = () => {
+  const handleAddAccessControl = () => {
+    setOpenShareModal(true);
     setOpenProvisionAccessDialog(false);
+  }
+
+  const handleGetShareLink = async () => {
+    setOpenProvisionAccessDialog(false);
+    await handleSubmit();
+  }
+
+  const handleCancelProvisionAccessDialog = () => {
+    setOpenProvisionAccessDialog(false);
+    setAccessControlConditions([]);
   };
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setOpenSnackbar(false);
+  }
 
   useEffect(() => {
     loadGoogleAuth();
   }, []);
 
-  async function loadGoogleAuth() {
+  const loadGoogleAuth = async () => {
     window.gapi.load("client:auth2", function () {
-      window.gapi.auth2.init({
-        client_id: GOOGLE_CLIENT_KEY,
-        scope:
-          "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
-      }).then(googleObject => {
-        if(googleObject.isSignedIn.get()) {
-          const currentUserObject = window.gapi.auth2.getAuthInstance().currentUser.get();
-          getLatestRefreshToken(currentUserObject);
-        }
-      });
-    })
+      window.gapi.auth2
+        .init({
+          client_id: GOOGLE_CLIENT_KEY,
+          scope:
+            "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+        })
+        .then((googleObject) => {
+          if (googleObject.isSignedIn.get()) {
+            const currentUserObject = window.gapi.auth2
+              .getAuthInstance()
+              .currentUser.get();
+            getLatestRefreshToken(currentUserObject);
+          }
+        });
+    });
   }
 
-  async function getAuthSig() {
+  const getAuthSig = async () => {
     return await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
   }
 
-  async function getLatestRefreshToken(currentUserObject) {
-    const authResp = currentUserObject.getAuthResponse(true);
-    const id_token = authResp.id_token;
-    const authSig = await getAuthSig();
-    await axios
-      .post(
-        API_HOST + "/api/google/verifyToken",
-        {
-          authSig,
-          id_token
-        },
-      ).then(res => {
-        // console.log('VERIFY TOKEN RES', res.data)
-        // currentUserObject.reloadAuthResponse().then(res => {
-        //   console.log('LOADED AUTH RES', res)
-        // })
-        getGetCurrentUserProfile(res.data)
-      }).catch(err => console.log('Error loading user:', err))
+  const getLatestRefreshToken = async (currentUserObject) => {
+    const id_token = currentUserObject.getAuthResponse().id_token;
+    try {
+      const authSig = await getAuthSig();
+      const response = await asyncHelpers.verifyToken(authSig, id_token)
+      await getGetCurrentUserProfile(response.data, authSig);
+    } catch(err) {
+      console.log("Error verifying token:", err);
+    }
   }
 
-  async function getGetCurrentUserProfile(uniqueId) {
-    const authSig = await getAuthSig();
-    await axios
-      .post(
-        API_HOST + "/api/google/getUserProfile",
-        {
-          authSig,
-          uniqueId
-        },
-      ).then(res => {
-        console.log('PROFILE EVERYWHER!', res)
-        if (res.data[0]) {
-          const userProfile = res.data[0];
-          setToken(userProfile.accessToken);
-          setCurrentUser({
-            email: userProfile.email,
-          })
-          // authenticate();
-        }
-      })
+  const getGetCurrentUserProfile = async (uniqueId, authSig) => {
+    try {
+      const response = await asyncHelpers.getUserProfile(authSig, uniqueId)
+
+      if (response.data[0]) {
+        const userProfile = response.data[0];
+        setToken(userProfile.refreshToken);
+        setCurrentUser({
+          email: userProfile.email,
+        });
+        setConnectedServiceId(userProfile.id);
+        await getAllShares();
+      }
+    } catch(err) {
+      console.log("Error loading user profile:", err);
+    }
   }
 
-  async function authenticate() {
-    const authSig = await getAuthSig();
-    console.log('AUTH SIG', authSig)
-    return window.gapi.auth2
-      .getAuthInstance()
-      .grantOfflineAccess()
-      .then(async (authResult) => {
-        console.log("authResult: ", authResult);
-        if (authResult.code) {
-          console.log("AUTH RESULT", authResult.code);
-          setToken(authResult.code);
-          await storeToken(authSig, authResult.code)
-        } else {
-          console.log("Error logging in");
-        }
-      });
+  const getAllShares = async () => {
+    const allShares = await asyncHelpers.getAllShares();
+    setAllShares(allShares.data);
   }
 
-  async function storeToken (authSig, token) {
-    console.log('SOTRE OKENT', authSig, token)
-    await axios
-      .post(
-        API_HOST + "/api/google/connect",
-        {
-          authSig,
-          token
-        },
-      ).then(res => {
-          console.log('CHECK STORE TOKEN', res.data)
-        if (!!res.data['connectedServices']) {
-          setConnectedServiceId(res.data.connectedServices[0].id);
-        }
-      })
+  const authenticate = async () => {
+    const authSig = await getAuthSig();
+    try {
+      const authResult = await window.gapi.auth2.getAuthInstance().grantOfflineAccess();
+      if (authResult.code) {
+        console.log("AUTH RESULT", authResult.code);
+        setToken(authResult.code);
+        await storeToken(authSig, authResult.code);
+      }
+    } catch(err) {
+      console.log('Error loggin in:', err)
+    }
+  }
+
+  const storeToken = async (authSig, token) => {
+    try {
+      const response = await asyncHelpers.storeConnectedServiceAccessToken(authSig, token);
+      if (!!response.data["connectedServices"]) {
+        setConnectedServiceId(response.data.connectedServices[0].id);
+      }
+    } catch(err) {
+      console.log('Error storing access token:', err);
+    }
   }
 
   const signOut = () => {
@@ -168,8 +161,9 @@ export default function GoogleGranting() {
     setToken("");
   };
 
-  const addToAccessControlConditions = (r) => {
-    setAccessControlConditions(accessControlConditions.concat(r));
+  const addToAccessControlConditions = async (r) => {
+    const concatAccessControlConditions = accessControlConditions.concat(r);
+    await setAccessControlConditions(concatAccessControlConditions);
   };
 
   const removeIthAccessControlCondition = (i) => {
@@ -183,13 +177,9 @@ export default function GoogleGranting() {
   };
 
   const handleSubmit = async () => {
-    console.log("DOUBLE CHECK TOKEN", token);
-
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-
-    console.log('CHECK LINK', connectedServiceId)
 
     const regex = /d\/(.{44})/g;
     let id = link.match(regex)[0];
@@ -198,156 +188,139 @@ export default function GoogleGranting() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     };
-    axios
-      .post(
-        API_HOST + "/api/google/share",
-        {
-          driveId: id,
-          role: role,
-          token: token,
-          connectedServiceId: connectedServiceId,
-          accessControlConditions: accessControlConditions,
-          authSig,
-        },
-        requestOptions
-      )
-      .then(async (resp) => {
-        const { data } = resp;
-        console.log("AFTER THE CALL", data);
-        const accessControlConditions = data["authorizedControlConditions"];
-        const uuid = data["uuid"];
-        const chain = accessControlConditions[0].chain;
-        const authSig = await LitJsSdk.checkAndSignAuthMessage({
-          chain,
-        });
-        const resourceId = {
-          baseUrl: API_HOST,
-          path: "/l/" + uuid,
-          orgId: "",
-          role: role.toString(),
-          extraData: "",
-        };
-        console.log(accessControlConditions);
-        console.log("About to save");
-        await window.litNodeClient.saveSigningCondition({
-          accessControlConditions,
-          chain,
-          authSig,
-          resourceId,
-        });
-        // console.log('ACCESS CONTROL', window.litNodeClient.humanizeAccessControlConditions(accessControlConditions[0]))
-        // litJsSdk.humanizeAccessControlConditions()
-        // window.litNodeClient.humanizeAccessControlConditions(accessControlConditions)
-        // setShareLink(FRONT_END_HOST + "/l/" + uuid);
-        // window.location.href = `${FRONT_END_HOST}/l/${uuid}`;
+    const requestData = {
+      driveId: id,
+      role: role,
+      token: token,
+      connectedServiceId: connectedServiceId,
+      accessControlConditions: accessControlConditions,
+      authSig,
+    };
+
+    try {
+      const response = await asyncHelpers.share(requestData, requestOptions);
+      const { data } = response;
+      const accessControlConditions = data["authorizedControlConditions"];
+      const uuid = data["uuid"];
+      const chain = accessControlConditions[0].chain;
+      const authSig = await LitJsSdk.checkAndSignAuthMessage({
+        chain,
       });
+      const resourceId = {
+        baseUrl: API_HOST,
+        path: "/l/" + uuid,
+        orgId: "",
+        role: role.toString(),
+        extraData: "",
+      };
+
+      console.log("ABOUT TO SAVE", {
+        accessControlConditions,
+        chain,
+        authSig,
+        resourceId,
+      });
+      window.litNodeClient.saveSigningCondition({
+        accessControlConditions,
+        chain,
+        authSig,
+        resourceId,
+      });
+      const humanized = await LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions,
+        myWalletAddress: authSig.address,
+      });
+      console.log("ACCESS CONTROL", humanized)
+      console.log("ACCESS CONTROL RAW", accessControlConditions)
+      setAccessControlConditions([]);
+      await getAllShares();
+    } catch(err) {
+      console.log('Error sharing link:', err)
+    }
   };
+
+  const handleDeleteShare = async (shareInfo) => {
+    try {
+      await asyncHelpers.deleteShare(shareInfo.id);
+      await getAllShares();
+      setSnackbarMessage(`${shareInfo.name} has been deleted.`)
+      setOpenSnackbar(true);
+    } catch(err) {
+      console.log('Error deleting share', err);
+    }
+  }
+
+  const getLinkFromShare = async (linkUuid) => {
+    setSnackbarMessage(`Link has been copied to clipboard.`)
+    setOpenSnackbar(true);
+    await navigator.clipboard.writeText(FRONT_END_HOST + "/l/" + linkUuid)
+  }
 
   if (token === "") {
     return (
       <section>
-        <Button onClick={() => authenticate("google")}>Connect your Google account</Button>
+        <Button onClick={() => authenticate("google")}>
+          Connect your Google account
+        </Button>
       </section>
     );
   }
 
   return (
-    <section className={'vertical-flex'}>
-       {/*TODO: remove 'vertical-flex' from class*/}
+    <section className={"vertical-flex"}>
+      {/*TODO: remove 'vertical-flex' from class*/}
       <ServiceHeader
-        serviceName={'Google Drive App'}
-        oauthServiceProvider={'Google'}
-        currentUser={'Comrade Marx'}
+        serviceName={"Google Drive App"}
+        oauthServiceProvider={"Google"}
+        currentUser={"Comrade Marx"}
         currentUserEmail={currentUser.email}
-        signOut={signOut}/>
-    {/*TODO: remove span spacer and orient with html grid*/}
-      <span style={{height: '8rem'}}></span>
+        signOut={signOut}
+      />
+      {/*TODO: remove span spacer and orient with html grid*/}
+      <span style={{ height: "8rem" }}></span>
       <ServiceLinks
-        className={'top-large-margin-buffer'}
-        serviceName={'Drive'}
+        className={"top-large-margin-buffer"}
+        serviceName={"Drive"}
         handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-        listOfLinks={sampleLinks}/>
-      <ProvisionAccess
-        handleCloseProvisionAccessDialog={handleCloseProvisionAccessDialog}
+        handleEditLinkAction={() => console.log('EDIT CLICKED')}
+        handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
+        handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
+        handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
+        listOfShares={allShares}
+      />
+      <ProvisionAccessModal
+        handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
+        accessControlConditions={accessControlConditions}
+        removeIthAccessControlCondition={removeIthAccessControlCondition}
+        handleAddAccessControl={handleAddAccessControl}
+        handleGetShareLink={handleGetShareLink}
         link={link}
+        setLink={setLink}
         openProvisionAccessDialog={openProvisionAccessDialog}
-        setModalOpen={setModalOpen}
         setRole={setRole}
         role={role}
-        setLink={setLink}/>
-      {modalOpen && (
+        roleMap={googleRoleMap}
+      />
+      {openShareModal && (
         <ShareModal
-          className={'share-modal'}
+          className={"share-modal"}
           show={false}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setOpenShareModal(false)}
           sharingItems={[{ name: link }]}
-          onAccessControlConditionsSelected={(restriction) => {
-            addToAccessControlConditions(restriction);
-            setModalOpen(false);
+          onAccessControlConditionsSelected={async (restriction) => {
+            await addToAccessControlConditions(restriction);
+            setOpenShareModal(false);
+            setOpenProvisionAccessDialog(true);
           }}
-      />)}
+        />
+      )}
 
-
-      <div className="App">
-        <header className="App-header">
-          <p>Enter the link to the drive file below.</p>
-          <form>
-            <label htmlFor="drive-link">Drive Link</label>
-            <input
-              type="text"
-              name="drive-link"
-              id="drive-link"
-              onChange={(e) => setLink(e.target.value)}
-            />
-
-            <p>Added Access Control Conditions (click to delete)</p>
-            {accessControlConditions.map((r, i) => (
-              <Button
-                key={i}
-                label={JSON.stringify(r)}
-                onClick={() => removeIthAccessControlCondition(i)}
-              >{JSON.stringify(r)}</Button>
-            ))}
-            <Button
-              className="top-margin-buffer"
-              label="Add access control conditions"
-              type="button"
-              onClick={() => setModalOpen(true)}
-            >Add Access Control Conditions</Button>
-            {modalOpen && (
-              <ShareModal
-                show={false}
-                onClose={() => setModalOpen(false)}
-                sharingItems={[{name: link}]}
-                onAccessControlConditionsSelected={(restriction) => {
-                  addToAccessControlConditions(restriction);
-                  setModalOpen(false);
-                }}
-              />
-            )}
-            <br/>
-            <label htmlFor="drive-role">Drive Role to share</label>
-            <select
-              name="drive-role"
-              id="drive-role"
-              onChange={(e) => setRole(parseInt(e.target.selectedIndex))}
-            >
-              <option value="read">Read</option>
-              <option value="comment">Comment</option>
-              <option value="write">Write</option>
-            </select>
-            <Button
-              className="top-margin-buffer left-margin-buffer"
-              label="Get share link"
-              type="button"
-              onClick={handleSubmit}
-            >Get Share Link</Button>
-          </form>
-        </header>
-      </div>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+      />
     </section>
-
-
-
   );
 }

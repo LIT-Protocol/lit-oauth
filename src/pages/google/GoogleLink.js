@@ -54,19 +54,28 @@ function GoogleLink() {
 
   async function provisionAccess() {
     console.log('LINK DATA', linkData)
-    const chain = linkData.requirements[0].chain;
+    const accessControlConditions = JSON.parse(linkData.share.accessControlConditions);
+    console.log('PARSE ACC', accessControlConditions)
+    const chain = accessControlConditions[0].chain;
     const resourceId = {
-      baseUrl: FRONT_END_URI,
+      baseUrl: BASE_URL,
       path: "/l/" + uuid,
       orgId: "",
-      role: linkData["role"].toString(),
+      role: linkData.share["role"].toString(),
       extraData: "",
     };
 
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
 
+    console.log('BEFORE FINAL SAVE', {
+      accessControlConditions: accessControlConditions,
+      chain,
+      authSig: authSig,
+      resourceId: resourceId,
+    })
+
     const jwt = await litNodeClient.getSignedToken({
-      accessControlConditions: linkData["requirements"],
+      accessControlConditions: accessControlConditions,
       chain,
       authSig: authSig,
       resourceId: resourceId,
@@ -109,13 +118,15 @@ function GoogleLink() {
 
   const handleSubmit = () => {
     provisionAccess().then((jwt) => {
-      const role = linkData["role"];
-      const body = JSON.stringify({ email, role, uuid, jwt });
+      const role = linkData.share["role"];
+      const body = { email, role, uuid, jwt };
       const headers = { "Content-Type": "application/json" };
+      console.log('BEFORE FINAL GO', body)
       axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers })
-        .then((data) =>
-            (window.location = `https://docs.google.com/document/d/${data}`)
-        );
+        .then((data) => {
+          console.log('SUBMIT HANDLED!', data);
+          window.location = `https://docs.google.com/document/d/${data}`;
+        });
     });
   };
 
@@ -143,21 +154,6 @@ function GoogleLink() {
          </div>
       </section>
     );
-
-      // <Theme preset={presetGpnDefault}>
-      //   <div className={"vertical-flex top-margin-buffer"}>
-      //     <label>Enter your Google Account email here
-      //       <input
-      //         type="text"
-      //         name="email-input"
-      //         id="email-input"
-      //         onChange={(e) => setEmail(e.target.value)}
-      //       />
-      //     </label>
-      //     <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit} />
-      //     <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete} />
-      //   </div>
-      // </Theme>
   }
 }
 
