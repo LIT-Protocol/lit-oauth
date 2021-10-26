@@ -6,9 +6,10 @@ import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
 import ProvisionAccessModal from "../sharedComponents/provisionAccessModal/ProvisionAccessModal";
 import {
-  Button, Snackbar,
+  Button, CircularProgress, Snackbar,
 } from "@mui/material";
 
+import './GoogleGranting.scss';
 import * as asyncHelpers from './googleAsyncHelpers.js';
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
@@ -111,8 +112,13 @@ export default function GoogleGranting() {
       if (response.data[0]) {
         const userProfile = response.data[0];
         setToken(userProfile.refreshToken);
+        const extraUserData = JSON.parse(userProfile.extraData);
+        const avatar = extraUserData.displayName.split(' ').map(s => s.split('')[0]).join(' ');
+        console.log('AVAT', avatar)
         setCurrentUser({
+          displayName: extraUserData.displayName,
           email: userProfile.email,
+          avatar: avatar,
         });
         setConnectedServiceId(userProfile.id);
         await getAllShares();
@@ -281,14 +287,13 @@ export default function GoogleGranting() {
       <ServiceHeader
         serviceName={"Google Drive App"}
         oauthServiceProvider={"Google"}
-        currentUser={"Comrade Marx"}
-        currentUserEmail={currentUser.email}
+        currentUser={currentUser}
         signOut={signOut}
       />
       {/*TODO: remove span spacer and orient with html grid*/}
       <span style={{ height: "8rem" }}></span>
       <ServiceLinks
-        className={"top-large-margin-buffer"}
+        // className={"service-links"}
         serviceName={"Drive"}
         handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
         handleEditLinkAction={() => console.log('EDIT CLICKED')}

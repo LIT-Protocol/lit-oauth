@@ -1,6 +1,5 @@
 .App {
   text-align: center;
-  margin-top: 24px;
 }
 
 .split {
@@ -25,4 +24,15 @@
 
 h1, h2, h3, h4 {
   font-weight: 500;
+}
+
+.service-container {
+  display: grid;
+  grid-template-columns: 20% 20% 20% 20% 20%;
+  grid-template-rows: 20% 20% 20% 20% 20%;
+}
+
+.service-links {
+  grid-column: 2 / 4;
+  grid-row: 2 / 4;
 }

@@ -40,13 +40,13 @@ export default function ServiceHeader(props) {
           onClick={handleUserMenuClick}
           className={'header-user-menu'}
         >
-          <Avatar className={'right-buffer'}>KM</Avatar>
+          <Avatar className={'right-buffer'}>{currentUser.avatar}</Avatar>
           <div className={'user-info right-buffer'}>
             <span className={'user-name'}>
-              {currentUser}
+              {currentUser.displayName}
             </span>
             <span className={'user-email'}>
-              {currentUserEmail}
+              {currentUser.email}
             </span>
           </div>
           <KeyboardArrowDownIcon />
