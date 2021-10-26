@@ -145,7 +145,7 @@ export default async function (fastify, opts) {
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
     });
-    console.log("fileInfo", fileInfo);
+    // console.log("fileInfo", fileInfo);
 
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
