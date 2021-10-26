@@ -17,7 +17,10 @@ export default {
 
   production: {
     client: "pg",
-    connection: process.env.DATABASE_URL + "?ssl=true",
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    },
     pool: {
       min: 2,
       max: 10,
@@ -26,4 +29,5 @@ export default {
       tableName: "knex_migrations",
     },
   },
+  debug: true,
 };

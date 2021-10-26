@@ -125,6 +125,25 @@ export default async function (fastify, opts) {
         .where("id", "=", connectedServiceId)
     )[0];
 
+    const oauth_client = new google.auth.OAuth2(
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      "postmessage"
+    );
+
+    oauth_client.setCredentials({
+      access_token: connectedService.accessToken,
+      refresh_token: connectedService.refreshToken,
+    });
+
+    const drive = google.drive({
+      version: "v3",
+      auth: oauth_client,
+    });
+    const fileInfo = await drive.files.get({
+      fileId: req.body.driveId,
+    });
+
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
@@ -135,6 +154,8 @@ export default async function (fastify, opts) {
         connected_service_id: connectedService.id,
         role: req.body.role,
         user_id: authSig.address,
+        name: fileInfo.name,
+        asset_type: fileInfo.mimeType,
       });
 
     let uuid = insertToLinksQuery.id;
