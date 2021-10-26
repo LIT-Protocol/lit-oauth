@@ -181,9 +181,15 @@ export default function GoogleGranting() {
       chain: "ethereum",
     });
 
-    const regex = /d\/(.{44})/g;
-    let id = link.match(regex)[0];
-    id = id.slice(2, id.length);
+    console.log('LINK LINK', link)
+
+    // const regex = /d\/(.{44})/g;
+    // let id = link.match(regex)[0];
+    // id = id.slice(2, id.length);
+
+    const splitFileUri = link.split('/d/')[1];
+    const id = splitFileUri.split('/')[0];
+
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },

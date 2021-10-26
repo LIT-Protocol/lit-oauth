@@ -149,6 +149,7 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+    console.log('DRIVE', drive)
     console.log("CONNECTED SERVICE", connectedService);
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,

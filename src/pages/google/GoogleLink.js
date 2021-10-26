@@ -125,7 +125,7 @@ function GoogleLink() {
       axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers })
         .then((data) => {
           console.log('SUBMIT HANDLED!', data);
-          window.location = `https://docs.google.com/document/d/${data}`;
+          window.location = `https://docs.google.com/document/d/${data.fileId}`;
         });
     });
   };
