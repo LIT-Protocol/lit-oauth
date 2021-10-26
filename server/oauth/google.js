@@ -235,7 +235,7 @@ export default async function (fastify, opts) {
       !verified ||
       payload.baseUrl !==
         `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
-      payload.path !== "/l/" + uuid ||
+      payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
       payload.extraData !== ""

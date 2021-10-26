@@ -59,7 +59,7 @@ function GoogleLink() {
     const chain = accessControlConditions[0].chain;
     const resourceId = {
       baseUrl: BASE_URL,
-      path: "/l/" + uuid,
+      path: "/google/l/" + uuid,
       orgId: "",
       role: linkData.share["role"].toString(),
       extraData: "",

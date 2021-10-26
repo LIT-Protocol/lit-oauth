@@ -187,8 +187,9 @@ export default function GoogleGranting() {
     // let id = link.match(regex)[0];
     // id = id.slice(2, id.length);
 
-    const splitFileUri = link.split('/d/')[1];
-    const id = splitFileUri.split('/')[0];
+    // const splitFileUri = link.split('/d/')[1];
+    // const id = splitFileUri.split('/')[0];
+    const id = link.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
 
     const requestOptions = {
       method: "POST",
@@ -216,7 +217,7 @@ export default function GoogleGranting() {
       });
       const resourceId = {
         baseUrl: API_HOST,
-        path: "/l/" + uuid,
+        path: "/google/l/" + uuid,
         orgId: "",
         role: role.toString(),
         extraData: "",
@@ -261,7 +262,7 @@ export default function GoogleGranting() {
   const getLinkFromShare = async (linkUuid) => {
     setSnackbarMessage(`Link has been copied to clipboard.`)
     setOpenSnackbar(true);
-    await navigator.clipboard.writeText(FRONT_END_HOST + "/l/" + linkUuid)
+    await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
   }
 
   if (token === "") {

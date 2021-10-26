@@ -1,4 +1,14 @@
 export const URL_MAP = {
+  google: {
+    path: "/google",
+    componentName: "GoogleGranting",
+    exact: true,
+  },
+  googleLink: {
+    path: "/google/l/:linkId",
+    componentName: "GoogleLink",
+    exact: true,
+  },
   zoomGranting: {
     path: "/",
     componentName: "ZoomGranting",
@@ -8,11 +18,6 @@ export const URL_MAP = {
     path: "/share/zoom/:meetingId",
     componentName: "ZoomAccess",
     exact: false,
-  },
-  google: {
-    path: "/google",
-    componentName: "GoogleContainer",
-    exact: true,
   },
 };
 
