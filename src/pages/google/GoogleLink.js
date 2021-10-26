@@ -121,10 +121,8 @@ function GoogleLink() {
       const role = linkData.share["role"];
       const body = { email, role, uuid, jwt };
       const headers = { "Content-Type": "application/json" };
-      console.log('BEFORE FINAL GO', body)
       axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers })
         .then((data) => {
-          console.log('SUBMIT HANDLED!', data);
           window.location = `https://docs.google.com/document/d/${data.fileId}`;
         });
     });
