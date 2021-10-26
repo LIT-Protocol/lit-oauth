@@ -1,6 +1,6 @@
 export const URL_MAP = {
   zoomGranting: {
-    path: "/",
+    path: ["/", "/zoom"],
     componentName: "ZoomGranting",
     exact: true,
   },
