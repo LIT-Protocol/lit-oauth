@@ -33,7 +33,7 @@ export default function ProvisionAccessModal(props) {
         <DialogContent>
           <section className={'provision-access-container'}>
             <p>Google Drive Link</p>
-            <TextField fullWidth focused onChange={(e) => props.setLink(e.target.value)}/>
+            <TextField fullWidth autoFocus onChange={(e) => props.setLink(e.target.value)}/>
             <p>Permission Level</p>
             <FormControl fullWidth>
               <Select
