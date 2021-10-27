@@ -89,6 +89,11 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+fastify.setNotFoundHandler((req, res) => {
+  res.status(200);
+  res.sendFile("index.html");
+});
+
 fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
