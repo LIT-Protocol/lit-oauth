@@ -5,11 +5,9 @@ import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
 import ProvisionAccessModal from "../sharedComponents/provisionAccessModal/ProvisionAccessModal";
-import {
-  Button, Snackbar,
-} from "@mui/material";
+import { Button, Snackbar } from "@mui/material";
 
-import * as asyncHelpers from './googleAsyncHelpers.js';
+import * as asyncHelpers from "./googleAsyncHelpers.js";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -17,10 +15,10 @@ const GOOGLE_CLIENT_KEY =
   process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
 const googleRoleMap = {
-  Read: 'reader',
-  Comment: 'commenter',
-  Write: 'writer',
-}
+  Read: "reader",
+  Comment: "commenter",
+  Write: "writer",
+};
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
@@ -30,13 +28,15 @@ export default function GoogleGranting() {
   const [token, setToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [role, setRole] = useState('reader');
+  const [role, setRole] = useState("reader");
   const [currentUser, setCurrentUser] = useState({});
+  const [pickerLoaded, setPickerLoaded] = useState(false);
 
   const [openShareModal, setOpenShareModal] = useState(false);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
+  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
+    useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleOpenProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(true);
@@ -45,12 +45,12 @@ export default function GoogleGranting() {
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
     setOpenProvisionAccessDialog(false);
-  }
+  };
 
   const handleGetShareLink = async () => {
     setOpenProvisionAccessDialog(false);
     await handleSubmit();
-  }
+  };
 
   const handleCancelProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(false);
@@ -58,23 +58,26 @@ export default function GoogleGranting() {
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setOpenSnackbar(false);
-  }
+  };
 
   useEffect(() => {
     loadGoogleAuth();
   }, []);
 
   const loadGoogleAuth = async () => {
+    window.gapi.load("picker", function () {
+      setPickerLoaded(true);
+      console.log("picker loaded");
+    });
     window.gapi.load("client:auth2", function () {
       window.gapi.auth2
         .init({
           client_id: GOOGLE_CLIENT_KEY,
-          scope:
-            "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+          scope: "https://www.googleapis.com/auth/drive.file",
         })
         .then((googleObject) => {
           if (googleObject.isSignedIn.get()) {
@@ -85,28 +88,28 @@ export default function GoogleGranting() {
           }
         });
     });
-  }
+  };
 
   const getAuthSig = async () => {
     return await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-  }
+  };
 
   const getLatestRefreshToken = async (currentUserObject) => {
     const id_token = currentUserObject.getAuthResponse().id_token;
     try {
       const authSig = await getAuthSig();
-      const response = await asyncHelpers.verifyToken(authSig, id_token)
+      const response = await asyncHelpers.verifyToken(authSig, id_token);
       await getGetCurrentUserProfile(response.data, authSig);
-    } catch(err) {
+    } catch (err) {
       console.log("Error verifying token:", err);
     }
-  }
+  };
 
   const getGetCurrentUserProfile = async (uniqueId, authSig) => {
     try {
-      const response = await asyncHelpers.getUserProfile(authSig, uniqueId)
+      const response = await asyncHelpers.getUserProfile(authSig, uniqueId);
 
       if (response.data[0]) {
         const userProfile = response.data[0];
@@ -117,40 +120,47 @@ export default function GoogleGranting() {
         setConnectedServiceId(userProfile.id);
         await getAllShares();
       }
-    } catch(err) {
+    } catch (err) {
       console.log("Error loading user profile:", err);
     }
-  }
+  };
 
   const getAllShares = async () => {
     const allShares = await asyncHelpers.getAllShares();
     setAllShares(allShares.data);
-  }
+  };
 
   const authenticate = async () => {
     const authSig = await getAuthSig();
     try {
-      const authResult = await window.gapi.auth2.getAuthInstance().grantOfflineAccess();
+      const authResult = await window.gapi.auth2
+        .getAuthInstance()
+        .grantOfflineAccess({
+          scope: "https://www.googleapis.com/auth/drive.file",
+        });
       if (authResult.code) {
         console.log("AUTH RESULT", authResult.code);
         setToken(authResult.code);
         await storeToken(authSig, authResult.code);
       }
-    } catch(err) {
-      console.log('Error loggin in:', err)
+    } catch (err) {
+      console.log("Error loggin in:", err);
     }
-  }
+  };
 
   const storeToken = async (authSig, token) => {
     try {
-      const response = await asyncHelpers.storeConnectedServiceAccessToken(authSig, token);
+      const response = await asyncHelpers.storeConnectedServiceAccessToken(
+        authSig,
+        token
+      );
       if (!!response.data["connectedServices"]) {
         setConnectedServiceId(response.data.connectedServices[0].id);
       }
-    } catch(err) {
-      console.log('Error storing access token:', err);
+    } catch (err) {
+      console.log("Error storing access token:", err);
     }
-  }
+  };
 
   const signOut = () => {
     const auth2 = window.gapi.auth2.getAuthInstance();
@@ -181,14 +191,14 @@ export default function GoogleGranting() {
       chain: "ethereum",
     });
 
-    console.log('LINK LINK', link)
+    console.log("LINK LINK", link);
 
     // const regex = /d\/(.{44})/g;
     // let id = link.match(regex)[0];
     // id = id.slice(2, id.length);
 
-    const splitFileUri = link.split('/d/')[1];
-    const id = splitFileUri.split('/')[0];
+    const splitFileUri = link.split("/d/")[1];
+    const id = splitFileUri.split("/")[0];
 
     const requestOptions = {
       method: "POST",
@@ -203,7 +213,7 @@ export default function GoogleGranting() {
       authSig,
     };
 
-    console.log('REQUEST DATA', requestData)
+    console.log("REQUEST DATA", requestData);
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
@@ -238,12 +248,12 @@ export default function GoogleGranting() {
         accessControlConditions,
         myWalletAddress: authSig.address,
       });
-      console.log("ACCESS CONTROL", humanized)
-      console.log("ACCESS CONTROL RAW", accessControlConditions)
+      console.log("ACCESS CONTROL", humanized);
+      console.log("ACCESS CONTROL RAW", accessControlConditions);
       setAccessControlConditions([]);
       await getAllShares();
-    } catch(err) {
-      console.log('Error sharing link:', err)
+    } catch (err) {
+      console.log("Error sharing link:", err);
     }
   };
 
@@ -251,18 +261,18 @@ export default function GoogleGranting() {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares();
-      setSnackbarMessage(`${shareInfo.name} has been deleted.`)
+      setSnackbarMessage(`${shareInfo.name} has been deleted.`);
       setOpenSnackbar(true);
-    } catch(err) {
-      console.log('Error deleting share', err);
+    } catch (err) {
+      console.log("Error deleting share", err);
     }
-  }
+  };
 
   const getLinkFromShare = async (linkUuid) => {
-    setSnackbarMessage(`Link has been copied to clipboard.`)
+    setSnackbarMessage(`Link has been copied to clipboard.`);
     setOpenSnackbar(true);
-    await navigator.clipboard.writeText(FRONT_END_HOST + "/l/" + linkUuid)
-  }
+    await navigator.clipboard.writeText(FRONT_END_HOST + "/l/" + linkUuid);
+  };
 
   if (token === "") {
     return (
@@ -290,9 +300,9 @@ export default function GoogleGranting() {
         className={"top-large-margin-buffer"}
         serviceName={"Drive"}
         handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-        handleEditLinkAction={() => console.log('EDIT CLICKED')}
+        handleEditLinkAction={() => console.log("EDIT CLICKED")}
         handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
-        handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
+        handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}
         handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
         listOfShares={allShares}
       />
