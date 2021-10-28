@@ -7,7 +7,6 @@ export default function ServiceHeader(props) {
   const serviceName = props.serviceName;
   const oauthServiceProvider = props.oauthServiceProvider;
   const currentUser = props.currentUser;
-  const currentUserEmail = props.currentUserEmail;
   const [userOptionsAreOpen, setUserOptionsAreOpen] = useState(false);
   const open = Boolean(userOptionsAreOpen);
 
@@ -29,6 +28,7 @@ export default function ServiceHeader(props) {
   return (
     <Card className={'header-card'}>
       <span className={'header-left'}>
+        {/*<img src={require('props.serviceImage')}/>*/}
         <Avatar className={'right-buffer'}>G</Avatar>
         <h2>{serviceName}</h2>
       </span>

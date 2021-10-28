@@ -6,7 +6,7 @@ import { parseJwt } from "../utils.js";
 export default async function (fastify, opts) {
   // store the user's access token
   fastify.post("/api/google/connect", async (req, res) => {
-    const { authSig } = req.body;
+    const { authSig, token } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -18,7 +18,7 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    const { tokens } = await oauth_client.getToken(req.body.token);
+    const { tokens } = await oauth_client.getToken(token);
     oauth_client.setCredentials(tokens);
 
     const parsedJwt = parseJwt(tokens.id_token);
@@ -89,16 +89,48 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/google/verifyToken", async (req, res) => {
+    const { id_token, access_token, email } =  req.body.googleAuthResponse;
+    const authSig = req.body.authSig;
+
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
     );
 
     const ticket = await oauth_client.verifyIdToken({
-      idToken: req.body.id_token,
+      idToken: id_token,
       audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
     });
+
     const payload = ticket.getPayload();
     const userId = payload["sub"];
+
+    console.log('PAYLOAD SUB', payload)
+
+    const existingRows = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("id_on_service", "=", userId);
+
+    if (!existingRows.length) {
+      return -1;
+    }
+
+    existingRows[0].patch({
+      access_token: access_token,
+    });
+
+    const connectedGoogleServices =
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("user_id", "=", authSig.address)
+        .where("service_name", "=", "google");
+
+    const serialized = connectedGoogleServices.map((s) => ({
+      id: s.id,
+      email: s.email,
+      idOnService: s.id_on_service,
+    }));
+
 
     if (
       payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
@@ -106,17 +138,20 @@ export default async function (fastify, opts) {
       res.code(400);
       return { error: "Invalid signature" };
     } else {
-      return userId;
+      return { connectedServices: serialized, userId };
     }
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
     const uniqueId = req.body.uniqueId.toString();
-    return await fastify.objection.models.connectedServices
+    const connectedServices = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      // .where("id_on_service", "=", uniqueId)
+      .where("id_on_service", "=", uniqueId)
       // .where("user_id", '=', req.body.authSig.address)
+
+    delete connectedServices[0].refreshToken;
+    return connectedServices;
   })
 
   fastify.post("/api/google/share", async (req, res) => {
@@ -149,7 +184,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    console.log('DRIVE', drive)
     console.log("CONNECTED SERVICE", connectedService);
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,

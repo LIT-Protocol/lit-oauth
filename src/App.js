@@ -2,12 +2,16 @@ import "./App.css";
 import { BrowserRouter } from "react-router-dom";
 import Routes from "./Routes";
 import { useAppContext } from "./context/app";
+import { createTheme, ThemeProvider } from "@mui/material";
+import { litThemeObject } from "./litTheme";
+
+const litTheme = createTheme(litThemeObject);
 
 function App() {
   const { globalError } = useAppContext();
 
   return (
-    <div>
+    <ThemeProvider theme={litTheme}>
       <BrowserRouter>
         <div className="App">
           {globalError ? (
@@ -25,7 +29,7 @@ function App() {
           <Routes />
         </div>
       </BrowserRouter>
-    </div>
+    </ThemeProvider>
   );
 }
 

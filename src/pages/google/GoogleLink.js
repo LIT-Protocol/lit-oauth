@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
-import { Button } from "@mui/material";
-
-import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
+import { Button, Card, CardActions, CardHeader, CardContent, TextField } from "@mui/material";
+import './GoogleLink.scss';
 
 const GOOGLE_CLIENT_KEY = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
@@ -44,7 +43,7 @@ function GoogleLink() {
           console.log(res.data["requirements"]);
           console.log(typeof res.data["role"]);
           setLinkData(res.data);
-          console.log(res.data);
+          console.log('LINK DATA', res.data);
         })
         .catch((err) => {
           setError("Invalid link");
@@ -116,6 +115,16 @@ function GoogleLink() {
       });
   };
 
+  const getFileTypeUrl = (fileType) => {
+    let fileTypeUrl;
+    if (fileType.includes('audio') || fileType.includes('mpeg')) {
+      fileTypeUrl = 'file';
+    } else if (fileType.includes('document')) {
+      fileTypeUrl = 'document';
+    }
+    return fileTypeUrl;
+  }
+
   const handleSubmit = () => {
     provisionAccess().then((jwt) => {
       const role = linkData.share["role"];
@@ -123,7 +132,9 @@ function GoogleLink() {
       const headers = { "Content-Type": "application/json" };
       axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers })
         .then((data) => {
-          window.location = `https://docs.google.com/document/d/${data.fileId}`;
+          window.location = `https://docs.google.com/${getFileTypeUrl(linkData.share.assetType)}/d/${data.data.fileId}`;
+          console.log("DATA", data)
+          console.log('LINK', `https://docs.google.com/${getFileTypeUrl(linkData.share.assetType)}/d/${data.data.fileId}`)
         });
     });
   };
@@ -137,19 +148,29 @@ function GoogleLink() {
   } else {
     return (
       <section>
-        {/*<ServiceHeader/>*/}
-         <div className={"vertical-flex top-margin-buffer"}>
-           <label>Enter your Google Account email here
-             <input
-               type="text"
-               name="email-input"
-               id="email-input"
-               onChange={(e) => setEmail(e.target.value)}
-             />
-           </label>
-           <Button label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit}>Request Access</Button>
-           <Button label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete}>Delete This Link</Button>
-         </div>
+        <Card className={'request-link-card'}>
+          {/*<ServiceHeader/>*/}
+          <CardHeader title={'Enter your Google Account email here'} />
+          {/*  Enter your Google Account email here*/}
+          {/*</CardHeader>*/}
+          <CardContent>
+            <TextField fullWidth autoFocus onChange={(e) => setEmail(e.target.value)}/>
+          </CardContent>
+          <CardActions className={'request-link-actions'}>
+             <Button variant={'outlined'} label="Delete This Link" className="top-margin-buffer" type="button" onClick={handleDelete}>Delete This Link</Button>
+             <Button disabled={!email.length} variant={'outlined'} label="Request Access" className="top-margin-buffer" type="button" onClick={handleSubmit}>View File</Button>
+          </CardActions>
+           {/*<div className={"vertical-flex top-margin-buffer"}>*/}
+           {/*  <label>Enter your Google Account email here*/}
+           {/*    <input*/}
+           {/*      type="text"*/}
+           {/*      name="email-input"*/}
+           {/*      id="email-input"*/}
+           {/*      onChange={(e) => setEmail(e.target.value)}*/}
+           {/*    />*/}
+           {/*  </label>*/}
+           {/*</div>*/}
+        </Card>
       </section>
     );
   }
