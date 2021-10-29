@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Avatar, Button, Card, Menu, MenuItem } from "@mui/material";
 import './ServiceHeader.scss';
@@ -6,9 +6,14 @@ import './ServiceHeader.scss';
 export default function ServiceHeader(props) {
   const serviceName = props.serviceName;
   const oauthServiceProvider = props.oauthServiceProvider;
-  const currentUser = props.currentUser;
+  let currentUser = props.currentUser;
   const [userOptionsAreOpen, setUserOptionsAreOpen] = useState(false);
   const open = Boolean(userOptionsAreOpen);
+
+  useEffect(() => {
+    currentUser = props.currentUser;
+    console.log('PROPOSPOPSO', props.currentUser)
+  }, [props])
 
   const handleUserMenuClick = (event) => {
     setUserOptionsAreOpen(event.currentTarget);

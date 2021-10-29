@@ -74,7 +74,20 @@ export default function GoogleGranting() {
   useEffect(() => {
     console.log('LOAD GOOGLE AUTH')
     loadGoogleAuth();
+    getAuthSig();
   }, []);
+
+  useEffect(() => {
+    const humanizeAccessControlConditions = async () => {
+      return await LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions,
+        myWalletAddress: storedAuthSig.address,
+      });
+    }
+    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
+      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
+    });
+  }, [accessControlConditions])
 
   const loadGoogleAuth = async () => {
     window.gapi.load("client:auth2", function () {
@@ -86,12 +99,18 @@ export default function GoogleGranting() {
         })
         .then((googleObject) => {
           if (googleObject.isSignedIn.get()) {
+            console.log('IS SIGNED IN')
             const currentUserObject = window.gapi.auth2
               .getAuthInstance().currentUser.get();
-            getLatestAccessToken(currentUserObject);
+            setLatestAccessToken(currentUserObject);
           }
         });
     });
+    window.gapi.load('picker', {'callback': onPickerApiLoad});
+  }
+
+  const onPickerApiLoad = () => {
+    // pickerApiLoaded = true;
   }
 
   const getAuthSig = async () => {
@@ -100,51 +119,20 @@ export default function GoogleGranting() {
     });
   }
 
-  const getLatestAccessToken = async (currentUserObject) => {
+  const setLatestAccessToken = async (currentUserObject) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
       const authSig = await getAuthSig()
       setStoredAuthSig(authSig);
-      // await storeToken(authSig, googleAuthResponse.id_token);
       const response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
-      console.log("RESP", response)
-      if (response.data === -1) {
-        return;
-      }
-      if (!!response.data["connectedServices"]) {
-        setConnectedServiceId(response.data.connectedServices[0].id);
-      }
-      await getGetCurrentUserProfile(response.data.userId, authSig);
+
+      setConnectedServiceId(() => response.data.connectedServices[0].id);
+      setCurrentUser(() => response.data.userProfile);
+      setToken(() => googleAuthResponse.accessToken);
+      await getAllShares();
     } catch(err) {
       setSnackbarInfo({
-        message: `Error verifying token:, ${err}`,
-        severity: 'error'
-      })
-      setOpenSnackbar(true);
-    }
-  }
-
-  const getGetCurrentUserProfile = async (uniqueId, authSig) => {
-    try {
-      const response = await asyncHelpers.getUserProfile(authSig, uniqueId)
-
-      if (response.data[0]) {
-        const userProfile = response.data[0];
-        setToken(userProfile.refreshToken);
-        const extraUserData = JSON.parse(userProfile.extraData);
-        const avatar = extraUserData.displayName.split(' ').map(s => s.split('')[0]).join(' ');
-        console.log('AVAT', response.data)
-        setCurrentUser({
-          displayName: extraUserData.displayName,
-          email: userProfile.email,
-          avatar: avatar,
-        });
-        setConnectedServiceId(userProfile.id);
-        await getAllShares();
-      }
-    } catch(err) {
-      setSnackbarInfo({
-        message: `Error loading user profile:, ${err}`,
+        message: `Error verifying user:, ${err}`,
         severity: 'error'
       })
       setOpenSnackbar(true);
@@ -162,11 +150,10 @@ export default function GoogleGranting() {
     try {
       const authResult = await window.gapi.auth2.getAuthInstance().grantOfflineAccess();
       if (authResult.code) {
-        console.log("AUTH RESULT", authResult.code);
-        setToken(authResult.code);
         await storeToken(authSig, authResult.code);
       }
     } catch(err) {
+      console.log('ERROR LOGGIN IN', err)
       setSnackbarInfo({
         message: `Error logging in: ${err}`,
         severity: 'error'
@@ -180,7 +167,19 @@ export default function GoogleGranting() {
       const response = await asyncHelpers.storeConnectedServiceAccessToken(authSig, token);
       console.log('RESPONSE!', response)
       if (!!response.data["connectedServices"]) {
-        setConnectedServiceId(response.data.connectedServices[0].id);
+        await setConnectedServiceId(response.data.connectedServices[0].id);
+        const googleAuthInstance = window.gapi.auth2
+          .getAuthInstance();
+        const currentUserObject = googleAuthInstance.currentUser.get()
+        setToken(googleAuthInstance.accessToken);
+        const userBasicProfile = currentUserObject.getBasicProfile();
+        const userProfile = {
+          email: userBasicProfile.getEmail(),
+          displayName: userBasicProfile.getName(),
+          givenName: userBasicProfile.getGivenName(),
+          avatar: userBasicProfile.getName().split(' ').map(s => s.split('')[0]).join(''),
+        };
+        setCurrentUser(() => userProfile);
       }
     } catch(err) {
       setSnackbarInfo({
@@ -198,20 +197,8 @@ export default function GoogleGranting() {
     });
     setAccessControlConditions([]);
     setToken("");
+    setCurrentUser({})
   };
-
-  useEffect(() => {
-    console.log('ACCESS CONTROL TEST')
-    const humanizeAccessControlConditions = async () => {
-      return await LitJsSdk.humanizeAccessControlConditions({
-        accessControlConditions,
-        myWalletAddress: storedAuthSig.address,
-      });
-    }
-    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
-      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
-    });
-  }, [accessControlConditions])
 
   const addToAccessControlConditions = async (r) => {
     const concatAccessControlConditions = accessControlConditions.concat(r);
@@ -233,14 +220,6 @@ export default function GoogleGranting() {
       chain: "ethereum",
     });
 
-    console.log('LINK LINK', link)
-
-    // const regex = /d\/(.{44})/g;
-    // let id = link.match(regex)[0];
-    // id = id.slice(2, id.length);
-
-    // const splitFileUri = link.split('/d/')[1];
-    // const id = splitFileUri.split('/')[0];
     const id = link.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
 
     const requestOptions = {
@@ -255,8 +234,6 @@ export default function GoogleGranting() {
       accessControlConditions: accessControlConditions,
       authSig,
     };
-
-    console.log('REQUEST DATA', requestData)
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
@@ -285,8 +262,7 @@ export default function GoogleGranting() {
         authSig,
         resourceId,
       });
-      // console.log("ACCESS CONTROL", humanized)
-      console.log("ACCESS CONTROL RAW", accessControlConditions)
+
       setAccessControlConditions([]);
       setSnackbarInfo({
         message: `New link created.`,
@@ -333,9 +309,18 @@ export default function GoogleGranting() {
   if (token === "") {
     return (
       <section>
+        {/*<div className="g-signin2" data-onsuccess="onSignIn"></div>*/}
         <Button onClick={() => authenticate("google")}>
           Connect your Google account
         </Button>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+        </Snackbar>
       </section>
     );
   }

@@ -104,25 +104,36 @@ export default async function (fastify, opts) {
     const payload = ticket.getPayload();
     const userId = payload["sub"];
 
-    console.log('PAYLOAD SUB', payload)
-
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", userId);
 
+    console.log('EXISTING ROWS', existingRows)
+
     if (!existingRows.length) {
-      return -1;
+      res.code(400);
+      return { error: 'User not found.' };
+    }
+
+    if (
+      payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
+      || userId !== existingRows[0].idOnService
+    ) {
+      res.code(400);
+      return { error: "Invalid signature" };
     }
 
     existingRows[0].patch({
       access_token: access_token,
+      email: email,
     });
 
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
         .where("user_id", "=", authSig.address)
+        .where("id_on_service", "=", userId)
         .where("service_name", "=", "google");
 
     const serialized = connectedGoogleServices.map((s) => ({
@@ -131,15 +142,17 @@ export default async function (fastify, opts) {
       idOnService: s.id_on_service,
     }));
 
+    // TODO: replace with google user photo
+    const avatar = payload.name.split(' ').map(s => s.split('')[0]).join('');
 
-    if (
-      payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
-    ) {
-      res.code(400);
-      return { error: "Invalid signature" };
-    } else {
-      return { connectedServices: serialized, userId };
-    }
+    const userProfile = {
+      email: payload.email,
+      displayName: payload.name,
+      givenName: payload.given_name,
+      avatar: avatar
+    };
+
+    return { connectedServices: serialized, userId, userProfile };
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
@@ -148,7 +161,7 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", uniqueId)
-      // .where("user_id", '=', req.body.authSig.address)
+      .where("user_id", '=', req.body.authSig.address)
 
     delete connectedServices[0].refreshToken;
     return connectedServices;
@@ -289,7 +302,7 @@ export default async function (fastify, opts) {
     )[0];
 
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -301,7 +314,6 @@ export default async function (fastify, opts) {
 
     const permission = {
       type: "user",
-      // role: roleMap[share.role],
       role: share.role,
       emailAddress: requestedEmail,
     };
@@ -309,6 +321,8 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+
+    console.log('FILEID', share)
 
     await drive.permissions.create({
       resource: permission,
