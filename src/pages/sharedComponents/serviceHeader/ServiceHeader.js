@@ -12,8 +12,7 @@ export default function ServiceHeader(props) {
 
   useEffect(() => {
     currentUser = props.currentUser;
-    console.log('PROPOSPOPSO', props.currentUser)
-  }, [props])
+  }, [props.currentUser])
 
   const handleUserMenuClick = (event) => {
     setUserOptionsAreOpen(event.currentTarget);
