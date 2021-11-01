@@ -14,18 +14,15 @@ import {
 } from "@mui/material";
 import './ProvisionAccessModal.scss';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useEffect } from "react";
 
 export default function ProvisionAccessModal(props) {
-
   let picker;
+  let pickerFileObj = {};
 
   const createPicker = () => {
-    // let view = new window.gapi.picker.DocsView(window.)
-    console.log('CREATE PICKER')
+    props.setOpenProvisionAccessDialog(false);
 
     if (props.accessToken?.length) {
-      console.log('PICKERR', google)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
         picker = new google.picker.PickerBuilder()
         .addView(view)
@@ -35,15 +32,19 @@ export default function ProvisionAccessModal(props) {
         .setCallback(pickerCallback)
           .build();
       picker.setVisible(true);
-      // console.log('GOOGLEAPI', google)
-      // const picker = new google.picker.PickerBuilder();
-      // picker.setOauthToken(props.accessToken);
-      // picker.setDeveloperKey(process.env.)
     }
   }
 
   const pickerCallback = (data) => {
-    console.log('GOOGLE PICKER DATA', data)
+    if (data?.action === 'loaded') {
+      return;
+    }
+    console.log('DATA FROM PICKER', data)
+    props.setOpenProvisionAccessDialog(true);
+    if (data?.action === 'picked') {
+      props.setLink(data.docs[0].embedUrl);
+      pickerFileObj = {...data.docs[0]};
+    }
   };
 
   return (
@@ -78,9 +79,28 @@ export default function ProvisionAccessModal(props) {
         </DialogContent>
         <DialogContent style={{ paddingTop: '0'}}>
           <section className={'provision-access-container'}>
-            <Button variant={'outlined'} onClick={() => createPicker()}>Choose File</Button>
             <p>Google Drive Link</p>
-            <TextField value={props.link} fullWidth autoFocus onChange={(e) => props.setLink(e.target.value)}/>
+            <span>
+              <TextField
+                disabled
+                value={props.link}
+                autoFocus
+                style={{ paddingLeft: '0 !important' }}
+                fullWidth
+                InputProps={{
+                  startAdornment: (
+                    <Button style={{ marginRight: '1rem' }} variant={'outlined'} onClick={() => createPicker()}>Choose File</Button>
+                  ),
+                  endAdornment: (
+                  <IconButton
+                    style={{marginLeft: '0.5rem' }}
+                    onClick={() => props.setLink('')}>
+                    <DeleteIcon />
+                  </IconButton>
+                  )
+                }}
+              />
+            </span>
             <p>Permission Level</p>
             <FormControl fullWidth>
               <Select

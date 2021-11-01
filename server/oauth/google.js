@@ -62,8 +62,6 @@ export default async function (fastify, opts) {
       connected_service_id = query.id;
     }
 
-    console.log("CONNECTED SERVICE DECLARE", connected_service_id);
-
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -108,8 +106,6 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", userId);
-
-    console.log('EXISTING ROWS', existingRows)
 
     if (!existingRows.length) {
       res.code(400);
@@ -168,7 +164,6 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/google/share", async (req, res) => {
-    console.log("REQ BODY", req.body);
     const { authSig, connectedServiceId } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
@@ -183,7 +178,7 @@ export default async function (fastify, opts) {
     )[0];
 
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -197,7 +192,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    console.log("CONNECTED SERVICE", connectedService);
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
     });
@@ -229,7 +223,7 @@ export default async function (fastify, opts) {
     const uuid = req.body.uuid;
     // get email from token
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -272,7 +266,6 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/shareLink", async (req, res) => {
     // Check the supplied JWT
-    console.log('REQ FINAL SHARELINK', req.body)
     const requestedEmail = req.body.email;
     const role = req.body.role;
     const uuid = req.body.uuid;
@@ -321,8 +314,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-
-    console.log('FILEID', share)
 
     await drive.permissions.create({
       resource: permission,

@@ -114,7 +114,6 @@ export default function GoogleGranting() {
             "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
         })
         .then((googleObject) => {
-          window.gapi.load('picker', {'callback': onPickerApiLoad});
           if (googleObject.isSignedIn.get()) {
             console.log('IS SIGNED IN')
             const currentUserObject = window.gapi.auth2
@@ -123,10 +122,10 @@ export default function GoogleGranting() {
           }
         });
     });
+    window.gapi.load('picker', {'callback': onPickerApiLoad});
   }
 
   const onPickerApiLoad = () => {
-    // pickerApiLoaded = true;
     console.log('PICKER LOADED')
   }
 
@@ -224,7 +223,6 @@ export default function GoogleGranting() {
   };
 
   const removeIthAccessControlCondition = async (i) => {
-    console.log("accessControl", accessControlConditions);
     let slice1 = accessControlConditions.slice(0, i);
     let slice2 = accessControlConditions.slice(
       i + 1,
@@ -268,12 +266,6 @@ export default function GoogleGranting() {
         extraData: "",
       };
 
-      console.log("ABOUT TO SAVE", {
-        accessControlConditions,
-        chain,
-        authSig,
-        resourceId,
-      });
       window.litNodeClient.saveSigningCondition({
         accessControlConditions,
         chain,
@@ -400,6 +392,7 @@ export default function GoogleGranting() {
         setRole={setRole}
         roleMap={googleRoleMap}
         openProvisionAccessDialog={openProvisionAccessDialog}
+        setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
       />
       {openShareModal && (
         <ShareModal
