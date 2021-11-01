@@ -380,8 +380,9 @@ export default function GoogleGranting() {
       <ProvisionAccessModal
         handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
         accessControlConditions={accessControlConditions}
-        humanizedAccessControlArray={humanizedAccessControlArray}
         removeIthAccessControlCondition={removeIthAccessControlCondition}
+        setAccessControlConditions={setAccessControlConditions}
+        humanizedAccessControlArray={humanizedAccessControlArray}
         handleAddAccessControl={handleAddAccessControl}
         handleGetShareLink={handleGetShareLink}
         accessToken={token}

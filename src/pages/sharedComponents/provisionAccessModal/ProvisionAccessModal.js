@@ -89,12 +89,15 @@ export default function ProvisionAccessModal(props) {
                 fullWidth
                 InputProps={{
                   startAdornment: (
-                    <Button style={{ marginRight: '1rem' }} variant={'outlined'} onClick={() => createPicker()}>Choose File</Button>
+                    <Button style={{ marginRight: '1rem', width: '10rem' }} onClick={() => createPicker()}>Choose File</Button>
                   ),
                   endAdornment: (
                   <IconButton
                     style={{marginLeft: '0.5rem' }}
-                    onClick={() => props.setLink('')}>
+                    onClick={() => {
+                      props.setLink('');
+                      props.setAccessControlConditions([]);
+                    }}>
                     <DeleteIcon />
                   </IconButton>
                   )
