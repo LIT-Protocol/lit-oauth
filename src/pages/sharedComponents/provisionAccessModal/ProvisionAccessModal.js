@@ -12,8 +12,31 @@ import {
 } from "@mui/material";
 import './ProvisionAccessModal.scss';
 import DeleteIcon from '@mui/icons-material/Delete';
+import useDrivePicker from "react-google-drive-picker";
+import { useEffect } from "react";
 
 export default function ProvisionAccessModal(props) {
+  const [openPicker, data, authResponse] = useDrivePicker();
+
+  useEffect(() => {})
+
+  const handleOpenPicker = () => {
+    openPicker({
+      // clientId: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      developerKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY,
+      viewId: "DOCS",
+      token: props.accessToken,
+      showUploadView: true,
+      showUploadFolders: true,
+      supportDrives: true,
+      multiselect: false,
+    })
+  }
+
+  const pickerCallback = (data) => {
+    console.log('GOOGLE PICKER DATA', data)
+  };
+
   return (
     <section>
       <Dialog maxWidth={'md'} fullWidth={true} open={props.openProvisionAccessDialog}>
@@ -46,6 +69,7 @@ export default function ProvisionAccessModal(props) {
         </DialogContent>
         <DialogContent style={{ paddingTop: '0'}}>
           <section className={'provision-access-container'}>
+            <Button variant={'outlined'} onClick={() => handleOpenPicker()}>Choose File</Button>
             <p>Google Drive Link</p>
             <TextField value={props.link} fullWidth autoFocus onChange={(e) => props.setLink(e.target.value)}/>
             <p>Permission Level</p>

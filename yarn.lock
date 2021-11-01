@@ -7401,7 +7401,7 @@ google-p12-pem@^3.0.3:
   dependencies:
     node-forge "^0.10.0"
 
-googleapis-common@^5.0.1, googleapis-common@^5.0.2:
+googleapis-common@^5.0.1:
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-5.0.5.tgz#4c7160be1ed7e4cc8cdbcdb6eac8a4b3a61dd782"
   integrity sha512-o2dgoW4x4fLIAN+IVAOccz3mEH8Lj1LP9c9BSSvkNJEn+U7UZh0WSr4fdH08x5VH7+sstIpd1lOYFZD0g7j4pw==
@@ -7412,14 +7412,6 @@ googleapis-common@^5.0.1, googleapis-common@^5.0.2:
     qs "^6.7.0"
     url-template "^2.0.8"
     uuid "^8.0.0"
-
-googleapis@^88.2.0:
-  version "88.2.0"
-  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-88.2.0.tgz#956cdc45ebce82215a246b1069eb475770408c26"
-  integrity sha512-z3iDvGVqaJ+4TZ7YulK530q5vkY0BifvAWqcu2JiUSgpnIHzsA89k005+McoaYB+lAgv7lPY2Y4OPMT6iloWRA==
-  dependencies:
-    google-auth-library "^7.0.2"
-    googleapis-common "^5.0.2"
 
 graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4:
   version "4.2.6"
@@ -11878,6 +11870,11 @@ react-error-overlay@^6.0.9:
   version "6.0.9"
   resolved "https://registry.yarnpkg.com/react-error-overlay/-/react-error-overlay-6.0.9.tgz#3c743010c9359608c375ecd6bc76f35d93995b0a"
   integrity sha512-nQTTcUu+ATDbrSD1BZHr5kgSD4oF8OFjxun8uAaL8RwPBacGBNPf/yAuVVdx17N8XNzRDMrZ9XcKZHCjPW+9ew==
+
+react-google-drive-picker@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.yarnpkg.com/react-google-drive-picker/-/react-google-drive-picker-1.1.4.tgz#dc6dfae2cb11d947358d9f8e02a3232632a98ddf"
+  integrity sha512-sXcr3yRD4rqp0JlPge31lrcAgwrsBIERB5IwPu0ZvDNR4RyEHUVLxm2QYRA/wz9lgcaY21oy9Foo96rAxLAbtw==
 
 react-input-autosize@^3.0.0:
   version "3.0.0"

@@ -72,9 +72,13 @@ export default function GoogleGranting() {
   }
 
   useEffect(() => {
-    console.log('LOAD GOOGLE AUTH')
-    loadGoogleAuth();
-    getAuthSig();
+    console.log('CHECK UP ON TOKEN', token)
+  }, [token])
+
+  useEffect(() => {
+    // getAuthSig();
+    // loadGoogleAuth();
+    loadAuth();
   }, []);
 
   useEffect(() => {
@@ -89,6 +93,18 @@ export default function GoogleGranting() {
     });
   }, [accessControlConditions])
 
+  const loadAuth = async () => {
+    try {
+      const litAuthResult = await LitJsSdk.checkAndSignAuthMessage({
+        chain: "ethereum",
+      });
+      setStoredAuthSig(() => litAuthResult)
+      await loadGoogleAuth();
+    } catch(err) {
+      console.log('LIT AUTH FAILURE', err)
+    }
+  }
+
   const loadGoogleAuth = async () => {
     window.gapi.load("client:auth2", function () {
       window.gapi.auth2
@@ -98,6 +114,7 @@ export default function GoogleGranting() {
             "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
         })
         .then((googleObject) => {
+          window.gapi.load('picker', {'callback': onPickerApiLoad});
           if (googleObject.isSignedIn.get()) {
             console.log('IS SIGNED IN')
             const currentUserObject = window.gapi.auth2
@@ -106,11 +123,11 @@ export default function GoogleGranting() {
           }
         });
     });
-    window.gapi.load('picker', {'callback': onPickerApiLoad});
   }
 
   const onPickerApiLoad = () => {
     // pickerApiLoaded = true;
+    console.log('PICKER LOADED')
   }
 
   const getAuthSig = async () => {
@@ -128,9 +145,10 @@ export default function GoogleGranting() {
 
       setConnectedServiceId(() => response.data.connectedServices[0].id);
       setCurrentUser(() => response.data.userProfile);
-      setToken(() => googleAuthResponse.accessToken);
+      setToken(() => googleAuthResponse.access_token);
       await getAllShares();
     } catch(err) {
+      console.log('Error verifying user:', err);
       setSnackbarInfo({
         message: `Error verifying user:, ${err}`,
         severity: 'error'
@@ -153,7 +171,7 @@ export default function GoogleGranting() {
         await storeToken(authSig, authResult.code);
       }
     } catch(err) {
-      console.log('ERROR LOGGIN IN', err)
+      console.log('Error logging in:', err)
       setSnackbarInfo({
         message: `Error logging in: ${err}`,
         severity: 'error'
@@ -165,13 +183,12 @@ export default function GoogleGranting() {
   const storeToken = async (authSig, token) => {
     try {
       const response = await asyncHelpers.storeConnectedServiceAccessToken(authSig, token);
-      console.log('RESPONSE!', response)
       if (!!response.data["connectedServices"]) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2
           .getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get()
-        setToken(googleAuthInstance.accessToken);
+        setToken(() => currentUserObject.getAuthResponse().access_token);
         const userBasicProfile = currentUserObject.getBasicProfile();
         const userProfile = {
           email: userBasicProfile.getEmail(),
@@ -182,6 +199,7 @@ export default function GoogleGranting() {
         setCurrentUser(() => userProfile);
       }
     } catch(err) {
+      console.log(`Error storing access token:, ${err}`)
       setSnackbarInfo({
         message: `Error storing access token:, ${err}`,
         severity: 'error'
@@ -271,6 +289,7 @@ export default function GoogleGranting() {
       setOpenSnackbar(true);
       await getAllShares();
     } catch(err) {
+      console.log(`'Error sharing share', ${err}`)
       setSnackbarInfo({
         message: `'Error sharing share', ${err}`,
         severity: 'error'
@@ -289,6 +308,7 @@ export default function GoogleGranting() {
       });
       setOpenSnackbar(true);
     } catch(err) {
+      console.log(`'Error deleting share', ${err}`)
       setSnackbarInfo({
         message: `'Error deleting share', ${err}`,
         severity: 'error'
@@ -306,10 +326,28 @@ export default function GoogleGranting() {
     await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
   }
 
+
+  if (!storedAuthSig.sig) {
+    return (
+      <section>
+        <p>
+          Login with your wallet to proceed.
+        </p>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+        </Snackbar>
+      </section>
+    );
+  }
+
   if (token === "") {
     return (
       <section>
-        {/*<div className="g-signin2" data-onsuccess="onSignIn"></div>*/}
         <Button onClick={() => authenticate("google")}>
           Connect your Google account
         </Button>
@@ -326,9 +364,7 @@ export default function GoogleGranting() {
   }
 
   return (
-    // <section className={"vertical-flex"}>
     <section className={"service-grid-container"}>
-      {/*TODO: remove 'vertical-flex' from class*/}
       <div className={'service-grid-header'}>
         <ServiceHeader
           serviceName={"Google Drive App"}
@@ -337,8 +373,6 @@ export default function GoogleGranting() {
           signOut={signOut}
         />
       </div>
-      {/*TODO: remove span spacer and orient with html grid*/}
-      {/*<span style={{height: '15vh'}}></span>*/}
       <div className={'service-grid-links'}>
         <ServiceLinks
           className={"service-links"}
@@ -358,13 +392,14 @@ export default function GoogleGranting() {
         removeIthAccessControlCondition={removeIthAccessControlCondition}
         handleAddAccessControl={handleAddAccessControl}
         handleGetShareLink={handleGetShareLink}
+        accessToken={token}
         authSig={storedAuthSig}
         link={link}
         setLink={setLink}
-        openProvisionAccessDialog={openProvisionAccessDialog}
-        setRole={setRole}
         role={role}
+        setRole={setRole}
         roleMap={googleRoleMap}
+        openProvisionAccessDialog={openProvisionAccessDialog}
       />
       {openShareModal && (
         <ShareModal
