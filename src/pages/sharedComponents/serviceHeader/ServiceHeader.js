@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Avatar, Button, Card, Menu, MenuItem } from "@mui/material";
 import './ServiceHeader.scss';
@@ -6,10 +6,13 @@ import './ServiceHeader.scss';
 export default function ServiceHeader(props) {
   const serviceName = props.serviceName;
   const oauthServiceProvider = props.oauthServiceProvider;
-  const currentUser = props.currentUser;
-  const currentUserEmail = props.currentUserEmail;
+  let currentUser = props.currentUser;
   const [userOptionsAreOpen, setUserOptionsAreOpen] = useState(false);
   const open = Boolean(userOptionsAreOpen);
+
+  useEffect(() => {
+    currentUser = props.currentUser;
+  }, [props.currentUser])
 
   const handleUserMenuClick = (event) => {
     setUserOptionsAreOpen(event.currentTarget);
@@ -29,6 +32,7 @@ export default function ServiceHeader(props) {
   return (
     <Card className={'header-card'}>
       <span className={'header-left'}>
+        {/*<img src={require('props.serviceImage')}/>*/}
         <Avatar className={'right-buffer'}>G</Avatar>
         <h2>{serviceName}</h2>
       </span>
@@ -40,13 +44,13 @@ export default function ServiceHeader(props) {
           onClick={handleUserMenuClick}
           className={'header-user-menu'}
         >
-          <Avatar className={'right-buffer'}>KM</Avatar>
+          <Avatar className={'right-buffer'}>{currentUser.avatar}</Avatar>
           <div className={'user-info right-buffer'}>
             <span className={'user-name'}>
-              {currentUser}
+              {currentUser.displayName}
             </span>
             <span className={'user-email'}>
-              {currentUserEmail}
+              {currentUser.email}
             </span>
           </div>
           <KeyboardArrowDownIcon />

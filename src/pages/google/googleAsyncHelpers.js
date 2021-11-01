@@ -2,11 +2,11 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const verifyToken = async (authSig, id_token) => {
+export const verifyToken = async (authSig, googleAuthResponse) => {
   return await axios
     .post(API_HOST + "/api/google/verifyToken", {
       authSig,
-      id_token,
+      googleAuthResponse,
     });
 }
 

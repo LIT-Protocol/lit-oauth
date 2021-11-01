@@ -5,9 +5,14 @@ import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
 import ProvisionAccessModal from "../sharedComponents/provisionAccessModal/ProvisionAccessModal";
-import { Button, Snackbar } from "@mui/material";
+import {
+  Alert,
+  Button, Snackbar,
+} from "@mui/material";
+// import googleDriveLogo from '../../assets/googledrive.png';
 
-import * as asyncHelpers from "./googleAsyncHelpers.js";
+import './GoogleGranting.scss';
+import * as asyncHelpers from './googleAsyncHelpers.js';
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -30,17 +35,14 @@ export default function GoogleGranting() {
   const [accessControlConditions, setAccessControlConditions] = useState([]);
   const [role, setRole] = useState("reader");
   const [currentUser, setCurrentUser] = useState({});
-  const [pickerLoaded, setPickerLoaded] = useState(false);
+  const [storedAuthSig, setStoredAuthSig] = useState({});
+  const [humanizedAccessControlArray, setHumanizedAccessControlArray] = useState([]);
 
   const [openShareModal, setOpenShareModal] = useState(false);
   const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
     useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const handleOpenProvisionAccessDialog = () => {
-    setOpenProvisionAccessDialog(true);
-  };
+  const [snackbarInfo, setSnackbarInfo] = useState({});
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -49,12 +51,18 @@ export default function GoogleGranting() {
 
   const handleGetShareLink = async () => {
     setOpenProvisionAccessDialog(false);
+    setLink('');
     await handleSubmit();
+  };
+
+  const handleOpenProvisionAccessDialog = () => {
+    setOpenProvisionAccessDialog(true);
   };
 
   const handleCancelProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(false);
     setAccessControlConditions([]);
+    setLink('');
   };
 
   const handleCloseSnackbar = (event, reason) => {
@@ -65,8 +73,38 @@ export default function GoogleGranting() {
   };
 
   useEffect(() => {
-    loadGoogleAuth();
+    console.log('CHECK UP ON TOKEN', token)
+  }, [token])
+
+  useEffect(() => {
+    // getAuthSig();
+    // loadGoogleAuth();
+    loadAuth();
   }, []);
+
+  useEffect(() => {
+    const humanizeAccessControlConditions = async () => {
+      return await LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions,
+        myWalletAddress: storedAuthSig.address,
+      });
+    }
+    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
+      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
+    });
+  }, [accessControlConditions])
+
+  const loadAuth = async () => {
+    try {
+      const litAuthResult = await LitJsSdk.checkAndSignAuthMessage({
+        chain: "ethereum",
+      });
+      setStoredAuthSig(() => litAuthResult)
+      await loadGoogleAuth();
+    } catch(err) {
+      console.log('LIT AUTH FAILURE', err)
+    }
+  }
 
   const loadGoogleAuth = async () => {
     window.gapi.load("picker", function () {
@@ -81,14 +119,19 @@ export default function GoogleGranting() {
         })
         .then((googleObject) => {
           if (googleObject.isSignedIn.get()) {
+            console.log('IS SIGNED IN')
             const currentUserObject = window.gapi.auth2
-              .getAuthInstance()
-              .currentUser.get();
-            getLatestRefreshToken(currentUserObject);
+              .getAuthInstance().currentUser.get();
+            setLatestAccessToken(currentUserObject);
           }
         });
     });
-  };
+    window.gapi.load('picker', {'callback': onPickerApiLoad});
+  }
+
+  const onPickerApiLoad = () => {
+    console.log('PICKER LOADED')
+  }
 
   const getAuthSig = async () => {
     return await LitJsSdk.checkAndSignAuthMessage({
@@ -96,42 +139,35 @@ export default function GoogleGranting() {
     });
   };
 
-  const getLatestRefreshToken = async (currentUserObject) => {
-    const id_token = currentUserObject.getAuthResponse().id_token;
+  const setLatestAccessToken = async (currentUserObject) => {
+    const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
-      const authSig = await getAuthSig();
-      const response = await asyncHelpers.verifyToken(authSig, id_token);
-      await getGetCurrentUserProfile(response.data, authSig);
-    } catch (err) {
-      console.log("Error verifying token:", err);
-    }
-  };
+      const authSig = await getAuthSig()
+      setStoredAuthSig(authSig);
+      const response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
 
-  const getGetCurrentUserProfile = async (uniqueId, authSig) => {
-    try {
-      const response = await asyncHelpers.getUserProfile(authSig, uniqueId);
-
-      if (response.data[0]) {
-        const userProfile = response.data[0];
-        setToken(userProfile.refreshToken);
-        setCurrentUser({
-          email: userProfile.email,
-        });
-        setConnectedServiceId(userProfile.id);
-        await getAllShares();
-      }
-    } catch (err) {
-      console.log("Error loading user profile:", err);
+      setConnectedServiceId(() => response.data.connectedServices[0].id);
+      setCurrentUser(() => response.data.userProfile);
+      setToken(() => googleAuthResponse.access_token);
+      await getAllShares();
+    } catch(err) {
+      console.log('Error verifying user:', err);
+      setSnackbarInfo({
+        message: `Error verifying user:, ${err}`,
+        severity: 'error'
+      })
+      setOpenSnackbar(true);
     }
   };
 
   const getAllShares = async () => {
     const allShares = await asyncHelpers.getAllShares();
-    setAllShares(allShares.data);
-  };
+    setAllShares(allShares.data.reverse());
+  }
 
   const authenticate = async () => {
     const authSig = await getAuthSig();
+    setStoredAuthSig(authSig);
     try {
       const authResult = await window.gapi.auth2
         .getAuthInstance()
@@ -139,12 +175,15 @@ export default function GoogleGranting() {
           scope: "https://www.googleapis.com/auth/drive.file",
         });
       if (authResult.code) {
-        console.log("AUTH RESULT", authResult.code);
-        setToken(authResult.code);
         await storeToken(authSig, authResult.code);
       }
-    } catch (err) {
-      console.log("Error loggin in:", err);
+    } catch(err) {
+      console.log('Error logging in:', err)
+      setSnackbarInfo({
+        message: `Error logging in: ${err}`,
+        severity: 'error'
+      })
+      setOpenSnackbar(true);
     }
   };
 
@@ -155,10 +194,27 @@ export default function GoogleGranting() {
         token
       );
       if (!!response.data["connectedServices"]) {
-        setConnectedServiceId(response.data.connectedServices[0].id);
+        await setConnectedServiceId(response.data.connectedServices[0].id);
+        const googleAuthInstance = window.gapi.auth2
+          .getAuthInstance();
+        const currentUserObject = googleAuthInstance.currentUser.get()
+        setToken(() => currentUserObject.getAuthResponse().access_token);
+        const userBasicProfile = currentUserObject.getBasicProfile();
+        const userProfile = {
+          email: userBasicProfile.getEmail(),
+          displayName: userBasicProfile.getName(),
+          givenName: userBasicProfile.getGivenName(),
+          avatar: userBasicProfile.getName().split(' ').map(s => s.split('')[0]).join(''),
+        };
+        setCurrentUser(() => userProfile);
       }
-    } catch (err) {
-      console.log("Error storing access token:", err);
+    } catch(err) {
+      console.log(`Error storing access token:, ${err}`)
+      setSnackbarInfo({
+        message: `Error storing access token:, ${err}`,
+        severity: 'error'
+      })
+      setOpenSnackbar(true);
     }
   };
 
@@ -169,6 +225,7 @@ export default function GoogleGranting() {
     });
     setAccessControlConditions([]);
     setToken("");
+    setCurrentUser({})
   };
 
   const addToAccessControlConditions = async (r) => {
@@ -176,8 +233,7 @@ export default function GoogleGranting() {
     await setAccessControlConditions(concatAccessControlConditions);
   };
 
-  const removeIthAccessControlCondition = (i) => {
-    console.log("accessControl", accessControlConditions);
+  const removeIthAccessControlCondition = async (i) => {
     let slice1 = accessControlConditions.slice(0, i);
     let slice2 = accessControlConditions.slice(
       i + 1,
@@ -191,14 +247,7 @@ export default function GoogleGranting() {
       chain: "ethereum",
     });
 
-    console.log("LINK LINK", link);
-
-    // const regex = /d\/(.{44})/g;
-    // let id = link.match(regex)[0];
-    // id = id.slice(2, id.length);
-
-    const splitFileUri = link.split("/d/")[1];
-    const id = splitFileUri.split("/")[0];
+    const id = link.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
 
     const requestOptions = {
       method: "POST",
@@ -213,47 +262,42 @@ export default function GoogleGranting() {
       authSig,
     };
 
-    console.log("REQUEST DATA", requestData);
-
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
       const { data } = response;
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
-      const authSig = await LitJsSdk.checkAndSignAuthMessage({
-        chain,
-      });
+      const authSig = await getAuthSig();
       const resourceId = {
         baseUrl: API_HOST,
-        path: "/l/" + uuid,
+        path: "/google/l/" + uuid,
         orgId: "",
         role: role.toString(),
         extraData: "",
       };
 
-      console.log("ABOUT TO SAVE", {
-        accessControlConditions,
-        chain,
-        authSig,
-        resourceId,
-      });
       window.litNodeClient.saveSigningCondition({
         accessControlConditions,
         chain,
         authSig,
         resourceId,
       });
-      const humanized = await LitJsSdk.humanizeAccessControlConditions({
-        accessControlConditions,
-        myWalletAddress: authSig.address,
-      });
-      console.log("ACCESS CONTROL", humanized);
-      console.log("ACCESS CONTROL RAW", accessControlConditions);
+
       setAccessControlConditions([]);
+      setSnackbarInfo({
+        message: `New link created.`,
+        severity: 'success'
+      });
+      setOpenSnackbar(true);
       await getAllShares();
-    } catch (err) {
-      console.log("Error sharing link:", err);
+    } catch(err) {
+      console.log(`'Error sharing share', ${err}`)
+      setSnackbarInfo({
+        message: `'Error sharing share', ${err}`,
+        severity: 'error'
+      });
+      setOpenSnackbar(true);
     }
   };
 
@@ -261,18 +305,48 @@ export default function GoogleGranting() {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares();
-      setSnackbarMessage(`${shareInfo.name} has been deleted.`);
+      setSnackbarInfo({
+        message: `${shareInfo.name} has been deleted.`,
+        severity: 'success'
+      });
       setOpenSnackbar(true);
-    } catch (err) {
-      console.log("Error deleting share", err);
+    } catch(err) {
+      console.log(`'Error deleting share', ${err}`)
+      setSnackbarInfo({
+        message: `'Error deleting share', ${err}`,
+        severity: 'error'
+      });
+      setOpenSnackbar(true);
     }
   };
 
   const getLinkFromShare = async (linkUuid) => {
-    setSnackbarMessage(`Link has been copied to clipboard.`);
+    setSnackbarInfo({
+      message: `Link has been copied to clipboard.`,
+      severity: 'info'
+    })
     setOpenSnackbar(true);
-    await navigator.clipboard.writeText(FRONT_END_HOST + "/l/" + linkUuid);
-  };
+    await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
+  }
+
+
+  if (!storedAuthSig.sig) {
+    return (
+      <section>
+        <p>
+          Login with your wallet to proceed.
+        </p>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+        </Snackbar>
+      </section>
+    );
+  }
 
   if (token === "") {
     return (
@@ -280,44 +354,57 @@ export default function GoogleGranting() {
         <Button onClick={() => authenticate("google")}>
           Connect your Google account
         </Button>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+        </Snackbar>
       </section>
     );
   }
 
   return (
-    <section className={"vertical-flex"}>
-      {/*TODO: remove 'vertical-flex' from class*/}
-      <ServiceHeader
-        serviceName={"Google Drive App"}
-        oauthServiceProvider={"Google"}
-        currentUser={"Comrade Marx"}
-        currentUserEmail={currentUser.email}
-        signOut={signOut}
-      />
-      {/*TODO: remove span spacer and orient with html grid*/}
-      <span style={{ height: "8rem" }}></span>
-      <ServiceLinks
-        className={"top-large-margin-buffer"}
-        serviceName={"Drive"}
-        handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-        handleEditLinkAction={() => console.log("EDIT CLICKED")}
-        handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
-        handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}
-        handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
-        listOfShares={allShares}
-      />
+    <section className={"service-grid-container"}>
+      <div className={'service-grid-header'}>
+        <ServiceHeader
+          serviceName={"Google Drive App"}
+          oauthServiceProvider={"Google"}
+          currentUser={currentUser}
+          signOut={signOut}
+        />
+      </div>
+      <div className={'service-grid-links'}>
+        <ServiceLinks
+          className={"service-links"}
+          serviceName={"Drive"}
+          handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
+          handleEditLinkAction={() => console.log('EDIT CLICKED')}
+          handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
+          handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
+          handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
+          listOfShares={allShares}
+        />
+      </div>
       <ProvisionAccessModal
         handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
         accessControlConditions={accessControlConditions}
         removeIthAccessControlCondition={removeIthAccessControlCondition}
+        setAccessControlConditions={setAccessControlConditions}
+        humanizedAccessControlArray={humanizedAccessControlArray}
         handleAddAccessControl={handleAddAccessControl}
         handleGetShareLink={handleGetShareLink}
+        accessToken={token}
+        authSig={storedAuthSig}
         link={link}
         setLink={setLink}
-        openProvisionAccessDialog={openProvisionAccessDialog}
-        setRole={setRole}
         role={role}
+        setRole={setRole}
         roleMap={googleRoleMap}
+        openProvisionAccessDialog={openProvisionAccessDialog}
+        setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
       />
       {openShareModal && (
         <ShareModal
@@ -334,11 +421,13 @@ export default function GoogleGranting() {
       )}
 
       <Snackbar
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
-        message={snackbarMessage}
-      />
+      >
+        <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+      </Snackbar>
     </section>
   );
 }

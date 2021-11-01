@@ -18,6 +18,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
+import { DateTime } from "luxon";
+import { DATETIME_MED } from "luxon/src/impl/formats";
 
 export default function ServiceLinks(props) {
 
@@ -71,7 +73,7 @@ export default function ServiceLinks(props) {
                   <TableCell align="left">{getAccessControlConditions(share.accessControlConditions)}</TableCell>
                   <TableCell align="left">{share.assetType}</TableCell>
                   <TableCell align="left">{share.role}</TableCell>
-                  <TableCell align="left">{share.createdAt}</TableCell>
+                  <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">
                     <span className={'links-actions'}>
                       <IconButton size={'small'} onClick={props.handleEditLinkAction}>
@@ -104,7 +106,7 @@ export default function ServiceLinks(props) {
       >
         <DialogTitle>Warning</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete link titles -name here eventually-?
+          Are you sure you want to delete link titled <strong>{deleteShareInfo.name}</strong>?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteWarningModal(false)}>

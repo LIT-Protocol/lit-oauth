@@ -6,7 +6,7 @@ import { parseJwt } from "../utils.js";
 export default async function (fastify, opts) {
   // store the user's access token
   fastify.post("/api/google/connect", async (req, res) => {
-    const { authSig } = req.body;
+    const { authSig, token } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -18,7 +18,7 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    const { tokens } = await oauth_client.getToken(req.body.token);
+    const { tokens } = await oauth_client.getToken(token);
     oauth_client.setCredentials(tokens);
 
     const parsedJwt = parseJwt(tokens.id_token);
@@ -62,8 +62,6 @@ export default async function (fastify, opts) {
       connected_service_id = query.id;
     }
 
-    console.log("CONNECTED SERVICE DECLARE", connected_service_id);
-
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -89,38 +87,83 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/google/verifyToken", async (req, res) => {
+    const { id_token, access_token, email } =  req.body.googleAuthResponse;
+    const authSig = req.body.authSig;
+
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
     );
 
     const ticket = await oauth_client.verifyIdToken({
-      idToken: req.body.id_token,
+      idToken: id_token,
       audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
     });
+
     const payload = ticket.getPayload();
     const userId = payload["sub"];
 
+    const existingRows = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("id_on_service", "=", userId);
+
+    if (!existingRows.length) {
+      res.code(400);
+      return { error: 'User not found.' };
+    }
+
     if (
       payload.aud !== process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
+      || userId !== existingRows[0].idOnService
     ) {
       res.code(400);
       return { error: "Invalid signature" };
-    } else {
-      return userId;
     }
+
+    existingRows[0].patch({
+      access_token: access_token,
+      email: email,
+    });
+
+    const connectedGoogleServices =
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("user_id", "=", authSig.address)
+        .where("id_on_service", "=", userId)
+        .where("service_name", "=", "google");
+
+    const serialized = connectedGoogleServices.map((s) => ({
+      id: s.id,
+      email: s.email,
+      idOnService: s.id_on_service,
+    }));
+
+    // TODO: replace with google user photo
+    const avatar = payload.name.split(' ').map(s => s.split('')[0]).join('');
+
+    const userProfile = {
+      email: payload.email,
+      displayName: payload.name,
+      givenName: payload.given_name,
+      avatar: avatar
+    };
+
+    return { connectedServices: serialized, userId, userProfile };
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
     const uniqueId = req.body.uniqueId.toString();
-    return await fastify.objection.models.connectedServices
+    const connectedServices = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      // .where("id_on_service", "=", uniqueId)
-      // .where("user_id", '=', req.body.authSig.address)
+      .where("id_on_service", "=", uniqueId)
+      .where("user_id", '=', req.body.authSig.address)
+
+    delete connectedServices[0].refreshToken;
+    return connectedServices;
   })
 
   fastify.post("/api/google/share", async (req, res) => {
-    console.log("REQ BODY", req.body);
     const { authSig, connectedServiceId } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
@@ -135,7 +178,7 @@ export default async function (fastify, opts) {
     )[0];
 
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -149,8 +192,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    console.log('DRIVE', drive)
-    console.log("CONNECTED SERVICE", connectedService);
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
     });
@@ -182,7 +223,7 @@ export default async function (fastify, opts) {
     const uuid = req.body.uuid;
     // get email from token
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -225,7 +266,6 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/shareLink", async (req, res) => {
     // Check the supplied JWT
-    console.log('REQ FINAL SHARELINK', req.body)
     const requestedEmail = req.body.email;
     const role = req.body.role;
     const uuid = req.body.uuid;
@@ -235,7 +275,7 @@ export default async function (fastify, opts) {
       !verified ||
       payload.baseUrl !==
         `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
-      payload.path !== "/l/" + uuid ||
+      payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
       payload.extraData !== ""
@@ -255,7 +295,7 @@ export default async function (fastify, opts) {
     )[0];
 
     const oauth_client = new google.auth.OAuth2(
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
@@ -267,7 +307,6 @@ export default async function (fastify, opts) {
 
     const permission = {
       type: "user",
-      // role: roleMap[share.role],
       role: share.role,
       emailAddress: requestedEmail,
     };
