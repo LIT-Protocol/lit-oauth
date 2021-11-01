@@ -20,10 +20,10 @@ const GOOGLE_CLIENT_KEY =
   process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 
 const googleRoleMap = {
-  Read: 'reader',
-  Comment: 'commenter',
-  Write: 'writer',
-}
+  Read: "reader",
+  Comment: "commenter",
+  Write: "writer",
+};
 
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
@@ -33,26 +33,27 @@ export default function GoogleGranting() {
   const [token, setToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [role, setRole] = useState('reader');
+  const [role, setRole] = useState("reader");
   const [currentUser, setCurrentUser] = useState({});
   const [storedAuthSig, setStoredAuthSig] = useState({});
   const [humanizedAccessControlArray, setHumanizedAccessControlArray] = useState([]);
 
   const [openShareModal, setOpenShareModal] = useState(false);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] = useState(false);
+  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
+    useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
     setOpenProvisionAccessDialog(false);
-  }
+  };
 
   const handleGetShareLink = async () => {
     setOpenProvisionAccessDialog(false);
     setLink('');
     await handleSubmit();
-  }
+  };
 
   const handleOpenProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(true);
@@ -65,11 +66,11 @@ export default function GoogleGranting() {
   };
 
   const handleCloseSnackbar = (event, reason) => {
-    if (reason === 'clickaway') {
+    if (reason === "clickaway") {
       return;
     }
     setOpenSnackbar(false);
-  }
+  };
 
   useEffect(() => {
     console.log('CHECK UP ON TOKEN', token)
@@ -106,12 +107,15 @@ export default function GoogleGranting() {
   }
 
   const loadGoogleAuth = async () => {
+    window.gapi.load("picker", function () {
+      setPickerLoaded(true);
+      console.log("picker loaded");
+    });
     window.gapi.load("client:auth2", function () {
       window.gapi.auth2
         .init({
           client_id: GOOGLE_CLIENT_KEY,
-          scope:
-            "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.file",
+          scope: "https://www.googleapis.com/auth/drive.file",
         })
         .then((googleObject) => {
           if (googleObject.isSignedIn.get()) {
@@ -133,7 +137,7 @@ export default function GoogleGranting() {
     return await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-  }
+  };
 
   const setLatestAccessToken = async (currentUserObject) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
@@ -154,7 +158,7 @@ export default function GoogleGranting() {
       })
       setOpenSnackbar(true);
     }
-  }
+  };
 
   const getAllShares = async () => {
     const allShares = await asyncHelpers.getAllShares();
@@ -165,7 +169,11 @@ export default function GoogleGranting() {
     const authSig = await getAuthSig();
     setStoredAuthSig(authSig);
     try {
-      const authResult = await window.gapi.auth2.getAuthInstance().grantOfflineAccess();
+      const authResult = await window.gapi.auth2
+        .getAuthInstance()
+        .grantOfflineAccess({
+          scope: "https://www.googleapis.com/auth/drive.file",
+        });
       if (authResult.code) {
         await storeToken(authSig, authResult.code);
       }
@@ -177,11 +185,14 @@ export default function GoogleGranting() {
       })
       setOpenSnackbar(true);
     }
-  }
+  };
 
   const storeToken = async (authSig, token) => {
     try {
-      const response = await asyncHelpers.storeConnectedServiceAccessToken(authSig, token);
+      const response = await asyncHelpers.storeConnectedServiceAccessToken(
+        authSig,
+        token
+      );
       if (!!response.data["connectedServices"]) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2
@@ -205,7 +216,7 @@ export default function GoogleGranting() {
       })
       setOpenSnackbar(true);
     }
-  }
+  };
 
   const signOut = () => {
     const auth2 = window.gapi.auth2.getAuthInstance();
@@ -307,7 +318,7 @@ export default function GoogleGranting() {
       });
       setOpenSnackbar(true);
     }
-  }
+  };
 
   const getLinkFromShare = async (linkUuid) => {
     setSnackbarInfo({
