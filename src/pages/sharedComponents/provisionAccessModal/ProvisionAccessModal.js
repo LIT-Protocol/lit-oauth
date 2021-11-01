@@ -20,12 +20,6 @@ export default function ProvisionAccessModal(props) {
 
   let picker;
 
-  useEffect(() => {
-    if(data){
-      data.docs.map(i => console.log(i.name))
-    }
-  }, [data])
-
   const createPicker = () => {
     // let view = new window.gapi.picker.DocsView(window.)
     console.log('CREATE PICKER')
@@ -36,6 +30,7 @@ export default function ProvisionAccessModal(props) {
         picker = new google.picker.PickerBuilder()
         .addView(view)
         .setOAuthToken(props.accessToken)
+        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY)
         .setCallback(pickerCallback)
           .build();
