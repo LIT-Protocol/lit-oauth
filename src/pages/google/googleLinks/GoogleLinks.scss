@@ -1,0 +1,21 @@
+.links-card {
+  border: 0px solid transparent;
+  //width: 81rem;
+  margin: 0 auto;
+  box-shadow: none;
+}
+
+.links-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 90%;
+  margin: 0 auto;
+}
+
+.links-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}

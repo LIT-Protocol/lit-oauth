@@ -6,7 +6,7 @@ import { ProgressSpin } from "@consta/uikit/ProgressSpin";
 
 import LitJsSdk from "lit-js-sdk";
 import { getResourceIdForMeeting } from "./utils";
-import { getShares, getMeetingUrl } from "./api";
+import { getShares, getMeetingUrl } from "./zoomAsyncHelpers";
 import { useAppContext } from "../../context";
 
 export default function ZoomAccess() {

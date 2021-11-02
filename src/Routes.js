@@ -3,12 +3,14 @@ import { Route, Switch } from "react-router-dom";
 import { URL_MAP } from "./config";
 import ZoomAccess from "./pages/zoom/ZoomAccess";
 import ZoomGranting from "./pages/zoom/ZoomGranting";
-import GoogleContainer from "./pages/google/GoogleContainer";
+import GoogleGranting from "./pages/google/GoogleGranting";
+import GoogleLink from "./pages/google/GoogleLink";
 
 const ROUTING_COMPONENTS = {
+  GoogleGranting: GoogleGranting,
+  GoogleLink: GoogleLink,
   ZoomGranting: ZoomGranting,
   ZoomAccess: ZoomAccess,
-  GoogleContainer: GoogleContainer,
 };
 
 const Routes = () => {

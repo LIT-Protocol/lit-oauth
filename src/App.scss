@@ -1,6 +1,5 @@
 .App {
   text-align: center;
-  margin-top: 24px;
 }
 
 .split {
@@ -11,6 +10,8 @@
 .vertical-flex {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .top-margin-buffer {
@@ -19,4 +20,16 @@
 
 .left-margin-buffer {
   margin-left: 1rem;
+}
+
+h1, h2, h3, h4 {
+  font-weight: 500;
+}
+
+.picker-dialog-bg {
+  z-index: 100 !important;
+}
+
+.picker-dialog {
+  z-index: 101 !important;
 }
