@@ -244,7 +244,7 @@ export default async function (fastify, opts) {
     // get email from token
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
     const { tokens } = await oauth_client.getToken(req.body.token);
@@ -316,7 +316,7 @@ export default async function (fastify, opts) {
 
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
 
