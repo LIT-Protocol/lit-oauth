@@ -90,7 +90,7 @@ export default function ProvisionAccessModal(props) {
         </DialogContent>
         <DialogContent style={{ paddingTop: "0" }}>
           <section className={"provision-access-container"}>
-            <p>Google Drive Link</p>
+            <p>Google Drive File</p>
             <span>
               <TextField
                 disabled
