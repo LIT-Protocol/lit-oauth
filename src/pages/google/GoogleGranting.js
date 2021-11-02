@@ -419,6 +419,7 @@ export default function GoogleGranting() {
       />
       {openShareModal && (
         <ShareModal
+          showStep="ableToAccess"
           className={"share-modal"}
           show={false}
           onClose={() => setOpenShareModal(false)}
