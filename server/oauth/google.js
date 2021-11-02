@@ -86,24 +86,7 @@ export default async function (fastify, opts) {
     return { connectedServices: serialized };
   });
 
-  fastify.post('/api/google/getAllShares', async (req, res) => {
-    const authSig = req.body.authSig;
-
-    const connectedService =  await fastify.objection.models.connectedServices.query()
-      .where('service_name', '=', 'google')
-      .where('user_id', '=', authSig.address);
-
-    return await fastify.objection.models.shares.query()
-      .where('connected_service_id', '=', connectedService[0].id)
-      .where('user_id', '=', connectedService[0].userId);
-  })
-
-  fastify.post('/api/google/deleteShare', async(req, res) => {
-    const shareUuid = req.body.uuid;
-    return await fastify.objection.models.shares.query().delete()
-      .where('id', '=', shareUuid);
-  })
-
+  // verify token and update if necessary
   fastify.post("/api/google/verifyToken", async (req, res) => {
     const { id_token, access_token, email } =  req.body.googleAuthResponse;
     const authSig = req.body.authSig;
@@ -143,6 +126,15 @@ export default async function (fastify, opts) {
       email: email,
     });
 
+    await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("id_on_service", "=", userId)
+      .patch({
+        access_token: access_token,
+        email: email,
+      });
+
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -168,6 +160,25 @@ export default async function (fastify, opts) {
 
     return { connectedServices: serialized, userId, userProfile };
   });
+
+
+  fastify.post('/api/google/getAllShares', async (req, res) => {
+    const authSig = req.body.authSig;
+
+    const connectedService =  await fastify.objection.models.connectedServices.query()
+      .where('service_name', '=', 'google')
+      .where('user_id', '=', authSig.address);
+
+    return await fastify.objection.models.shares.query()
+      .where('connected_service_id', '=', connectedService[0].id)
+      .where('user_id', '=', connectedService[0].userId);
+  })
+
+  fastify.post('/api/google/deleteShare', async(req, res) => {
+    const shareUuid = req.body.uuid;
+    return await fastify.objection.models.shares.query().delete()
+      .where('id', '=', shareUuid);
+  })
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
     const uniqueId = req.body.uniqueId.toString();
@@ -342,8 +353,7 @@ export default async function (fastify, opts) {
         fields: "id",
       });
     } catch(err) {
-      console.log('ERORORORE', err.code)
-      res.send(err);
+      return err;
     }
 
     console.log('SHARE TO SHARE', share)

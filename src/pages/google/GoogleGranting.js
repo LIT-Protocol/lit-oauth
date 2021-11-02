@@ -49,6 +49,10 @@ export default function GoogleGranting() {
   }, []);
 
   useEffect(() => {
+    console.log('TOKEN CHECK', token)
+  }, [token])
+
+  useEffect(() => {
     const humanizeAccessControlConditions = async () => {
       return await LitJsSdk.humanizeAccessControlConditions({
         accessControlConditions,
