@@ -7,7 +7,7 @@ import {
   CardActions,
   CardHeader,
   CardContent,
-  TextField,
+  TextField, Snackbar, Alert,
 } from "@mui/material";
 import "./GoogleLink.scss";
 
@@ -23,6 +23,8 @@ function GoogleLink() {
   const [linkData, setLinkData] = useState([]);
   const [email, setEmail] = useState("");
   const [uuid, setUuid] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarInfo, setSnackbarInfo] = useState({});
 
   // gapi.load("client:auth2", function () {
   //   gapi.auth2.init({
@@ -30,6 +32,13 @@ function GoogleLink() {
   //     scope: "https://www.googleapis.com/auth/drive.file",
   //   });
   // });
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
 
   useEffect(() => {
     if (conditionsFetched === false) {
@@ -57,7 +66,7 @@ function GoogleLink() {
     }
   }, []);
 
-  async function provisionAccess() {
+  const provisionAccess = async () => {
     console.log("LINK DATA", linkData);
     const accessControlConditions = JSON.parse(
       linkData.share.accessControlConditions
@@ -141,25 +150,49 @@ function GoogleLink() {
     return fileTypeUrl;
   };
 
-  const handleSubmit = () => {
-    provisionAccess().then((jwt) => {
+  const handleSubmit = async () => {
+    provisionAccess().then(async (jwt) => {
       const role = linkData.share["role"];
       const body = { email, role, uuid, jwt };
       const headers = { "Content-Type": "application/json" };
-      axios
-        .post(`${BASE_URL}/api/google/shareLink`, body, { headers })
-        .then((data) => {
-          window.location = `https://docs.google.com/${getFileTypeUrl(
+      console.log('HANDLE SUBMIT')
+      try {
+        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
+        window.location = `https://docs.google.com/${getFileTypeUrl(
+          linkData.share.assetType
+        )}/d/${shareLinkResponse.data.fileId}`;
+        console.log("DATA", shareLinkResponse);
+        console.log(
+          "LINK",
+          `https://docs.google.com/${getFileTypeUrl(
             linkData.share.assetType
-          )}/d/${data.data.fileId}`;
-          console.log("DATA", data);
-          console.log(
-            "LINK",
-            `https://docs.google.com/${getFileTypeUrl(
-              linkData.share.assetType
-            )}/d/${data.data.fileId}`
-          );
-        });
+          )}/d/${shareLinkResponse.data.fileId}`
+        );
+      } catch(err) {
+        console.log('An error occurred while accessing link:', err)
+        setSnackbarInfo({
+          message: `An error occurred while accessing link: ${err}`,
+          severity: 'error'
+        })
+        setOpenSnackbar(true);
+      }
+      // axios
+      //   .post(`${BASE_URL}/api/google/shareLink`, body, { headers })
+      //   .then((data) => {
+      //     window.location = `https://docs.google.com/${getFileTypeUrl(
+      //       linkData.share.assetType
+      //     )}/d/${data.data.fileId}`;
+      //     console.log("DATA", data);
+      //     console.log(
+      //       "LINK",
+      //       `https://docs.google.com/${getFileTypeUrl(
+      //         linkData.share.assetType
+      //       )}/d/${data.data.fileId}`
+      //     );
+      //   })
+      //   .catch((err) => {
+      //     console.log('Error navigating to link.')
+      // });
     });
   };
 
@@ -218,6 +251,14 @@ function GoogleLink() {
           {/*  </label>*/}
           {/*</div>*/}
         </Card>
+        <Snackbar
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          open={openSnackbar}
+          autoHideDuration={4000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+        </Snackbar>
       </section>
     );
   }

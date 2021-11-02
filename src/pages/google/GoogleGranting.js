@@ -44,6 +44,22 @@ export default function GoogleGranting() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
 
+  useEffect(() => {
+    loadAuth();
+  }, []);
+
+  useEffect(() => {
+    const humanizeAccessControlConditions = async () => {
+      return await LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions,
+        myWalletAddress: storedAuthSig.address,
+      });
+    }
+    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
+      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
+    });
+  }, [accessControlConditions])
+
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
     setOpenProvisionAccessDialog(false);
@@ -72,28 +88,6 @@ export default function GoogleGranting() {
     setOpenSnackbar(false);
   };
 
-  useEffect(() => {
-    console.log("CHECK UP ON TOKEN", token);
-  }, [token]);
-
-  useEffect(() => {
-    // getAuthSig();
-    // loadGoogleAuth();
-    loadAuth();
-  }, []);
-
-  useEffect(() => {
-    const humanizeAccessControlConditions = async () => {
-      return await LitJsSdk.humanizeAccessControlConditions({
-        accessControlConditions,
-        myWalletAddress: storedAuthSig.address,
-      });
-    }
-    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
-      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
-    });
-  }, [accessControlConditions])
-
   const loadAuth = async () => {
     try {
       const litAuthResult = await LitJsSdk.checkAndSignAuthMessage({
@@ -113,12 +107,20 @@ export default function GoogleGranting() {
           client_id: GOOGLE_CLIENT_KEY,
           scope: "https://www.googleapis.com/auth/drive.file",
         })
-        .then((googleObject) => {
-          if (googleObject.isSignedIn.get()) {
-            console.log('IS SIGNED IN', googleObject.isSignedIn.get())
-            const currentUserObject = window.gapi.auth2
-              .getAuthInstance().currentUser.get();
-            setLatestAccessToken(currentUserObject);
+        .then(async (googleObject) => {
+          const currentUserObject = window.gapi.auth2
+            .getAuthInstance().currentUser.get();
+          const grantedScopes = currentUserObject.getGrantedScopes();
+          // check to see if signed in and scope for drive exists, if scope does not exist but use is signed in, notify with snackbar and sign out the user
+          if (googleObject.isSignedIn.get() && !!grantedScopes && grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
+            await checkForUserLocally(currentUserObject);
+          } else if (googleObject.isSignedIn.get() && !grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
+            setSnackbarInfo({
+              message: `Insufficient Permission: Request had insufficient authentication scopes.`,
+              severity: 'error'
+            })
+            setOpenSnackbar(true);
+            signOut();
           }
         });
     });
@@ -135,11 +137,35 @@ export default function GoogleGranting() {
     });
   };
 
+  const checkForUserLocally = async (currentUserObject) => {
+    const authSig = await getAuthSig();
+    setStoredAuthSig(authSig);
+    try {
+      const userProfiles = await asyncHelpers.getUserProfile(authSig, currentUserObject.getId())
+      if (userProfiles?.data[0]) {
+        await setLatestAccessToken(currentUserObject);
+      } else {
+        console.log('No user found locally. Please log in again.')
+        setSnackbarInfo({
+          message: `No user found locally. Please log in again.`,
+          severity: 'error'
+        })
+        setOpenSnackbar(true);
+      }
+    } catch(err) {
+      console.log('No user found locally:', err)
+      setSnackbarInfo({
+        message: `No user found locally: ${err}`,
+        severity: 'error'
+      })
+      setOpenSnackbar(true);
+    }
+  }
+
   const setLatestAccessToken = async (currentUserObject) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
       const authSig = await getAuthSig();
-      setStoredAuthSig(authSig);
       const response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
 
       setConnectedServiceId(() => response.data.connectedServices[0].id);
@@ -157,8 +183,8 @@ export default function GoogleGranting() {
   };
 
   const getAllShares = async (authSig) => {
-    const allShares = await asyncHelpers.getAllShares(authSig);
-    setAllShares(allShares.data.reverse());
+    const allSharesHolder = await asyncHelpers.getAllShares(authSig);
+    setAllShares(allSharesHolder.data.reverse());
   }
 
   const authenticate = async () => {
@@ -189,6 +215,16 @@ export default function GoogleGranting() {
         authSig,
         token
       );
+      console.log('ERROR MAYBE?', response)
+      if (response.data['errorStatus']) {
+        setSnackbarInfo({
+          message: `Error logging in: ${response.data.errors[0]['message']}`,
+          severity: 'error'
+        })
+        setOpenSnackbar(true);
+        signOut();
+        return;
+      }
       if (!!response.data["connectedServices"]) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
@@ -204,12 +240,13 @@ export default function GoogleGranting() {
         setCurrentUser(() => userProfile);
       }
     } catch(err) {
-      console.log(`Error storing access token:, ${err}`)
+      console.log(`Error storing access token:, ${err.errors}`)
       setSnackbarInfo({
         message: `Error storing access token:, ${err}`,
         severity: 'error'
       })
       setOpenSnackbar(true);
+      signOut();
     }
   };
 
@@ -281,10 +318,11 @@ export default function GoogleGranting() {
 
       setAccessControlConditions([]);
       setSnackbarInfo({
-        message: `New link created.`,
+        message: `New link created and copied to clipboard.`,
         severity: 'success'
       });
       setOpenSnackbar(true);
+      await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(authSig);
     } catch(err) {
       console.log(`'Error sharing share', ${err}`)
