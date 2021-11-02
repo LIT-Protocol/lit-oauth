@@ -73,8 +73,8 @@ export default function GoogleGranting() {
   };
 
   useEffect(() => {
-    console.log('CHECK UP ON TOKEN', token)
-  }, [token])
+    console.log("CHECK UP ON TOKEN", token);
+  }, [token]);
 
   useEffect(() => {
     // getAuthSig();
@@ -138,7 +138,7 @@ export default function GoogleGranting() {
   const setLatestAccessToken = async (currentUserObject) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
-      const authSig = await getAuthSig()
+      const authSig = await getAuthSig();
       setStoredAuthSig(authSig);
       const response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
 
@@ -191,9 +191,8 @@ export default function GoogleGranting() {
       );
       if (!!response.data["connectedServices"]) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
-        const googleAuthInstance = window.gapi.auth2
-          .getAuthInstance();
-        const currentUserObject = googleAuthInstance.currentUser.get()
+        const googleAuthInstance = window.gapi.auth2.getAuthInstance();
+        const currentUserObject = googleAuthInstance.currentUser.get();
         setToken(() => currentUserObject.getAuthResponse().access_token);
         const userBasicProfile = currentUserObject.getBasicProfile();
         const userProfile = {
@@ -221,7 +220,7 @@ export default function GoogleGranting() {
     });
     setAccessControlConditions([]);
     setToken("");
-    setCurrentUser({})
+    setCurrentUser({});
   };
 
   const addToAccessControlConditions = async (r) => {
@@ -404,10 +403,11 @@ export default function GoogleGranting() {
       />
       {openShareModal && (
         <ShareModal
+          showStep="ableToAccess"
           className={"share-modal"}
           show={false}
           onClose={() => setOpenShareModal(false)}
-          sharingItems={[{ name: file.url }]}
+          sharingItems={[{ name: file.embedUrl }]}
           onAccessControlConditionsSelected={async (restriction) => {
             await addToAccessControlConditions(restriction);
             setOpenShareModal(false);

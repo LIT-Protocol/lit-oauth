@@ -10,21 +10,23 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  TextField, List, ListItem, ListItemText,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import './GoogleProvisionAccessModal.scss';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function GoogleProvisionAccessModal(props) {
   let picker;
-  let pickerFileObj = { name: '' };
 
   const createPicker = () => {
     props.setOpenProvisionAccessDialog(false);
 
     if (props.accessToken?.length) {
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-        picker = new google.picker.PickerBuilder()
+      picker = new google.picker.PickerBuilder()
         .addView(view)
         .setOAuthToken(props.accessToken)
         .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
@@ -43,7 +45,6 @@ export default function GoogleProvisionAccessModal(props) {
     props.setOpenProvisionAccessDialog(true);
     if (data?.action === 'picked') {
       props.setFile(data.docs[0]);
-      pickerFileObj = {...data.docs[0]};
     }
   };
 
