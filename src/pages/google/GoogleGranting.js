@@ -144,10 +144,16 @@ export default function GoogleGranting() {
     try {
       const authSig = await getAuthSig();
       setStoredAuthSig(authSig);
-      const response = await asyncHelpers.verifyToken(
-        authSig,
-        googleAuthResponse
-      );
+      let response;
+      try {
+        response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
+      } catch (e) {
+        console.log(
+          "error verifying user token.  this happens if the user hasn't connected a google account yet.  swallowing.",
+          e
+        );
+        return;
+      }
 
       setConnectedServiceId(() => response.data.connectedServices[0].id);
       setCurrentUser(() => response.data.userProfile);
