@@ -12,12 +12,12 @@ import {
   IconButton,
   TextField, List, ListItem, ListItemText,
 } from "@mui/material";
-import './ProvisionAccessModal.scss';
+import './GoogleProvisionAccessModal.scss';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-export default function ProvisionAccessModal(props) {
+export default function GoogleProvisionAccessModal(props) {
   let picker;
-  let pickerFileObj = {};
+  let pickerFileObj = { name: '' };
 
   const createPicker = () => {
     props.setOpenProvisionAccessDialog(false);
@@ -42,7 +42,7 @@ export default function ProvisionAccessModal(props) {
     console.log('DATA FROM PICKER', data)
     props.setOpenProvisionAccessDialog(true);
     if (data?.action === 'picked') {
-      props.setLink(data.docs[0].embedUrl);
+      props.setFile(data.docs[0]);
       pickerFileObj = {...data.docs[0]};
     }
   };
@@ -54,36 +54,12 @@ export default function ProvisionAccessModal(props) {
           Provision Access
         </DialogTitle>
         <DialogContent style={{ paddingBottom: '0'}}>
-          <section className={'provision-access-current-controls'}>
-            <h4>Current Access Control Conditions</h4>
-            {props.humanizedAccessControlArray.length > 0 &&
-              <List dense={true}>
-                {props.humanizedAccessControlArray.map((accessControl, i) =>
-                  <ListItem className={'provision-access-control-item'}
-                    secondaryAction={
-                      <IconButton onClick={() => props.removeIthAccessControlCondition(i)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    }>
-                    <ListItemText
-                      primary={accessControl}
-                    />
-                  </ListItem>
-                )}
-              </List>
-            }
-            {!props.humanizedAccessControlArray.length &&
-              <span>No current access control conditions</span>
-            }
-          </section>
-        </DialogContent>
-        <DialogContent style={{ paddingTop: '0'}}>
           <section className={'provision-access-container'}>
             <p>Google Drive Link</p>
             <span>
               <TextField
                 disabled
-                value={props.link}
+                value={props['file'] ? props.file['name'] : ''}
                 autoFocus
                 style={{ paddingLeft: '0 !important' }}
                 fullWidth
@@ -92,14 +68,14 @@ export default function ProvisionAccessModal(props) {
                     <Button style={{ marginRight: '1rem', width: '10rem' }} onClick={() => createPicker()}>Choose File</Button>
                   ),
                   endAdornment: (
-                  <IconButton
-                    style={{marginLeft: '0.5rem' }}
-                    onClick={() => {
-                      props.setLink('');
-                      props.setAccessControlConditions([]);
-                    }}>
-                    <DeleteIcon />
-                  </IconButton>
+                    <IconButton
+                      style={{marginLeft: '0.5rem' }}
+                      onClick={() => {
+                        props.setFile(null);
+                        props.setAccessControlConditions([]);
+                      }}>
+                      <DeleteIcon />
+                    </IconButton>
                   )
                 }}
               />
@@ -118,9 +94,33 @@ export default function ProvisionAccessModal(props) {
             </FormControl>
           </section>
         </DialogContent>
+        <DialogContent style={{ paddingTop: '0'}}>
+          <section className={'provision-access-current-controls'}>
+            <h4>Current Access Control Conditions</h4>
+            {props.humanizedAccessControlArray.length > 0 &&
+              <List dense={true}>
+                {props.humanizedAccessControlArray.map((accessControl, i) =>
+                  <ListItem key={i} className={'provision-access-control-item'}
+                    secondaryAction={
+                      <IconButton onClick={() => props.removeIthAccessControlCondition(i)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    }>
+                    <ListItemText
+                      primary={accessControl}
+                    />
+                  </ListItem>
+                )}
+              </List>
+            }
+            {!props.humanizedAccessControlArray.length &&
+              <span>No current access control conditions</span>
+            }
+          </section>
+        </DialogContent>
         <DialogActions>
           <Button variant={'outlined'}
-                  disabled={!props.link.length}
+                  disabled={!props.file}
                   onClick={() => {
                     props.handleAddAccessControl()
                   }}>Add Access Control Conditions</Button>

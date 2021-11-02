@@ -3,8 +3,8 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
-import ServiceLinks from "../sharedComponents/serviceLinks/ServiceLinks";
-import ProvisionAccessModal from "../sharedComponents/provisionAccessModal/ProvisionAccessModal";
+import GoogleLinks from "./googleLinks/GoogleLinks";
+import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
 import {
   Alert,
   Button, Snackbar,
@@ -28,7 +28,7 @@ const googleRoleMap = {
 export default function GoogleGranting() {
   const parsedEnv = dotenv.config();
 
-  const [link, setLink] = useState("");
+  const [file, setFile] = useState(null);
   const [allShares, setAllShares] = useState([]);
   const [token, setToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
@@ -51,7 +51,7 @@ export default function GoogleGranting() {
 
   const handleGetShareLink = async () => {
     setOpenProvisionAccessDialog(false);
-    setLink('');
+    setFile(null);
     await handleSubmit();
   };
 
@@ -62,7 +62,7 @@ export default function GoogleGranting() {
   const handleCancelProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(false);
     setAccessControlConditions([]);
-    setLink('');
+    setFile(null);
   };
 
   const handleCloseSnackbar = (event, reason) => {
@@ -107,10 +107,6 @@ export default function GoogleGranting() {
   }
 
   const loadGoogleAuth = async () => {
-    window.gapi.load("picker", function () {
-      setPickerLoaded(true);
-      console.log("picker loaded");
-    });
     window.gapi.load("client:auth2", function () {
       window.gapi.auth2
         .init({
@@ -119,7 +115,7 @@ export default function GoogleGranting() {
         })
         .then((googleObject) => {
           if (googleObject.isSignedIn.get()) {
-            console.log('IS SIGNED IN')
+            console.log('IS SIGNED IN', googleObject.isSignedIn.get())
             const currentUserObject = window.gapi.auth2
               .getAuthInstance().currentUser.get();
             setLatestAccessToken(currentUserObject);
@@ -149,7 +145,7 @@ export default function GoogleGranting() {
       setConnectedServiceId(() => response.data.connectedServices[0].id);
       setCurrentUser(() => response.data.userProfile);
       setToken(() => googleAuthResponse.access_token);
-      await getAllShares();
+      await getAllShares(authSig);
     } catch(err) {
       console.log('Error verifying user:', err);
       setSnackbarInfo({
@@ -160,8 +156,8 @@ export default function GoogleGranting() {
     }
   };
 
-  const getAllShares = async () => {
-    const allShares = await asyncHelpers.getAllShares();
+  const getAllShares = async (authSig) => {
+    const allShares = await asyncHelpers.getAllShares(authSig);
     setAllShares(allShares.data.reverse());
   }
 
@@ -246,15 +242,15 @@ export default function GoogleGranting() {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-
-    const id = link.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
-
+    console.log('FILEFIELFIE', file)
+    // const id = file.embedUrl.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
+    // console.log('IDIDIDID', id)
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     };
     const requestData = {
-      driveId: id,
+      driveId: file.id,
       role: role,
       token: token,
       connectedServiceId: connectedServiceId,
@@ -290,7 +286,7 @@ export default function GoogleGranting() {
         severity: 'success'
       });
       setOpenSnackbar(true);
-      await getAllShares();
+      await getAllShares(authSig);
     } catch(err) {
       console.log(`'Error sharing share', ${err}`)
       setSnackbarInfo({
@@ -304,7 +300,7 @@ export default function GoogleGranting() {
   const handleDeleteShare = async (shareInfo) => {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
-      await getAllShares();
+      await getAllShares(storedAuthSig);
       setSnackbarInfo({
         message: `${shareInfo.name} has been deleted.`,
         severity: 'success'
@@ -377,7 +373,7 @@ export default function GoogleGranting() {
         />
       </div>
       <div className={'service-grid-links'}>
-        <ServiceLinks
+        <GoogleLinks
           className={"service-links"}
           serviceName={"Drive"}
           handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
@@ -388,7 +384,7 @@ export default function GoogleGranting() {
           listOfShares={allShares}
         />
       </div>
-      <ProvisionAccessModal
+      <GoogleProvisionAccessModal
         handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
         accessControlConditions={accessControlConditions}
         removeIthAccessControlCondition={removeIthAccessControlCondition}
@@ -398,8 +394,8 @@ export default function GoogleGranting() {
         handleGetShareLink={handleGetShareLink}
         accessToken={token}
         authSig={storedAuthSig}
-        link={link}
-        setLink={setLink}
+        file={file}
+        setFile={setFile}
         role={role}
         setRole={setRole}
         roleMap={googleRoleMap}
@@ -411,7 +407,7 @@ export default function GoogleGranting() {
           className={"share-modal"}
           show={false}
           onClose={() => setOpenShareModal(false)}
-          sharingItems={[{ name: link }]}
+          sharingItems={[{ name: file.url }]}
           onAccessControlConditionsSelected={async (restriction) => {
             await addToAccessControlConditions(restriction);
             setOpenShareModal(false);

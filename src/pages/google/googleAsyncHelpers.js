@@ -43,8 +43,10 @@ export const share = async (requestData, requestOptions) => {
     );
 }
 
-export const getAllShares = async () => {
-  return await axios.get(API_HOST + "/api/google/getAllShares");
+export const getAllShares = async (authSig) => {
+  return await axios.post(`${API_HOST}/api/google/getAllShares`, {
+    authSig,
+  });
 }
 
 export const deleteShare = async (shareUuid) => {

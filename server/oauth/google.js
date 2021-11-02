@@ -76,8 +76,16 @@ export default async function (fastify, opts) {
     return { connectedServices: serialized };
   });
 
-  fastify.get('/api/google/getAllShares', async (req, res) => {
-    return await fastify.objection.models.shares.query();
+  fastify.post('/api/google/getAllShares', async (req, res) => {
+    const authSig = req.body.authSig;
+
+    const connectedService =  await fastify.objection.models.connectedServices.query()
+      .where('service_name', '=', 'google')
+      .where('user_id', '=', authSig.address);
+
+    return await fastify.objection.models.shares.query()
+      .where('connected_service_id', '=', connectedService[0].id)
+      .where('user_id', '=', authSig.address);
   })
 
   fastify.post('/api/google/deleteShare', async(req, res) => {
@@ -192,6 +200,8 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+    console.log('REQ FOR SHARE!', req.body)
+
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
     });
