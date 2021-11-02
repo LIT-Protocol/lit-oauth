@@ -149,9 +149,9 @@ function GoogleLink() {
       axios
         .post(`${BASE_URL}/api/google/shareLink`, body, { headers })
         .then((data) => {
-          // window.location = `https://docs.google.com/${getFileTypeUrl(
-          //   linkData.share.assetType
-          // )}/d/${data.data.fileId}`;
+          window.location = `https://docs.google.com/${getFileTypeUrl(
+            linkData.share.assetType
+          )}/d/${data.data.fileId}`;
           console.log("DATA", data);
           console.log(
             "LINK",
