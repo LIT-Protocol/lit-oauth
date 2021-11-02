@@ -82,7 +82,14 @@ export default async function (fastify, opts) {
       });
     }
 
-    reply.redirect(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+    reply.redirect(`${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/zoom`);
+  });
+
+  fastify.post("/api/zoom/getServiceInfo", async (request, reply) => {
+    const authSig = request.body.authSig;
+    console.log('REQU SERVUCEW IUBFI', request.body)
+    return fastify.objection.models.connectedServices.query()
+      .where('user_id', '=', authSig.address);
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
@@ -157,6 +164,17 @@ export default async function (fastify, opts) {
     };
   });
 
+  fastify.post('/api/zoom/getAllShares', async (req, res) => {
+    const authSig = req.body.authSig;
+    const connectedService =  await fastify.objection.models.connectedServices.query()
+      .where('service_name', '=', 'zoom')
+      .where('user_id', '=', authSig.address);
+
+    return await fastify.objection.models.shares.query()
+      .where('connected_service_id', '=', connectedService[0].id)
+      .where('user_id', '=', authSig.address);
+  })
+
   fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
     const { jwt, meetingId, shareId } = request.body;
 
@@ -220,6 +238,12 @@ export default async function (fastify, opts) {
       joinUrl,
     };
   });
+
+  fastify.post('/api/zoom/deleteShare', async(req, res) => {
+    const shareUuid = req.body.uuid;
+    return await fastify.objection.models.shares.query().delete()
+      .where('id', '=', shareUuid);
+  })
 
   fastify.post("/api/zoom/shareMeeting", async (request, reply) => {
     const { authSig, meeting, accessControlConditions } = request.body;

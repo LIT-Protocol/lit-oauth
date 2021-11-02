@@ -1,4 +1,4 @@
-import './ServiceLinks.scss';
+import './GoogleLinks.scss';
 import {
   Button,
   Card,
@@ -21,14 +21,13 @@ import { useState } from "react";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
 
-export default function ServiceLinks(props) {
+export default function GoogleLinks(props) {
 
   const [openDeleteWarningModal, setOpenDeleteWarningModal] = useState(false);
   const [deleteShareInfo, setDeleteShareInfo] = useState({});
 
   const handleOpenDeleteModal = (shareInfo) => {
-    console.log('Share Info', shareInfo)
-    setDeleteShareInfo(shareInfo);
+    setDeleteShareInfo(() => shareInfo);
     setOpenDeleteWarningModal(true);
   }
 
@@ -76,9 +75,9 @@ export default function ServiceLinks(props) {
                   <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">
                     <span className={'links-actions'}>
-                      <IconButton size={'small'} onClick={props.handleEditLinkAction}>
-                        <EditIcon/>
-                      </IconButton>
+                      {/*<IconButton size={'small'} onClick={props.handleEditLinkAction}>*/}
+                      {/*  <EditIcon/>*/}
+                      {/*</IconButton>*/}
                       <Tooltip title={'Copy share link'}>
                         <IconButton size={'small'} onClick={() => props.handleCopyLinkAction(share.id)}>
                           <LinkIcon/>

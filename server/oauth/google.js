@@ -15,7 +15,7 @@ export default async function (fastify, opts) {
     // First - get Google Drive refresh token (given acct email and drive)
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
     const { tokens } = await oauth_client.getToken(token);
@@ -28,9 +28,19 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    const about_info = await drive.about.get({
-      fields: "user",
-    });
+
+    let about_info;
+    try {
+      about_info = await drive.about.get({
+        fields: "user",
+      });
+    } catch(err) {
+      const errorObject = {
+        errorStatus: err.code,
+        errors: err.errors
+      }
+      return errorObject;
+    }
 
     const existingRows = await fastify.objection.models.connectedServices
       .query()
@@ -76,16 +86,7 @@ export default async function (fastify, opts) {
     return { connectedServices: serialized };
   });
 
-  fastify.get('/api/google/getAllShares', async (req, res) => {
-    return await fastify.objection.models.shares.query();
-  })
-
-  fastify.post('/api/google/deleteShare', async(req, res) => {
-    const shareUuid = req.body.uuid;
-    return await fastify.objection.models.shares.query().delete()
-      .where('id', '=', shareUuid);
-  })
-
+  // verify token and update if necessary
   fastify.post("/api/google/verifyToken", async (req, res) => {
     const { id_token, access_token, email } =  req.body.googleAuthResponse;
     const authSig = req.body.authSig;
@@ -125,6 +126,15 @@ export default async function (fastify, opts) {
       email: email,
     });
 
+    await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("id_on_service", "=", userId)
+      .patch({
+        access_token: access_token,
+        email: email,
+      });
+
     const connectedGoogleServices =
       await fastify.objection.models.connectedServices
         .query()
@@ -151,6 +161,25 @@ export default async function (fastify, opts) {
     return { connectedServices: serialized, userId, userProfile };
   });
 
+
+  fastify.post('/api/google/getAllShares', async (req, res) => {
+    const authSig = req.body.authSig;
+
+    const connectedService =  await fastify.objection.models.connectedServices.query()
+      .where('service_name', '=', 'google')
+      .where('user_id', '=', authSig.address);
+
+    return await fastify.objection.models.shares.query()
+      .where('connected_service_id', '=', connectedService[0].id)
+      .where('user_id', '=', connectedService[0].userId);
+  })
+
+  fastify.post('/api/google/deleteShare', async(req, res) => {
+    const shareUuid = req.body.uuid;
+    return await fastify.objection.models.shares.query().delete()
+      .where('id', '=', shareUuid);
+  })
+
   fastify.post("/api/google/getUserProfile", async (req, res) => {
     const uniqueId = req.body.uniqueId.toString();
     const connectedServices = await fastify.objection.models.connectedServices
@@ -164,7 +193,7 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig, connectedServiceId } = req.body;
+    const { authSig, connectedServiceId, token } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -179,12 +208,12 @@ export default async function (fastify, opts) {
 
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
 
     oauth_client.setCredentials({
-      access_token: connectedService.accessToken,
+      access_token: token,
       refresh_token: connectedService.refreshToken,
     });
 
@@ -192,6 +221,8 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+    console.log('REQ FOR SHARE!', req.body)
+
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
     });
@@ -224,7 +255,7 @@ export default async function (fastify, opts) {
     // get email from token
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
     const { tokens } = await oauth_client.getToken(req.body.token);
@@ -296,7 +327,7 @@ export default async function (fastify, opts) {
 
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
 
@@ -315,11 +346,17 @@ export default async function (fastify, opts) {
       auth: oauth_client,
     });
 
-    await drive.permissions.create({
-      resource: permission,
-      fileId: share.assetIdOnService,
-      fields: "id",
-    });
+    try {
+      await drive.permissions.create({
+        resource: permission,
+        fileId: share.assetIdOnService,
+        fields: "id",
+      });
+    } catch(err) {
+      return err;
+    }
+
+    console.log('SHARE TO SHARE', share)
 
     // Send drive ID back and redirect
     return { fileId: share.assetIdOnService };
