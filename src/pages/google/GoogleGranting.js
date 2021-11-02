@@ -49,10 +49,6 @@ export default function GoogleGranting() {
   }, []);
 
   useEffect(() => {
-    console.log('TOKEN CHECK', token)
-  }, [token])
-
-  useEffect(() => {
     const humanizeAccessControlConditions = async () => {
       return await LitJsSdk.humanizeAccessControlConditions({
         accessControlConditions,
@@ -132,7 +128,7 @@ export default function GoogleGranting() {
   }
 
   const onPickerApiLoad = () => {
-    console.log('PICKER LOADED')
+    console.log('Google Picker Loaded')
   }
 
   const getAuthSig = async () => {
