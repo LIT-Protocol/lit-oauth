@@ -7,12 +7,16 @@ import GoogleLinks from "./googleLinks/GoogleLinks";
 import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
 import {
   Alert,
-  Button, Card, CardHeader, Snackbar, Avatar, CardContent,
+  Button,
+  Card,
+  Snackbar,
+  Avatar,
+  CardContent,
 } from "@mui/material";
 // import googleDriveLogo from '../../assets/googledrive.png';
 
-import './GoogleGranting.scss';
-import * as asyncHelpers from './googleAsyncHelpers.js';
+import "./GoogleGranting.scss";
+import * as asyncHelpers from "./googleAsyncHelpers.js";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -36,7 +40,8 @@ export default function GoogleGranting() {
   const [role, setRole] = useState("reader");
   const [currentUser, setCurrentUser] = useState({});
   const [storedAuthSig, setStoredAuthSig] = useState({});
-  const [humanizedAccessControlArray, setHumanizedAccessControlArray] = useState([]);
+  const [humanizedAccessControlArray, setHumanizedAccessControlArray] =
+    useState([]);
 
   const [openShareModal, setOpenShareModal] = useState(false);
   const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
@@ -54,11 +59,13 @@ export default function GoogleGranting() {
         accessControlConditions,
         myWalletAddress: storedAuthSig.address,
       });
-    }
-    humanizeAccessControlConditions().then(humanizedAccessControlConditions => {
-      setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
-    });
-  }, [accessControlConditions])
+    };
+    humanizeAccessControlConditions().then(
+      (humanizedAccessControlConditions) => {
+        setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
+      }
+    );
+  }, [accessControlConditions]);
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -101,12 +108,12 @@ export default function GoogleGranting() {
       const litAuthResult = await LitJsSdk.checkAndSignAuthMessage({
         chain: "ethereum",
       });
-      setStoredAuthSig(() => litAuthResult)
+      setStoredAuthSig(() => litAuthResult);
       await loadGoogleAuth();
-    } catch(err) {
-      console.log('LIT AUTH FAILURE', err)
+    } catch (err) {
+      console.log("LIT AUTH FAILURE", err);
     }
-  }
+  };
 
   const loadGoogleAuth = async () => {
     window.gapi.load("client:auth2", function () {
@@ -117,10 +124,15 @@ export default function GoogleGranting() {
         })
         .then(async (googleObject) => {
           const currentUserObject = window.gapi.auth2
-            .getAuthInstance().currentUser.get();
+            .getAuthInstance()
+            .currentUser.get();
           const grantedScopes = currentUserObject.getGrantedScopes();
           // check to see if signed in and scope for drive exists, if scope does not exist but use is signed in, notify with snackbar and sign out the user
-          if (googleObject.isSignedIn.get() && !!grantedScopes && grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
+          if (
+            googleObject.isSignedIn.get() &&
+            !!grantedScopes &&
+            grantedScopes.includes("https://www.googleapis.com/auth/drive.file")
+          ) {
             await checkForUserLocally(currentUserObject);
           } else if (googleObject.isSignedIn.get() && !grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
             handleOpenSnackBar(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
@@ -128,12 +140,12 @@ export default function GoogleGranting() {
           }
         });
     });
-    window.gapi.load('picker', {'callback': onPickerApiLoad});
-  }
+    window.gapi.load("picker", { callback: onPickerApiLoad });
+  };
 
   const onPickerApiLoad = () => {
-    console.log('Google Picker Loaded')
-  }
+    console.log("Google Picker Loaded");
+  };
 
   const getAuthSig = async () => {
     return await LitJsSdk.checkAndSignAuthMessage({
@@ -145,7 +157,10 @@ export default function GoogleGranting() {
     const authSig = await getAuthSig();
     setStoredAuthSig(authSig);
     try {
-      const userProfiles = await asyncHelpers.getUserProfile(authSig, currentUserObject.getId())
+      const userProfiles = await asyncHelpers.getUserProfile(
+        authSig,
+        currentUserObject.getId()
+      );
       if (userProfiles?.data[0]) {
         await setLatestAccessToken(currentUserObject);
       } else {
@@ -156,13 +171,16 @@ export default function GoogleGranting() {
       console.log('No user found locally:', err)
       handleOpenSnackBar(`No user found locally: ${err}`, 'error');
     }
-  }
+  };
 
   const setLatestAccessToken = async (currentUserObject) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
       const authSig = await getAuthSig();
-      const response = await asyncHelpers.verifyToken(authSig, googleAuthResponse);
+      const response = await asyncHelpers.verifyToken(
+        authSig,
+        googleAuthResponse
+      );
 
       setConnectedServiceId(() => response.data.connectedServices[0].id);
       setCurrentUser(() => response.data.userProfile);
@@ -177,7 +195,7 @@ export default function GoogleGranting() {
   const getAllShares = async (authSig) => {
     const allSharesHolder = await asyncHelpers.getAllShares(authSig);
     setAllShares(allSharesHolder.data.reverse());
-  }
+  };
 
   const authenticate = async () => {
     const authSig = await getAuthSig();
@@ -219,7 +237,11 @@ export default function GoogleGranting() {
           email: userBasicProfile.getEmail(),
           displayName: userBasicProfile.getName(),
           givenName: userBasicProfile.getGivenName(),
-          avatar: userBasicProfile.getName().split(' ').map(s => s.split('')[0]).join(''),
+          avatar: userBasicProfile
+            .getName()
+            .split(" ")
+            .map((s) => s.split("")[0])
+            .join(""),
         };
         setCurrentUser(() => userProfile);
       }
@@ -246,6 +268,7 @@ export default function GoogleGranting() {
   };
 
   const removeIthAccessControlCondition = async (i) => {
+    // setAccessControlConditions([]);
     let slice1 = accessControlConditions.slice(0, i);
     let slice2 = accessControlConditions.slice(
       i + 1,
