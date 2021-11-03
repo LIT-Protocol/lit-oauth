@@ -82,6 +82,14 @@ export default function ZoomMeetings(props) {
     setSelectedMeeting(() => null);
   };
 
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackbarInfo({
+      message: message,
+      severity: severity
+    })
+    setOpenSnackbar(true);
+  };
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;

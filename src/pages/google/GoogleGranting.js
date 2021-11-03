@@ -81,6 +81,14 @@ export default function GoogleGranting() {
     setFile(null);
   };
 
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackbarInfo({
+      message: message,
+      severity: severity
+    })
+    setOpenSnackbar(true);
+  }
+
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -119,17 +127,8 @@ export default function GoogleGranting() {
             grantedScopes.includes("https://www.googleapis.com/auth/drive.file")
           ) {
             await checkForUserLocally(currentUserObject);
-          } else if (
-            googleObject.isSignedIn.get() &&
-            !grantedScopes.includes(
-              "https://www.googleapis.com/auth/drive.file"
-            )
-          ) {
-            setSnackbarInfo({
-              message: `Insufficient Permission: Request had insufficient authentication scopes.`,
-              severity: "error",
-            });
-            setOpenSnackbar(true);
+          } else if (googleObject.isSignedIn.get() && !grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
+            handleOpenSnackBar(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
             signOut();
           }
         });
@@ -158,20 +157,12 @@ export default function GoogleGranting() {
       if (userProfiles?.data[0]) {
         await setLatestAccessToken(currentUserObject);
       } else {
-        console.log("No user found locally. Please log in again.");
-        setSnackbarInfo({
-          message: `No user found locally. Please log in again.`,
-          severity: "error",
-        });
-        setOpenSnackbar(true);
+        console.log('No user found locally. Please log in again.')
+        handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
       }
-    } catch (err) {
-      console.log("No user found locally:", err);
-      setSnackbarInfo({
-        message: `No user found locally: ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+    } catch(err) {
+      console.log('No user found locally:', err)
+      handleOpenSnackBar(`No user found locally: ${err}`, 'error');
     }
   };
 
@@ -188,13 +179,9 @@ export default function GoogleGranting() {
       setCurrentUser(() => response.data.userProfile);
       setToken(() => googleAuthResponse.access_token);
       await getAllShares(authSig);
-    } catch (err) {
-      console.log("Error verifying user:", err);
-      setSnackbarInfo({
-        message: `Error verifying user:, ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+    } catch(err) {
+      console.log('Error verifying user:', err);
+      handleOpenSnackBar(`Error verifying user:, ${err}`, 'error');
     }
   };
 
@@ -215,13 +202,9 @@ export default function GoogleGranting() {
       if (authResult.code) {
         await storeToken(authSig, authResult.code);
       }
-    } catch (err) {
-      console.log("Error logging in:", err);
-      setSnackbarInfo({
-        message: `Error logging in: ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+    } catch(err) {
+      console.log('Error logging in:', err)
+      handleOpenSnackBar(`Error logging in: ${err}`, 'error');
     }
   };
 
@@ -231,13 +214,9 @@ export default function GoogleGranting() {
         authSig,
         token
       );
-      console.log("ERROR MAYBE?", response);
-      if (response.data["errorStatus"]) {
-        setSnackbarInfo({
-          message: `Error logging in: ${response.data.errors[0]["message"]}`,
-          severity: "error",
-        });
-        setOpenSnackbar(true);
+      console.log('ERROR MAYBE?', response)
+      if (response.data['errorStatus']) {
+        handleOpenSnackBar(`Error logging in: ${response.data.errors[0]['message']}`, 'error');
         signOut();
         return;
       }
@@ -259,13 +238,9 @@ export default function GoogleGranting() {
         };
         setCurrentUser(() => userProfile);
       }
-    } catch (err) {
-      console.log(`Error storing access token:, ${err.errors}`);
-      setSnackbarInfo({
-        message: `Error storing access token:, ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+    } catch(err) {
+      console.log(`Error storing access token:, ${err.errors}`)
+      handleOpenSnackBar(`Error storing access token:, ${err}`, 'error');
       signOut();
     }
   };
@@ -299,9 +274,7 @@ export default function GoogleGranting() {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-    console.log("FILEFIELFIE", file);
     // const id = file.embedUrl.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
-    // console.log('IDIDIDID', id)
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -338,20 +311,12 @@ export default function GoogleGranting() {
       });
 
       setAccessControlConditions([]);
-      setSnackbarInfo({
-        message: `New link created and copied to clipboard.`,
-        severity: "success",
-      });
-      setOpenSnackbar(true);
+      handleOpenSnackBar(`New link created and copied to clipboard.`, 'success');
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(authSig);
-    } catch (err) {
-      console.log(`'Error sharing share', ${err}`);
-      setSnackbarInfo({
-        message: `'Error sharing share', ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+    } catch(err) {
+      console.log(`'Error sharing share', ${err}`)
+      handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
     }
   };
 
@@ -359,31 +324,18 @@ export default function GoogleGranting() {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig);
-      setSnackbarInfo({
-        message: `${shareInfo.name} has been deleted.`,
-        severity: "success",
-      });
-      setOpenSnackbar(true);
-    } catch (err) {
-      console.log(`'Error deleting share', ${err}`);
-      setSnackbarInfo({
-        message: `'Error deleting share', ${err}`,
-        severity: "error",
-      });
-      setOpenSnackbar(true);
+      handleOpenSnackBar(`${shareInfo.name} has been deleted.`, 'success');
+    } catch(err) {
+      console.log(`'Error deleting share', ${err}`)
+      handleOpenSnackBar(`Error deleting share: ${err}`, 'error');
     }
   };
 
   const getLinkFromShare = async (linkUuid) => {
-    setSnackbarInfo({
-      message: `Link has been copied to clipboard.`,
-      severity: "info",
-    });
-    setOpenSnackbar(true);
-    await navigator.clipboard.writeText(
-      FRONT_END_HOST + "/google/l/" + linkUuid
-    );
-  };
+    await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
+    handleOpenSnackBar(`Link has been copied to clipboard.`, 'info');
+  }
+
 
   if (!storedAuthSig.sig) {
     return (

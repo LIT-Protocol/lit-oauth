@@ -24,7 +24,7 @@ export default function ZoomGranting() {
   const [currentUser, setCurrentUser] = useState(mockInitialUser)
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
   const signOut = () => {
-    console.log('To be signed out of zoom')
+    setCurrentServiceInfo(() => null);
   };
 
   useEffect(() => {
@@ -33,6 +33,7 @@ export default function ZoomGranting() {
     }
       getService();
   }, [])
+
 
   const getConnectedService = async () => {
     await performWithAuthSig(async (authSig) => {
@@ -78,13 +79,5 @@ export default function ZoomGranting() {
         <ZoomMeetings />
       </div>
     </section>
-    // <Theme preset={presetGpnDefault}>
-    //   <div className="App">
-    //     <Button
-    //       label="Connect your Zoom account"
-    //       onClick={() => connect("zoom")}
-    //     />
-    //   </div>
-    // </Theme>
   );
 }

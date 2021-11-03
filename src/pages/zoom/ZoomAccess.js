@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
-import { Button } from "@consta/uikit/Button";
-import { ProgressSpin } from "@consta/uikit/ProgressSpin";
-
 import LitJsSdk from "lit-js-sdk";
 import { getResourceIdForMeeting } from "./utils";
 import { getShares, getMeetingUrl } from "./zoomAsyncHelpers";
 import { useAppContext } from "../../context";
+import { Button, CircularProgress } from "@mui/material";
 
 export default function ZoomAccess() {
   let { meetingId } = useParams();
@@ -135,17 +133,17 @@ export default function ZoomAccess() {
     return (
       <>
         <h3>Connecting to Lit Protocol, please wait...</h3>
-        <ProgressSpin />
+        {/*<ProgressSpin />*/}
+        <CircularProgress/>
       </>
     );
   }
 
   return (
     <>
-      <Button
-        label="Connect Wallet and Join Zoom Meeting"
-        onClick={handleConnectAndJoin}
-      />
+      <Button variant={'outlined'}
+              onClick={handleConnectAndJoin}
+      >Connect Wallet and Join Zoom Meeting</Button>
     </>
   );
 }
