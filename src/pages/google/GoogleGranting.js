@@ -5,7 +5,14 @@ import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import GoogleLinks from "./googleLinks/GoogleLinks";
 import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
-import { Alert, Button, Snackbar } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Card,
+  Snackbar,
+  Avatar,
+  CardContent,
+} from "@mui/material";
 // import googleDriveLogo from '../../assets/googledrive.png';
 
 import "./GoogleGranting.scss";
@@ -260,14 +267,14 @@ export default function GoogleGranting() {
     await setAccessControlConditions(concatAccessControlConditions);
   };
 
-  const removeAccessControlCondition = async (i) => {
-    setAccessControlConditions([]);
-    // let slice1 = accessControlConditions.slice(0, i);
-    // let slice2 = accessControlConditions.slice(
-    //   i + 1,
-    //   accessControlConditions.length
-    // );
-    // setAccessControlConditions(slice1.concat(slice2));
+  const removeIthAccessControlCondition = async (i) => {
+    // setAccessControlConditions([]);
+    let slice1 = accessControlConditions.slice(0, i);
+    let slice2 = accessControlConditions.slice(
+      i + 1,
+      accessControlConditions.length
+    );
+    setAccessControlConditions(slice1.concat(slice2));
   };
 
   const handleSubmit = async () => {
@@ -337,30 +344,36 @@ export default function GoogleGranting() {
   }
 
 
-  if (!storedAuthSig.sig) {
+  if (!storedAuthSig.sig || token === "") {
     return (
-      <section>
-        <p>Login with your wallet to proceed.</p>
+      <section className={'service-grid-container'}>
+        <Card className={'service-grid-login'}>
+          <CardContent className={'login-container-top'}>
+            <span className={'login-service'}>
+              <Avatar sx={{width: 60, height: 60}}>G</Avatar>
+              <div>
+                <h2 className={'service-title'}>Google Drive</h2>
+                <p className={'service-category'}>Productivity</p>
+              </div>
+            </span>
+            {!storedAuthSig['sig'] ? (
+              <p>
+                Login with your wallet to proceed.
+              </p>
+            ) : (
+              <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate("google")}>
+                Launch
+              </Button>
+            )}
+          </CardContent>
+          <CardContent class={'service-description'}>
+            <p>Create permissions based on wallet contents for your already-existing Google Drive files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>
+            <p>Once files are permissioned on the Lit Google Docs App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>
+            <p>Wallets that meet the conditions will enter their email address for access.</p>
+          </CardContent>
+        </Card>
         <Snackbar
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          open={openSnackbar}
-          autoHideDuration={4000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
-        </Snackbar>
-      </section>
-    );
-  }
-
-  if (token === "") {
-    return (
-      <section>
-        <Button onClick={() => authenticate("google")}>
-          Connect your Google account
-        </Button>
-        <Snackbar
-          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
           open={openSnackbar}
           autoHideDuration={4000}
           onClose={handleCloseSnackbar}
@@ -373,7 +386,7 @@ export default function GoogleGranting() {
 
   return (
     <section className={"service-grid-container"}>
-      <div className={"service-grid-header"}>
+      <div className={'service-grid-header'}>
         <ServiceHeader
           serviceName={"Google Drive App"}
           oauthServiceProvider={"Google"}
@@ -381,14 +394,14 @@ export default function GoogleGranting() {
           signOut={signOut}
         />
       </div>
-      <div className={"service-grid-links"}>
+      <div className={'service-grid-links'}>
         <GoogleLinks
           className={"service-links"}
           serviceName={"Drive"}
           handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-          handleEditLinkAction={() => console.log("EDIT CLICKED")}
+          handleEditLinkAction={() => console.log('EDIT CLICKED')}
           handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
-          handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}
+          handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
           handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
           listOfShares={allShares}
         />
@@ -396,7 +409,7 @@ export default function GoogleGranting() {
       <GoogleProvisionAccessModal
         handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
         accessControlConditions={accessControlConditions}
-        removeAccessControlCondition={removeAccessControlCondition}
+        removeIthAccessControlCondition={removeIthAccessControlCondition}
         setAccessControlConditions={setAccessControlConditions}
         humanizedAccessControlArray={humanizedAccessControlArray}
         handleAddAccessControl={handleAddAccessControl}
@@ -427,7 +440,7 @@ export default function GoogleGranting() {
       )}
 
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}

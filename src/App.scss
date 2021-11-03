@@ -33,3 +33,67 @@ h1, h2, h3, h4 {
 .picker-dialog {
   z-index: 101 !important;
 }
+
+// shared grid scss
+.service-grid-container {
+  display: grid;
+  grid-template-rows: 12% 13% 40% 15% 15%;
+  grid-template-columns: 12% 8% 60% 8% 12%;
+  width: 100vw;
+  height: 100vh;
+}
+
+.service-grid-header {
+  grid-row: 1 / 4;
+  grid-column: 3 / 4;
+}
+
+.service-grid-links {
+  grid-row: 3 / 6;
+  grid-column: 2 / 5;
+}
+
+.service-grid-login {
+  grid-row: 2 / 4;
+  grid-column: 3 / 4;
+  border: none;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  border-bottom: 1px solid #5E36B7;
+}
+
+.login-container-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.login-service {
+  display: flex;
+  align-items: center;
+}
+
+.service-title {
+  width: 15rem;
+  text-align: left;
+  margin: 0 0 0 1rem;
+  padding: 0;
+}
+
+.service-category {
+  width: 6rem;
+  background-color: #e2e2e2;
+  margin: 0.5rem 0 0 1rem;
+  padding: 0.25rem;
+  font-size: 0.8rem;
+}
+
+.service-launch-button {
+  width: 8rem;
+  height: 2.5rem;
+}
+
+.service-description {
+  text-align: left;
+  margin: 8rem auto 0;
+  width: 70%;
+}
