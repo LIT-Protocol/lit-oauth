@@ -9258,10 +9258,10 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.1.6.tgz#1c00c743b433cd0a4e80758f7b64a57440d9ff00"
   integrity sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
 
-lit-access-control-conditions-modal@^1.1.10:
-  version "1.1.11"
-  resolved "https://registry.yarnpkg.com/lit-access-control-conditions-modal/-/lit-access-control-conditions-modal-1.1.11.tgz#f6a494f298c1f2571e464451d7bcbc1a9504cd5c"
-  integrity sha512-/8Vcf3mr/fq9Ki/dOoiyqpEbnhYt0WtNVj7L7UOy8r+NSC1Qn6sQ3fxL5qzLIy7Q5weTQr6D/X2Ur46lSx8CFg==
+lit-access-control-conditions-modal@^1.1.12:
+  version "1.1.12"
+  resolved "https://registry.yarnpkg.com/lit-access-control-conditions-modal/-/lit-access-control-conditions-modal-1.1.12.tgz#cf6151f9f16905acc1d43b9e909205586629e67f"
+  integrity sha512-dmFsNBKyTe0FixwHWeHBOBz2Z3Sbp/hYWeUlSeEkmhhH21MMYnWf9b00ZNOv5TUk+qG4XBmpivDIi9mimE8wmQ==
   dependencies:
     "@babel/polyfill" "^7.12.1"
     "@consta/uikit" "^3.0.0"
@@ -9273,10 +9273,10 @@ lit-access-control-conditions-modal@^1.1.10:
     react-virtualized "^9.22.3"
     sass "^1.42.0"
 
-lit-js-sdk@^1.1.71:
-  version "1.1.71"
-  resolved "https://registry.yarnpkg.com/lit-js-sdk/-/lit-js-sdk-1.1.71.tgz#b7904e7d19a8d149a55ecc0635b7d42fa9511aff"
-  integrity sha512-1q57DEj0Owc+3cgEPSbQlfClRyy9P3PboOvxmaXO0NbwN3DXIpLzpXulTdYuViFeW7dVM/lq7Uz3tbajYp5dCw==
+lit-js-sdk@^1.1.80:
+  version "1.1.80"
+  resolved "https://registry.yarnpkg.com/lit-js-sdk/-/lit-js-sdk-1.1.80.tgz#738a189cf8915bd9f924a7c25079a2f7afd748cd"
+  integrity sha512-wKYIEYSvZ8ZZ6h2064CEZnkWPVbybWqnYJnAzj2ygoqCa9KiqFtj3Ty94cTMjeN4+bJac1lTJ/1n68VFNIvnxg==
   dependencies:
     "@ethersproject/contracts" "^5.2.0"
     "@ethersproject/hash" "^5.4.0"
