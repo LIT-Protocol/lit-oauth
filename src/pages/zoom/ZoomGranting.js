@@ -34,6 +34,7 @@ export default function ZoomGranting() {
       getService();
   }, [])
 
+  
   const getConnectedService = async () => {
     await performWithAuthSig(async (authSig) => {
       const serviceInfo = await getServiceInfo(authSig);

@@ -356,8 +356,6 @@ export default async function (fastify, opts) {
       return err;
     }
 
-    console.log('SHARE TO SHARE', share)
-
     // Send drive ID back and redirect
     return { fileId: share.assetIdOnService };
   });
