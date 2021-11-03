@@ -188,7 +188,9 @@ export default async function (fastify, opts) {
       .where("id_on_service", "=", uniqueId)
       .where("user_id", '=', req.body.authSig.address)
 
-    delete connectedServices[0].refreshToken;
+    if (connectedServices[0]?.refreshToken) {
+      delete connectedServices[0].refreshToken;
+    }
     return connectedServices;
   })
 

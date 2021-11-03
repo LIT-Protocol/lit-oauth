@@ -3,7 +3,7 @@ import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
 import ZoomMeetings from "./ZoomGrantingComponents/ZoomMeetings";
 import { useAppContext } from "../../context";
-import { Button } from "@mui/material";
+import { Alert, Avatar, Button, Card, CardContent, Snackbar } from "@mui/material";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import { useEffect, useState } from "react";
 import { getServiceInfo } from "./zoomAsyncHelpers";
@@ -23,6 +23,7 @@ export default function ZoomGranting() {
 
   const [currentUser, setCurrentUser] = useState(mockInitialUser)
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
+  const [storedAuthSig, setStoredAuthSig] = useState({});
   const signOut = () => {
     setCurrentServiceInfo(() => null);
   };
@@ -37,6 +38,7 @@ export default function ZoomGranting() {
 
   const getConnectedService = async () => {
     await performWithAuthSig(async (authSig) => {
+      setStoredAuthSig(authSig);
       const serviceInfo = await getServiceInfo(authSig);
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(() => serviceInfo.data[0]);
@@ -58,9 +60,44 @@ export default function ZoomGranting() {
     });
   };
 
-  if (!currentServiceInfo) {
+  if (!storedAuthSig['sig'] || !currentServiceInfo) {
     return (
-      <Button onClick={() => connect("zoom")}>Connect your Zoom account</Button>
+    <section className={'service-grid-container'}>
+      {/*<Button onClick={() => connect("zoom")}>Connect your Zoom account</Button>*/}
+      <Card className={'service-grid-login'}>
+        <CardContent className={'login-container-top'}>
+            <span className={'login-service'}>
+              <Avatar sx={{width: 60, height: 60}}>Z</Avatar>
+              <div>
+                <h2 className={'service-title'}>Zoom</h2>
+                <p className={'service-category'}>Productivity</p>
+              </div>
+            </span>
+          {!storedAuthSig['sig'] ? (
+            <p>
+              Login with your wallet to proceed.
+            </p>
+          ) : (
+            <Button className={'service-launch-button'} variant={'contained'} onClick={() => connect("zoom")}>
+              Launch
+            </Button>
+          )}
+        </CardContent>
+        <CardContent class={'service-description'}>
+          <p>Create permissions based on wallet contents for your already-existing Zoom meetings. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>
+          <p>Once files are permissioned on the Lit Zoom App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>
+          <p>Wallets that meet the conditions will enter their email address for access.</p>
+        </CardContent>
+      </Card>
+      {/*<Snackbar*/}
+      {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}*/}
+      {/*  open={openSnackbar}*/}
+      {/*  autoHideDuration={4000}*/}
+      {/*  onClose={handleCloseSnackbar}*/}
+      {/*>*/}
+      {/*  <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>*/}
+      {/*</Snackbar>*/}
+    </section>
     )
   }
 
