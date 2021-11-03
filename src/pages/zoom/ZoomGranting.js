@@ -24,7 +24,7 @@ export default function ZoomGranting() {
   const [currentUser, setCurrentUser] = useState(mockInitialUser)
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
   const signOut = () => {
-    console.log('To be signed out of zoom')
+    setCurrentServiceInfo(() => null);
   };
 
   useEffect(() => {

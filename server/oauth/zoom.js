@@ -35,7 +35,6 @@ export default async function (fastify, opts) {
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
     const { state } = request.query;
-    console.log("state from zoom", state);
     const { authSig } = JSON.parse(state);
     console.log("authSig from zoom", authSig);
 

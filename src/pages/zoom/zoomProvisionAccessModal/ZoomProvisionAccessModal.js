@@ -141,10 +141,15 @@ export default function ZoomProvisionAccessModal(props) {
                       onClick={() => {
                         props.handleAddAccessControl()
                       }}>Add Access Control Conditions</Button>
-              <Button disabled={!props.accessControlConditions.length} variant={'outlined'} onClick={() => props.handleGetShareLink()}>Get Share Link</Button>
+              <Button disabled={!props.accessControlConditions.length}
+                      style={{marginLeft: '0.5rem'}}
+                      variant={'outlined'}
+                      onClick={() => props.handleGetShareLink()}>Get Share Link</Button>
             </span>
           )}
-          <Button variant={'outlined'} onClick={() => props.handleCancelProvisionAccessDialog()}>Cancel</Button>
+          <Button variant={'outlined'}
+                  style={{marginLeft: '0.5rem'}}
+                  onClick={() => props.handleCancelProvisionAccessDialog()}>Cancel</Button>
         </DialogActions>
       </Dialog>
     </section>
