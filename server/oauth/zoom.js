@@ -271,8 +271,12 @@ export default async function (fastify, opts) {
       asset_type: meeting.type,
     });
 
-    return {
-      success: true,
-    };
+    const mostRecentShare = await fastify.objection.models.shares.query()
+      .where('asset_id_on_service', '=', meeting.id)
+      .where('connectedServiceId', '=', meeting.connectedServiceId)
+      .where('userId', '=', userId)
+      .where('name', '=', meeting.topic)
+
+    return mostRecentShare;
   });
 }

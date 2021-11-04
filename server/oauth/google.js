@@ -156,6 +156,10 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
     const authSig = req.body.authSig;
+    if (!authUser(authSig)) {
+      res.code(400);
+      return { error: "Invalid signature" };
+    }
 
     const connectedService = await fastify.objection.models.connectedServices
       .query()

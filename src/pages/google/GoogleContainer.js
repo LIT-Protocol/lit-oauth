@@ -1,12 +1,12 @@
 import GoogleGranting from "./GoogleGranting";
-import GoogleLink from "./GoogleLink";
+import GoogleLinkShare from "./GoogleLinkShare";
 
 function GoogleContainer() {
 
   if (window.location.pathname.includes("/l/")) {
     return (
       <div>
-        <GoogleLink />
+        <GoogleLinkShare />
       </div>
     );
   }

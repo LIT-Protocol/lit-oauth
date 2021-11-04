@@ -11,26 +11,6 @@ export const getMeetingsAndWebinars = async ({ authSig }) => {
   return resp.data;
 };
 
-export const createMeetingShare = async ({
-  authSig,
-  meeting,
-  accessControlConditions,
-}) => {
-  const data = await axios.post(`${API_HOST}/api/zoom/shareMeeting`, {
-    authSig,
-    meeting,
-    accessControlConditions,
-  });
-
-  return data;
-};
-
-export const getAllShares = async (authSig) => {
-  return await axios.post(`${API_HOST}/api/zoom/getAllShares`, {
-    authSig,
-  });
-}
-
 export const getShares = async ({ authSig, meetingId }) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/shares`, {
     authSig,
@@ -52,6 +32,26 @@ export const getMeetingUrl = async ({ meetingId, jwt, shareId }) => {
 
 export const getServiceInfo = async(authSig) => {
   return await axios.post(`${API_HOST}/api/zoom/getServiceInfo`, { authSig });
+}
+
+export const createMeetingShare = async ({
+  authSig,
+  meeting,
+  accessControlConditions,
+}) => {
+  const data = await axios.post(`${API_HOST}/api/zoom/shareMeeting`, {
+    authSig,
+    meeting,
+    accessControlConditions,
+  });
+
+  return data;
+};
+
+export const getAllShares = async (authSig) => {
+  return await axios.post(`${API_HOST}/api/zoom/getAllShares`, {
+    authSig,
+  });
 }
 
 export const deleteShare = async (shareUuid) => {

@@ -3,7 +3,7 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
-import GoogleLinks from "./googleLinks/GoogleLinks";
+import GoogleLinks from "./GoogleGrantingComponents/GoogleLinks";
 import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
 import {
   Alert,
@@ -51,10 +51,6 @@ export default function GoogleGranting(props) {
     useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
-
-  // useEffect(() => {
-  //   console.log('PROP TEST YO', props)
-  // }, props)
 
   useEffect(() => {
     if (!!performWithAuthSig) {
@@ -431,70 +427,72 @@ export default function GoogleGranting(props) {
   // }
 
   return (
-    (!storedAuthSig['sig'] || token === "") ? (
-      <div className={'service-loader'}>
-        <CircularProgress/>
-        <h3>Working...</h3>
-      </div>
-    ) : (
-    <section className={"service-grid-container"}>
-      <Button aria-label="delete" size="large" startIcon={<ArrowBackIcon/>} onClick={() => window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`}>
-        Back to all Apps
-      </Button>
-      <div className={'service-grid-header'}>
-        <ServiceHeader
-          serviceName={"Google Drive App"}
-          oauthServiceProvider={"Google"}
-          currentUser={currentUser}
-          serviceImageUrl={'/googledrive.png'}
-          signOut={signOut}
-        />
-      </div>
-      <div className={'service-grid-links'}>
-        <GoogleLinks
-          className={"service-links"}
-          serviceName={"Drive"}
-          handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-          handleEditLinkAction={() => console.log('EDIT CLICKED')}
-          handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
-          handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
-          handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
-          listOfShares={allShares}
-        />
-      </div>
-      <GoogleProvisionAccessModal
-        handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
-        accessControlConditions={accessControlConditions}
-        removeIthAccessControlCondition={removeIthAccessControlCondition}
-        setAccessControlConditions={setAccessControlConditions}
-        humanizedAccessControlArray={humanizedAccessControlArray}
-        handleAddAccessControl={handleAddAccessControl}
-        handleGetShareLink={handleGetShareLink}
-        accessToken={token}
-        authSig={storedAuthSig}
-        file={file}
-        setFile={setFile}
-        role={role}
-        setRole={setRole}
-        roleMap={googleRoleMap}
-        openProvisionAccessDialog={openProvisionAccessDialog}
-        setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
-      />
-      {openShareModal && (
-        <ShareModal
-          showStep="ableToAccess"
-          className={"share-modal"}
-          show={false}
-          onClose={() => setOpenShareModal(false)}
-          sharingItems={[{ name: file.embedUrl }]}
-          onAccessControlConditionsSelected={async (restriction) => {
-            await addToAccessControlConditions(restriction);
-            setOpenShareModal(false);
-            setOpenProvisionAccessDialog(true);
-          }}
-        />
+    <div>
+      {(!storedAuthSig['sig'] || token === "") ? (
+        <div className={'service-loader'}>
+          <CircularProgress/>
+          <h3>Working...</h3>
+        </div>
+      ) : (
+        <section className={"service-grid-container"}>
+          <Button aria-label="delete" size="large" startIcon={<ArrowBackIcon/>} onClick={() => window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`}>
+            Back to all Apps
+          </Button>
+          <div className={'service-grid-header'}>
+            <ServiceHeader
+              serviceName={"Google Drive App"}
+              oauthServiceProvider={"Google"}
+              currentUser={currentUser}
+              serviceImageUrl={'/googledrive.png'}
+              signOut={signOut}
+            />
+          </div>
+          <div className={'service-grid-links'}>
+            <GoogleLinks
+              className={"service-links"}
+              serviceName={"Drive"}
+              handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
+              handleEditLinkAction={() => console.log('EDIT CLICKED')}
+              handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
+              handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
+              handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
+              listOfShares={allShares}
+            />
+          </div>
+          <GoogleProvisionAccessModal
+            handleCancelProvisionAccessDialog={handleCancelProvisionAccessDialog}
+            accessControlConditions={accessControlConditions}
+            removeIthAccessControlCondition={removeIthAccessControlCondition}
+            setAccessControlConditions={setAccessControlConditions}
+            humanizedAccessControlArray={humanizedAccessControlArray}
+            handleAddAccessControl={handleAddAccessControl}
+            handleGetShareLink={handleGetShareLink}
+            accessToken={token}
+            authSig={storedAuthSig}
+            file={file}
+            setFile={setFile}
+            role={role}
+            setRole={setRole}
+            roleMap={googleRoleMap}
+            openProvisionAccessDialog={openProvisionAccessDialog}
+            setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
+          />
+          {openShareModal && (
+            <ShareModal
+              showStep="ableToAccess"
+              className={"share-modal"}
+              show={false}
+              onClose={() => setOpenShareModal(false)}
+              sharingItems={[{ name: file.embedUrl }]}
+              onAccessControlConditionsSelected={async (restriction) => {
+                await addToAccessControlConditions(restriction);
+                setOpenShareModal(false);
+                setOpenProvisionAccessDialog(true);
+              }}
+            />
+          )}
+        </section>
       )}
-
       <Snackbar
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
@@ -503,6 +501,6 @@ export default function GoogleGranting(props) {
       >
         <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
       </Snackbar>
-    </section>
-  ))
+    </div>
+  )
 }

@@ -4,12 +4,12 @@ import { URL_MAP } from "./config";
 import ZoomAccess from "./pages/zoom/ZoomAccess";
 import ZoomGranting from "./pages/zoom/ZoomGranting";
 import GoogleGranting from "./pages/google/GoogleGranting";
-import GoogleLink from "./pages/google/GoogleLink";
+import GoogleLinkShare from "./pages/google/GoogleLinkShare";
 import ServiceLogin from "./pages/serviceLogin/ServiceLogin";
 
 const ROUTING_COMPONENTS = {
   GoogleGranting: GoogleGranting,
-  GoogleLink: GoogleLink,
+  GoogleLink: GoogleLinkShare,
   ZoomGranting: ZoomGranting,
   ZoomAccess: ZoomAccess,
   ServiceLogin: ServiceLogin,
