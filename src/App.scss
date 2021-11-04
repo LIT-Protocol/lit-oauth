@@ -97,3 +97,15 @@ h1, h2, h3, h4 {
   margin: 8rem auto 0;
   width: 70%;
 }
+
+.unselected-services {
+  margin-top: 3rem;
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2 / 5;
+  grid-row-start: 4;
+}
+
+.unselected-service-card {
+  margin: 1rem;
+}

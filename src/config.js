@@ -19,6 +19,11 @@ export const URL_MAP = {
     componentName: "ZoomAccess",
     exact: false,
   },
+  serviceLogin: {
+    path: "/",
+    componentName: "ServiceLogin",
+    exact: false,
+  },
 };
 
 export const HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;

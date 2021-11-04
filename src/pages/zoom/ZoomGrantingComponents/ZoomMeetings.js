@@ -56,7 +56,7 @@ export default function ZoomMeetings(props) {
   useEffect(() => {
     const go = async () => {
       const resp = await loadMeetings();
-      await retrieveAllShares();
+      // await retrieveAllShares();
     };
     go();
   }, []);
@@ -78,8 +78,8 @@ export default function ZoomMeetings(props) {
 
   const handleCancelProvisionAccessDialog = () => {
     setOpenProvisionAccessDialog(false);
-    setAccessControlConditions(() => []);
-    setSelectedMeeting(() => null);
+    setAccessControlConditions([]);
+    setSelectedMeeting(null);
   };
 
   const handleOpenSnackBar = (message, severity) => {

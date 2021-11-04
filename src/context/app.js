@@ -54,11 +54,17 @@ export const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
-    const go = async () => {
-      const tokens = await LitJsSdk.getTokenList();
-      setTokenList(tokens);
-    };
-    go();
+    if (!tokenList) {
+      const go = async () => {
+        try {
+          const tokens = await LitJsSdk.getTokenList();
+          setTokenList(tokens);
+        } catch(err) {
+          console.log('Error fetching token list:', err)
+        }
+      };
+      go();
+    }
   }, []);
 
   return (

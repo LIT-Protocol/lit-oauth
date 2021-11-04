@@ -10,7 +10,7 @@ import {
 } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
-  fastify.post("/api/oauth/zoom/login", async (request, reply) => {
+  fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
     const { authSig } = request.body;
 
     if (!authUser(authSig)) {

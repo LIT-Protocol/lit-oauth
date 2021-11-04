@@ -10,13 +10,15 @@ import {
   Button,
   Card,
   Snackbar,
-  Avatar,
-  CardContent,
+  IconButton,
+  CardContent, CircularProgress,
 } from "@mui/material";
 // import googleDriveLogo from '../../assets/googledrive.png';
 
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useAppContext } from "../../context";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -29,8 +31,9 @@ const googleRoleMap = {
   Write: "writer",
 };
 
-export default function GoogleGranting() {
+export default function GoogleGranting(props) {
   const parsedEnv = dotenv.config();
+  const { performWithAuthSig } = useAppContext();
 
   const [file, setFile] = useState(null);
   const [allShares, setAllShares] = useState([]);
@@ -48,6 +51,10 @@ export default function GoogleGranting() {
     useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
+
+  // useEffect(() => {
+  //   console.log('PROP TEST YO', props)
+  // }, props)
 
   useEffect(() => {
     loadAuth();
@@ -105,11 +112,10 @@ export default function GoogleGranting() {
 
   const loadAuth = async () => {
     try {
-      const litAuthResult = await LitJsSdk.checkAndSignAuthMessage({
-        chain: "ethereum",
-      });
-      setStoredAuthSig(() => litAuthResult);
-      await loadGoogleAuth();
+      await performWithAuthSig(async (authSig) => {
+        await setStoredAuthSig(() => authSig);
+        await loadGoogleAuth();
+      })
     } catch (err) {
       console.log("LIT AUTH FAILURE", err);
     }
@@ -136,7 +142,9 @@ export default function GoogleGranting() {
             await checkForUserLocally(currentUserObject);
           } else if (googleObject.isSignedIn.get() && !grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
             handleOpenSnackBar(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
-            signOut();
+            await signOut();
+          } else {
+            await authenticate();
           }
         });
     });
@@ -166,6 +174,7 @@ export default function GoogleGranting() {
       } else {
         console.log('No user found locally. Please log in again.')
         handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
+        // await authenticate();
       }
     } catch(err) {
       console.log('No user found locally:', err)
@@ -182,9 +191,9 @@ export default function GoogleGranting() {
         googleAuthResponse
       );
 
-      setConnectedServiceId(() => response.data.connectedServices[0].id);
-      setCurrentUser(() => response.data.userProfile);
-      setToken(() => googleAuthResponse.access_token);
+      setConnectedServiceId(response.data.connectedServices[0].id);
+      setCurrentUser(response.data.userProfile);
+      setToken(googleAuthResponse.access_token);
       await getAllShares(authSig);
     } catch(err) {
       console.log('Error verifying user:', err);
@@ -208,6 +217,7 @@ export default function GoogleGranting() {
         });
       if (authResult.code) {
         await storeToken(authSig, authResult.code);
+        await getAllShares(authSig);
       }
     } catch(err) {
       console.log('Error logging in:', err)
@@ -231,7 +241,7 @@ export default function GoogleGranting() {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
-        setToken(() => currentUserObject.getAuthResponse().access_token);
+        setToken(currentUserObject.getAuthResponse().access_token);
         const userBasicProfile = currentUserObject.getBasicProfile();
         const userProfile = {
           email: userBasicProfile.getEmail(),
@@ -243,7 +253,7 @@ export default function GoogleGranting() {
             .map((s) => s.split("")[0])
             .join(""),
         };
-        setCurrentUser(() => userProfile);
+        setCurrentUser(userProfile);
       }
     } catch(err) {
       console.log(`Error storing access token:, ${err.errors}`)
@@ -252,14 +262,15 @@ export default function GoogleGranting() {
     }
   };
 
-  const signOut = () => {
-    const auth2 = window.gapi.auth2.getAuthInstance();
-    auth2.signOut().then(function () {
+  const signOut = async () => {
+    const auth2 = await window.gapi.auth2.getAuthInstance();
+    await auth2.signOut().then(function () {
       auth2.disconnect();
+      setAccessControlConditions([]);
+      setToken("");
+      setCurrentUser({});
+      window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
     });
-    setAccessControlConditions([]);
-    setToken("");
-    setCurrentUser({});
   };
 
   const addToAccessControlConditions = async (r) => {
@@ -348,29 +359,33 @@ export default function GoogleGranting() {
     return (
       <section className={'service-grid-container'}>
         <Card className={'service-grid-login'}>
-          <CardContent className={'login-container-top'}>
-            <span className={'login-service'}>
-              <Avatar sx={{width: 60, height: 60}}>G</Avatar>
-              <div>
-                <h2 className={'service-title'}>Google Drive</h2>
-                <p className={'service-category'}>Productivity</p>
-              </div>
-            </span>
-            {!storedAuthSig['sig'] ? (
-              <p>
-                Login with your wallet to proceed.
-              </p>
-            ) : (
-              <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate("google")}>
-                Launch
-              </Button>
-            )}
+          <CardContent>
+            <CircularProgress/>
+            <h3>Working...</h3>
           </CardContent>
-          <CardContent class={'service-description'}>
-            <p>Create permissions based on wallet contents for your already-existing Google Drive files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>
-            <p>Once files are permissioned on the Lit Google Docs App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>
-            <p>Wallets that meet the conditions will enter their email address for access.</p>
-          </CardContent>
+          {/*<CardContent className={'login-container-top'}>*/}
+          {/*  <span className={'login-service'}>*/}
+          {/*    <Avatar sx={{width: 60, height: 60}}>G</Avatar>*/}
+          {/*    <div>*/}
+          {/*      <h2 className={'service-title'}>Google Drive</h2>*/}
+          {/*      <p className={'service-category'}>Productivity</p>*/}
+          {/*    </div>*/}
+          {/*  </span>*/}
+          {/*  {!storedAuthSig['sig'] ? (*/}
+          {/*    <p>*/}
+          {/*      Login with your wallet to proceed.*/}
+          {/*    </p>*/}
+          {/*  ) : (*/}
+          {/*    <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate("google")}>*/}
+          {/*      Launch*/}
+          {/*    </Button>*/}
+          {/*  )}*/}
+          {/*</CardContent>*/}
+          {/*<CardContent class={'service-description'}>*/}
+          {/*  <p>Create permissions based on wallet contents for your already-existing Google Drive files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>*/}
+          {/*  <p>Once files are permissioned on the Lit Google Docs App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>*/}
+          {/*  <p>Wallets that meet the conditions will enter their email address for access.</p>*/}
+          {/*</CardContent>*/}
         </Card>
         <Snackbar
           anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
@@ -386,6 +401,9 @@ export default function GoogleGranting() {
 
   return (
     <section className={"service-grid-container"}>
+      <Button aria-label="delete" size="large" startIcon={<ArrowBackIcon/>} onClick={() => window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`}>
+        Back to all Apps
+      </Button>
       <div className={'service-grid-header'}>
         <ServiceHeader
           serviceName={"Google Drive App"}
