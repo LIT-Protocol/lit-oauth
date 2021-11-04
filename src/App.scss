@@ -40,7 +40,7 @@ h4 {
 // shared grid scss
 .service-grid-container {
   display: grid;
-  grid-template-rows: 12% 13% 40% 15% 15%;
+  grid-template-rows: 8% 13% 40% 15% 20%;
   grid-template-columns: 12% 8% 60% 8% 12%;
   width: 100vw;
   height: 100vh;
@@ -65,6 +65,14 @@ h4 {
   border-bottom: 1px solid #5e36b7;
 }
 
+.service-loader {
+  width: 6rem;
+  height: 6rem;
+  position: absolute;
+  top: 35vh;
+  left: calc(50vw - 3rem);
+}
+
 .login-container-top {
   display: flex;
   justify-content: space-between;
@@ -73,6 +81,15 @@ h4 {
 .login-service {
   display: flex;
   align-items: center;
+}
+
+.service-image {
+  height: 3rem;
+  width: 3rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin: 0;
+  padding: 0;
 }
 
 .service-title {
@@ -91,8 +108,14 @@ h4 {
 }
 
 .service-launch-button {
-  width: 8rem;
+  width: 10.3rem;
+  height: 2.3rem;
+  cursor: pointer;
+}
+
+.service-launch-button-google {
   height: 2.5rem;
+  cursor: pointer;
 }
 
 .service-launch-button-google {
@@ -104,4 +127,33 @@ h4 {
   text-align: left;
   margin: 8rem auto 0;
   width: 70%;
+}
+
+.unselected-services-container {
+  grid-column: 3 / 4;
+  grid-row-start: 4;
+  margin-top: 2rem;
+}
+
+.unselected-services {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.unselected-services-title {
+  width: 100%;
+  text-align: left;
+  margin: 0 1rem;
+}
+
+.unselected-service-card {
+  margin: 1rem;
+}
+
+.unselected-service-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
 }

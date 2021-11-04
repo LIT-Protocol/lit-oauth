@@ -10,11 +10,11 @@ export const verifyToken = async (authSig, googleAuthResponse) => {
     });
 }
 
-export const getUserProfile = async (authSig, uniqueId) => {
+export const getLitUserProfile = async (authSig, googleAccountUniqueId) => {
   return await axios
     .post(API_HOST + "/api/google/getUserProfile", {
       authSig,
-      uniqueId,
+      googleAccountUniqueId,
     });
 }
 

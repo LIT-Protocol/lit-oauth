@@ -10,7 +10,7 @@ import {
 } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
-  fastify.post("/api/oauth/zoom/login", async (request, reply) => {
+  fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
     const { authSig } = request.body;
 
     if (!authUser(authSig)) {
@@ -128,8 +128,8 @@ export default async function (fastify, opts) {
         )
       )
     )
-      .flat()
-      .filter((mw) => new Date(mw.start_time) > new Date());
+    .flat()
+    .filter((mw) => new Date(mw.start_time) > new Date());
 
     // console.log("meetingsAndWebinars", meetingsAndWebinars);
 
@@ -271,8 +271,12 @@ export default async function (fastify, opts) {
       asset_type: meeting.type,
     });
 
-    return {
-      success: true,
-    };
+    const mostRecentShare = await fastify.objection.models.shares.query()
+      .where('asset_id_on_service', '=', meeting.id)
+      .where('connectedServiceId', '=', meeting.connectedServiceId)
+      .where('userId', '=', userId)
+      .where('name', '=', meeting.topic)
+
+    return mostRecentShare;
   });
 }

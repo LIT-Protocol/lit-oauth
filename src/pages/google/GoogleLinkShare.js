@@ -9,14 +9,14 @@ import {
   CardContent,
   TextField, Snackbar, Alert,
 } from "@mui/material";
-import "./GoogleLink.scss";
+import "./GoogleLinkShare.scss";
 
 const GOOGLE_CLIENT_KEY =
   process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID;
 const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_URI = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
-function GoogleLink() {
+function GoogleLinkShare() {
   const [conditionsFetched, setConditionsFetched] = useState(false);
   const [error, setError] = useState("");
   const [litNodeClient, setLitNodeClient] = useState({});
@@ -264,4 +264,4 @@ function GoogleLink() {
   }
 }
 
-export default GoogleLink;
+export default GoogleLinkShare;

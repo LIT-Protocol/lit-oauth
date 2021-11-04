@@ -78,6 +78,7 @@ export default async function (fastify, opts) {
         .query()
         .where("user_id", "=", authSig.address)
         .where("service_name", "=", "google");
+    console.log('CONNECTED GOOGLE SERVICES', connectedGoogleServices)
     const serialized = connectedGoogleServices.map((s) => ({
       id: s.id,
       email: s.email,
@@ -150,24 +151,15 @@ export default async function (fastify, opts) {
       idOnService: s.id_on_service,
     }));
 
-    // TODO: replace with google user photo
-    const avatar = payload.name
-      .split(" ")
-      .map((s) => s.split("")[0])
-      .join("");
-
-    const userProfile = {
-      email: payload.email,
-      displayName: payload.name,
-      givenName: payload.given_name,
-      avatar: avatar,
-    };
-
-    return { connectedServices: serialized, userId, userProfile };
+    return { connectedServices: serialized };
   });
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
     const authSig = req.body.authSig;
+    if (!authUser(authSig)) {
+      res.code(400);
+      return { error: "Invalid signature" };
+    }
 
     const connectedService = await fastify.objection.models.connectedServices
       .query()
@@ -189,14 +181,15 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
-    const uniqueId = req.body.uniqueId.toString();
+    const uniqueId = req.body.googleAccountUniqueId;
+    const authSigAddress = req.body.authSig.address;
     const connectedServices = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
       .where("id_on_service", "=", uniqueId)
-      .where("user_id", "=", req.body.authSig.address);
+      .where("user_id", "=", authSigAddress);
 
-    if (connectedServices[0]?.refreshToken) {
+    if (connectedServices?.length && connectedServices[0]['refreshToken']) {
       delete connectedServices[0].refreshToken;
     }
     return connectedServices;

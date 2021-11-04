@@ -23,6 +23,7 @@ export const AppContextProvider = (props) => {
       try {
         currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
         setAuthSig(currentAuthSig);
+        console.log('app.js CURRENT AUTH SIG', currentAuthSig)
       } catch (e) {
         console.log(e);
         if (e?.errorCode === "no_wallet") {
@@ -54,11 +55,17 @@ export const AppContextProvider = (props) => {
   };
 
   useEffect(() => {
-    const go = async () => {
-      const tokens = await LitJsSdk.getTokenList();
-      setTokenList(tokens);
-    };
-    go();
+    if (!tokenList) {
+      const go = async () => {
+        try {
+          const tokens = await LitJsSdk.getTokenList();
+          setTokenList(tokens);
+        } catch(err) {
+          console.log('Error fetching token list:', err)
+        }
+      };
+      go();
+    }
   }, []);
 
   return (
