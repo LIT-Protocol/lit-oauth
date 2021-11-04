@@ -118,6 +118,7 @@ export default function ZoomGranting() {
           serviceName={"Zoom App"}
           oauthServiceProvider={"Zoom"}
           currentUser={currentUser}
+          serviceImageUrl={'/zoom.png'}
           signOut={signOut}
         />
       </div>

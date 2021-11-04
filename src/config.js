@@ -22,7 +22,7 @@ export const URL_MAP = {
   serviceLogin: {
     path: "/",
     componentName: "ServiceLogin",
-    exact: false,
+    exact: true,
   },
 };
 

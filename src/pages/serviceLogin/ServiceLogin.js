@@ -70,7 +70,7 @@ export default function ServiceLogin() {
       <Card className={'service-grid-login'}>
         <CardContent className={'login-container-top'}>
             <span className={'login-service'}>
-              <Avatar sx={{width: 60, height: 60}}>G</Avatar>
+              <div className={'service-image'} style={{backgroundImage: `url(${currentSelectedService.serviceImageUrl}`}}/>
               <div>
                 <h2 className={'service-title'}>{currentSelectedService.serviceName}</h2>
                 <p className={'service-category'}>{currentSelectedService.serviceClassification}</p>
@@ -92,30 +92,38 @@ export default function ServiceLogin() {
           <p>Wallets that meet the conditions will enter their email address for access.</p>
         </CardContent>
       </Card>
-      <section className={'unselected-services'}>
-        { !!currentUnselectedServices.length && (
-          currentUnselectedServices.map((s, i) => (
-            <Card key={i} className={'unselected-service-card'} sx={{ maxWidth: 345 }}>
-              <CardMedia
-                component="img"
-                height="60"
-                // image={require('../../assets/desk.jpeg')}
-              />
-              <CardContent>
-                <Typography gutterBottom variant="h5" component="div">
-                  {s.serviceName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Grant access to {s.serviceName} with blockchain requirements.
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button variant={'outlined'} onClick={() => changeService(s.serviceTag)}size="small">Select</Button>
-              </CardActions>
-            </Card>
+      <section className={'unselected-services-container'}>
+        <h2 className={'unselected-services-title'}>More Apps</h2>
+        <span className={'unselected-services'}>
+          { !!currentUnselectedServices.length && (
+            currentUnselectedServices.map((s, i) => (
+              <Card key={i} className={'unselected-service-card'} sx={{ maxWidth: 345 }}>
+                <CardMedia
+                  component="img"
+                  height="60"
+                  image={'/desk.jpeg'}
+                />
+                <CardContent>
+                  <span className={'unselected-service-title'}>
+                    <div className={'service-image'}
+                         style={{backgroundImage: `url(${s.serviceImageUrl}`}}/>
+                    <h2 className={'left-margin-buffer'}>{s.serviceName}</h2>
+                    {/*<Typography gutterBottom variant="h5" component="div">*/}
+                    {/*  {s.serviceName}*/}
+                    {/*</Typography>*/}
+                  </span>
+                  <Typography variant="body2" color="text.secondary">
+                    Grant access to {s.serviceName} with blockchain requirements.
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button variant={'outlined'} onClick={() => changeService(s.serviceTag)}size="small">Select</Button>
+                </CardActions>
+              </Card>
 
-          ))
-        )}
+            ))
+          )}
+        </span>
       </section>
       <Snackbar
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}

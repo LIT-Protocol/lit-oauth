@@ -12,6 +12,7 @@ export default function ServiceHeader(props) {
 
   useEffect(() => {
     currentUser = props.currentUser;
+    console.log('CURRENT USER UPDATE', props.currentUser)
   }, [props.currentUser])
 
   const handleUserMenuClick = (event) => {
@@ -32,9 +33,9 @@ export default function ServiceHeader(props) {
   return (
     <Card className={'header-card'}>
       <span className={'header-left'}>
-        {/*<img src={require('props.serviceImage')}/>*/}
-        <Avatar className={'right-buffer'}>G</Avatar>
-        <h2>{serviceName}</h2>
+        <div className={'login-service-image'}
+             style={{backgroundImage: `url(${props.serviceImageUrl}`}}></div>
+        <h2 className={'left-margin-buffer'}>{serviceName}</h2>
       </span>
       <span className={'header-right'}>
         <p className={'service-text right-buffer'}>
@@ -44,7 +45,7 @@ export default function ServiceHeader(props) {
           onClick={handleUserMenuClick}
           className={'header-user-menu'}
         >
-          <Avatar className={'right-buffer'}>{currentUser.avatar}</Avatar>
+          <Avatar className={'right-buffer'} src={currentUser.avatar}/>
           <div className={'user-info right-buffer'}>
             <span className={'user-name'}>
               {currentUser.displayName}

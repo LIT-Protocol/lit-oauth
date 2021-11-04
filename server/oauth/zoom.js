@@ -128,8 +128,8 @@ export default async function (fastify, opts) {
         )
       )
     )
-      .flat()
-      .filter((mw) => new Date(mw.start_time) > new Date());
+    .flat()
+    .filter((mw) => new Date(mw.start_time) > new Date());
 
     // console.log("meetingsAndWebinars", meetingsAndWebinars);
 

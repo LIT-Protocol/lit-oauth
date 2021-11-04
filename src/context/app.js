@@ -23,6 +23,7 @@ export const AppContextProvider = (props) => {
       try {
         currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
         setAuthSig(currentAuthSig);
+        console.log('app.js CURRENT AUTH SIG', currentAuthSig)
       } catch (e) {
         console.log(e);
         if (e?.errorCode === "no_wallet") {
