@@ -14,6 +14,7 @@ import {
   CardContent,
 } from "@mui/material";
 // import googleDriveLogo from '../../assets/googledrive.png';
+import googleLoginButton from "../../assets/btn_google_signin_dark_normal_web@2x.png";
 
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
@@ -389,13 +390,18 @@ export default function GoogleGranting() {
             {!storedAuthSig["sig"] ? (
               <p>Login with your wallet to proceed.</p>
             ) : (
-              <Button
-                className={"service-launch-button"}
-                variant={"contained"}
+              // <Button
+              //   className={"service-launch-button"}
+              //   variant={"contained"}
+              //   onClick={() => authenticate("google")}
+              // >
+              //   Launch
+              // </Button>
+              <img
+                src={googleLoginButton}
+                className="service-launch-button-google"
                 onClick={() => authenticate("google")}
-              >
-                Launch
-              </Button>
+              />
             )}
           </CardContent>
           <CardContent class={"service-description"}>
@@ -414,6 +420,9 @@ export default function GoogleGranting() {
             <p>
               Wallets that meet the conditions will enter their email address
               for access.
+            </p>
+            <p>
+              Sign in with Google above to connect your Google Drive account
             </p>
           </CardContent>
         </Card>
