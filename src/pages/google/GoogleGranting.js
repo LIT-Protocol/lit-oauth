@@ -250,7 +250,8 @@ export default function GoogleGranting() {
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
         console.log("currentUserObject ", currentUserObject);
-        setToken(() => currentUserObject.getAuthResponse().access_token);
+        const token = currentUserObject.getAuthResponse().access_token;
+        setToken(token);
         const userBasicProfile = currentUserObject.getBasicProfile();
         console.log("userBasicProfile", userBasicProfile);
         const userProfile = {
