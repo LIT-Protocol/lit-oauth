@@ -22,7 +22,10 @@
   margin-left: 1rem;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   font-weight: 500;
 }
 
@@ -59,7 +62,7 @@ h1, h2, h3, h4 {
   border: none;
   box-shadow: none !important;
   border-radius: 0 !important;
-  border-bottom: 1px solid #5E36B7;
+  border-bottom: 1px solid #5e36b7;
 }
 
 .service-loader {
@@ -107,6 +110,11 @@ h1, h2, h3, h4 {
 .service-launch-button {
   width: 10.3rem;
   height: 2.3rem;
+  cursor: pointer;
+}
+
+.service-launch-button-google {
+  height: 2.5rem;
   cursor: pointer;
 }
 

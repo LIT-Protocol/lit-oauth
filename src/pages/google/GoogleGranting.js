@@ -14,6 +14,7 @@ import {
   CardContent, CircularProgress,
 } from "@mui/material";
 // import googleDriveLogo from '../../assets/googledrive.png';
+import googleLoginButton from "../../assets/btn_google_signin_dark_normal_web@2x.png";
 
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
@@ -273,7 +274,9 @@ export default function GoogleGranting(props) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
+
         const token = currentUserObject.getAuthResponse(true).access_token;
+        console.log("access_token", token);
         setToken(token);
         console.log(
           "currentUserObject after getting auth response with tokens",
@@ -356,7 +359,10 @@ export default function GoogleGranting(props) {
       });
 
       setAccessControlConditions([]);
-      handleOpenSnackBar(`New link created and copied to clipboard.`, 'success');
+      handleOpenSnackBar(
+        `New link created and copied to clipboard.`,
+        "success"
+      );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(storedAuthSig);
     } catch(err) {
@@ -369,10 +375,10 @@ export default function GoogleGranting(props) {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig);
-      handleOpenSnackBar(`${shareInfo.name} has been deleted.`, 'success');
-    } catch(err) {
-      console.log(`'Error deleting share', ${err}`)
-      handleOpenSnackBar(`Error deleting share: ${err}`, 'error');
+      handleOpenSnackBar(`${shareInfo.name} has been deleted.`, "success");
+    } catch (err) {
+      console.log(`'Error deleting share', ${err}`);
+      handleOpenSnackBar(`Error deleting share: ${err}`, "error");
     }
   };
 
@@ -449,7 +455,7 @@ export default function GoogleGranting(props) {
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
