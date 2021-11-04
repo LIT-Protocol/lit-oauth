@@ -15,18 +15,10 @@ import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
-const mockInitialUser = {
-  email: 'trotksy@stalinsucks.mx',
-  displayName: 'leon',
-  givenName: 'leon the trotsky',
-  avatar: 'l'
-}
-
-
 export default function ZoomGranting() {
   const { performWithAuthSig } = useAppContext();
 
-  const [currentUser, setCurrentUser] = useState(mockInitialUser)
+  const [currentUser, setCurrentUser] = useState({})
   const [allShares, setAllShares] = useState([]);
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
   const [storedAuthSig, setStoredAuthSig] = useState({});
@@ -109,6 +101,8 @@ export default function ZoomGranting() {
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(serviceInfo.data[0]);
+        await setUserProfile(serviceInfo.data[0])
+        console.log('ZOOM SERVICE', serviceInfo.data[0])
         await loadMeetings(storedAuthSig);
         await getAllShares(storedAuthSig)
       } else {
@@ -116,6 +110,18 @@ export default function ZoomGranting() {
         await connectToZoom(storedAuthSig);
       }
     })
+  }
+
+  const setUserProfile = async (currentUserObject) => {
+    const userBasicProfile = currentUserObject;
+
+    const userProfile = {
+      email: userBasicProfile.email,
+      displayName: userBasicProfile.email,
+      givenName: userBasicProfile.email,
+      avatar: 'Z',
+    };
+    setCurrentUser(userProfile);
   }
 
   const connectToZoom = async(authSig) => {
@@ -155,6 +161,8 @@ export default function ZoomGranting() {
 
   const signOut = async () => {
     await setCurrentServiceInfo(() => null);
+    setAccessControlConditions([]);
+    setCurrentUser({});
     // TODO: figure out how to sign out of zoom
     window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
   };
@@ -179,7 +187,7 @@ export default function ZoomGranting() {
       const meeting = meetings.find((m) => m.id === selectedMeeting.id);
       setSelectedMeeting(meeting);
       const share = meeting.shares[0];
-      console.log('SHARESHARE', share)
+      console.log('SHARESHARE', meeting)
 
       const resourceId = getResourceIdForMeeting({
         meeting: selectedMeeting,
@@ -191,8 +199,8 @@ export default function ZoomGranting() {
         authSig,
         resourceId,
       });
-      setSelectedMeeting(() => null);
-      setAccessControlConditions(() => []);
+      setSelectedMeeting( null);
+      setAccessControlConditions( []);
       // getLinkFromShare()
       await getAllShares(storedAuthSig);
     });
@@ -334,7 +342,7 @@ export default function ZoomGranting() {
       <Snackbar
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
-        autoHideDuration={4000}
+        autoHideDuration={5000}
         onClose={handleCloseSnackbar}
       >
         <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
