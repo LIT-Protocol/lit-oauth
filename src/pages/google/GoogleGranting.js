@@ -273,7 +273,6 @@ export default function GoogleGranting(props) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
-        setToken(currentUserObject.getAuthResponse().access_token);
         const token = currentUserObject.getAuthResponse(true).access_token;
         setToken(token);
         console.log(
@@ -381,50 +380,6 @@ export default function GoogleGranting(props) {
     await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
     handleOpenSnackBar(`Link has been copied to clipboard.`, 'info');
   }
-
-  // if (!storedAuthSig.sig || token === "") {
-  //   return (
-  //     <section className={'service-grid-container'}>
-  //       <Card className={'service-grid-login'}>
-  //         <CardContent>
-  //           <CircularProgress/>
-  //           <h3>Working...</h3>
-  //         </CardContent>
-  //         {/*<CardContent className={'login-container-top'}>*/}
-  //         {/*  <span className={'login-service'}>*/}
-  //         {/*    <Avatar sx={{width: 60, height: 60}}>G</Avatar>*/}
-  //         {/*    <div>*/}
-  //         {/*      <h2 className={'service-title'}>Google Drive</h2>*/}
-  //         {/*      <p className={'service-category'}>Productivity</p>*/}
-  //         {/*    </div>*/}
-  //         {/*  </span>*/}
-  //         {/*  {!storedAuthSig['sig'] ? (*/}
-  //         {/*    <p>*/}
-  //         {/*      Login with your wallet to proceed.*/}
-  //         {/*    </p>*/}
-  //         {/*  ) : (*/}
-  //         {/*    <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate("google")}>*/}
-  //         {/*      Launch*/}
-  //         {/*    </Button>*/}
-  //         {/*  )}*/}
-  //         {/*</CardContent>*/}
-  //         {/*<CardContent class={'service-description'}>*/}
-  //         {/*  <p>Create permissions based on wallet contents for your already-existing Google Drive files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>*/}
-  //         {/*  <p>Once files are permissioned on the Lit Google Docs App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>*/}
-  //         {/*  <p>Wallets that meet the conditions will enter their email address for access.</p>*/}
-  //         {/*</CardContent>*/}
-  //       </Card>
-  //       <Snackbar
-  //         anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
-  //         open={openSnackbar}
-  //         autoHideDuration={4000}
-  //         onClose={handleCloseSnackbar}
-  //       >
-  //         <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
-  //       </Snackbar>
-  //     </section>
-  //   );
-  // }
 
   return (
     <div>
