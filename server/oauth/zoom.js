@@ -6,7 +6,7 @@ import {
   getAccessToken,
   getUser,
   getMeetingsAndWebinars,
-  createMeetingInvite,
+  createMeetingInvite, refreshAccessToken,
 } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
@@ -32,6 +32,12 @@ export default async function (fastify, opts) {
         "https://zoom.us/oauth/authorize?" + new URLSearchParams(q).toString(),
     });
   });
+
+  fastify.delete("/api/oauth/zoom/serviceLogout", async (request, reply) => {
+    reply.send({
+      // redirectTo:
+    })
+  })
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
     const { state } = request.query;
@@ -86,9 +92,24 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/zoom/getServiceInfo", async (request, reply) => {
     const authSig = request.body.authSig;
-    return fastify.objection.models.connectedServices.query()
+    let connectedService = fastify.objection.models.connectedServices.query()
       .where('user_id', '=', authSig.address)
       .where('service_name', '=', 'zoom');
+
+    // if (connectedService.length) {
+    //   const refreshTokenArgs = {
+    //     connectedServiceId: connectedService[0].id,
+    //     refreshToken: connectedService[0].refresh_token,
+    //     fastify
+    //   }
+    //   await refreshAccessToken(refreshTokenArgs);
+    //
+    //   connectedService = fastify.objection.models.connectedServices.query()
+    //     .where('user_id', '=', authSig.address)
+    //     .where('service_name', '=', 'zoom');
+    // }
+
+    return connectedService;
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {

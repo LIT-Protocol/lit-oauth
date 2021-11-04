@@ -457,7 +457,7 @@ export default function GoogleGranting(props) {
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         open={openSnackbar}
-        autoHideDuration={4000}
+        autoHideDuration={5000}
         onClose={handleCloseSnackbar}
       >
         <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>

@@ -1,11 +1,12 @@
 .header-card {
-  background-color: #e7e3ee;
+  background-color: #e7e3ee !important;
+  border-radius: 0 0 2rem 2rem !important;
+  box-shadow: none !important;
   //width: 57rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  border-radius: 0 0 2rem 2rem;
 }
 
 .header-left, .header-right {
@@ -19,6 +20,8 @@
 }
 
 .header-user-menu {
+  background-color: #fff !important;
+  color: #000 !important;
 
   .user-info {
     display: flex;
@@ -29,6 +32,7 @@
 
   .user-email {
     font-size: 11px;
+    color: #444 !important;
   }
 }
 

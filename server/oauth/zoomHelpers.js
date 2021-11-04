@@ -154,7 +154,7 @@ export const createMeetingInvite = async ({
   });
 };
 
-const refreshAccessToken = async ({
+export const refreshAccessToken = async ({
   connectedServiceId,
   refreshToken,
   fastify,
