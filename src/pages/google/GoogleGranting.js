@@ -249,8 +249,10 @@ export default function GoogleGranting() {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
+        console.log("currentUserObject ", currentUserObject);
         setToken(() => currentUserObject.getAuthResponse().access_token);
         const userBasicProfile = currentUserObject.getBasicProfile();
+        console.log("userBasicProfile", userBasicProfile);
         const userProfile = {
           email: userBasicProfile.getEmail(),
           displayName: userBasicProfile.getName(),
@@ -264,7 +266,7 @@ export default function GoogleGranting() {
         setCurrentUser(() => userProfile);
       }
     } catch (err) {
-      console.log(`Error storing access token:, ${err.errors}`);
+      console.log(`Error storing access token:, ${err.errors}`, err);
       handleOpenSnackBar(`Error storing access token:, ${err}`, "error");
       signOut();
     }
