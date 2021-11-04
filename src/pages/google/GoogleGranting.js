@@ -91,10 +91,10 @@ export default function GoogleGranting() {
   const handleOpenSnackBar = (message, severity) => {
     setSnackbarInfo({
       message: message,
-      severity: severity
-    })
+      severity: severity,
+    });
     setOpenSnackbar(true);
-  }
+  };
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -134,8 +134,16 @@ export default function GoogleGranting() {
             grantedScopes.includes("https://www.googleapis.com/auth/drive.file")
           ) {
             await checkForUserLocally(currentUserObject);
-          } else if (googleObject.isSignedIn.get() && !grantedScopes.includes('https://www.googleapis.com/auth/drive.file')) {
-            handleOpenSnackBar(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
+          } else if (
+            googleObject.isSignedIn.get() &&
+            !grantedScopes.includes(
+              "https://www.googleapis.com/auth/drive.file"
+            )
+          ) {
+            handleOpenSnackBar(
+              `Insufficient Permission: Request had insufficient authentication scopes.`,
+              "error"
+            );
             signOut();
           }
         });
@@ -164,12 +172,15 @@ export default function GoogleGranting() {
       if (userProfiles?.data[0]) {
         await setLatestAccessToken(currentUserObject);
       } else {
-        console.log('No user found locally. Please log in again.')
-        handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
+        console.log("No user found locally. Please log in again.");
+        handleOpenSnackBar(
+          `No user found locally. Please log in again.`,
+          "error"
+        );
       }
-    } catch(err) {
-      console.log('No user found locally:', err)
-      handleOpenSnackBar(`No user found locally: ${err}`, 'error');
+    } catch (err) {
+      console.log("No user found locally:", err);
+      handleOpenSnackBar(`No user found locally: ${err}`, "error");
     }
   };
 
@@ -186,9 +197,9 @@ export default function GoogleGranting() {
       setCurrentUser(() => response.data.userProfile);
       setToken(() => googleAuthResponse.access_token);
       await getAllShares(authSig);
-    } catch(err) {
-      console.log('Error verifying user:', err);
-      handleOpenSnackBar(`Error verifying user:, ${err}`, 'error');
+    } catch (err) {
+      console.log("Error verifying user:", err);
+      handleOpenSnackBar(`Error verifying user:, ${err}`, "error");
     }
   };
 
@@ -209,9 +220,9 @@ export default function GoogleGranting() {
       if (authResult.code) {
         await storeToken(authSig, authResult.code);
       }
-    } catch(err) {
-      console.log('Error logging in:', err)
-      handleOpenSnackBar(`Error logging in: ${err}`, 'error');
+    } catch (err) {
+      console.log("Error logging in:", err);
+      handleOpenSnackBar(`Error logging in: ${err}`, "error");
     }
   };
 
@@ -221,13 +232,20 @@ export default function GoogleGranting() {
         authSig,
         token
       );
-      console.log('ERROR MAYBE?', response)
-      if (response.data['errorStatus']) {
-        handleOpenSnackBar(`Error logging in: ${response.data.errors[0]['message']}`, 'error');
+      console.log("ERROR MAYBE?", response);
+      if (response.data["errorStatus"]) {
+        handleOpenSnackBar(
+          `Error logging in: ${response.data.errors[0]["message"]}`,
+          "error"
+        );
         signOut();
         return;
       }
       if (!!response.data["connectedServices"]) {
+        console.log(
+          'response.data["connectedServices"]',
+          response.data["connectedServices"]
+        );
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
@@ -245,9 +263,9 @@ export default function GoogleGranting() {
         };
         setCurrentUser(() => userProfile);
       }
-    } catch(err) {
-      console.log(`Error storing access token:, ${err.errors}`)
-      handleOpenSnackBar(`Error storing access token:, ${err}`, 'error');
+    } catch (err) {
+      console.log(`Error storing access token:, ${err.errors}`);
+      handleOpenSnackBar(`Error storing access token:, ${err}`, "error");
       signOut();
     }
   };
@@ -318,12 +336,15 @@ export default function GoogleGranting() {
       });
 
       setAccessControlConditions([]);
-      handleOpenSnackBar(`New link created and copied to clipboard.`, 'success');
+      handleOpenSnackBar(
+        `New link created and copied to clipboard.`,
+        "success"
+      );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(authSig);
-    } catch(err) {
-      console.log(`'Error sharing share', ${err}`)
-      handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
+    } catch (err) {
+      console.log(`'Error sharing share', ${err}`);
+      handleOpenSnackBar(`'Error sharing share', ${err}`, "error");
     }
   };
 
@@ -331,49 +352,65 @@ export default function GoogleGranting() {
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig);
-      handleOpenSnackBar(`${shareInfo.name} has been deleted.`, 'success');
-    } catch(err) {
-      console.log(`'Error deleting share', ${err}`)
-      handleOpenSnackBar(`Error deleting share: ${err}`, 'error');
+      handleOpenSnackBar(`${shareInfo.name} has been deleted.`, "success");
+    } catch (err) {
+      console.log(`'Error deleting share', ${err}`);
+      handleOpenSnackBar(`Error deleting share: ${err}`, "error");
     }
   };
 
   const getLinkFromShare = async (linkUuid) => {
-    await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + linkUuid)
-    handleOpenSnackBar(`Link has been copied to clipboard.`, 'info');
-  }
-
+    await navigator.clipboard.writeText(
+      FRONT_END_HOST + "/google/l/" + linkUuid
+    );
+    handleOpenSnackBar(`Link has been copied to clipboard.`, "info");
+  };
 
   if (!storedAuthSig.sig || token === "") {
     return (
-      <section className={'service-grid-container'}>
-        <Card className={'service-grid-login'}>
-          <CardContent className={'login-container-top'}>
-            <span className={'login-service'}>
-              <Avatar sx={{width: 60, height: 60}}>G</Avatar>
+      <section className={"service-grid-container"}>
+        <Card className={"service-grid-login"}>
+          <CardContent className={"login-container-top"}>
+            <span className={"login-service"}>
+              <Avatar sx={{ width: 60, height: 60 }}>G</Avatar>
               <div>
-                <h2 className={'service-title'}>Google Drive</h2>
-                <p className={'service-category'}>Productivity</p>
+                <h2 className={"service-title"}>Google Drive</h2>
+                <p className={"service-category"}>Productivity</p>
               </div>
             </span>
-            {!storedAuthSig['sig'] ? (
-              <p>
-                Login with your wallet to proceed.
-              </p>
+            {!storedAuthSig["sig"] ? (
+              <p>Login with your wallet to proceed.</p>
             ) : (
-              <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate("google")}>
+              <Button
+                className={"service-launch-button"}
+                variant={"contained"}
+                onClick={() => authenticate("google")}
+              >
                 Launch
               </Button>
             )}
           </CardContent>
-          <CardContent class={'service-description'}>
-            <p>Create permissions based on wallet contents for your already-existing Google Drive files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>
-            <p>Once files are permissioned on the Lit Google Docs App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>
-            <p>Wallets that meet the conditions will enter their email address for access.</p>
+          <CardContent class={"service-description"}>
+            <p>
+              Create permissions based on wallet contents for your
+              already-existing Google Drive files. Our flexible permissions
+              builders allows you to allow access based on token or NFT
+              ownership as well as other wallet attributes, like membership in a
+              DAO.
+            </p>
+            <p>
+              Once files are permissioned on the Lit Google Docs App, you can
+              edit wallet parameters, view/edit access, and delete it from the
+              app which removes that access.
+            </p>
+            <p>
+              Wallets that meet the conditions will enter their email address
+              for access.
+            </p>
           </CardContent>
         </Card>
         <Snackbar
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
           open={openSnackbar}
           autoHideDuration={4000}
           onClose={handleCloseSnackbar}
@@ -386,7 +423,7 @@ export default function GoogleGranting() {
 
   return (
     <section className={"service-grid-container"}>
-      <div className={'service-grid-header'}>
+      <div className={"service-grid-header"}>
         <ServiceHeader
           serviceName={"Google Drive App"}
           oauthServiceProvider={"Google"}
@@ -394,14 +431,14 @@ export default function GoogleGranting() {
           signOut={signOut}
         />
       </div>
-      <div className={'service-grid-links'}>
+      <div className={"service-grid-links"}>
         <GoogleLinks
           className={"service-links"}
           serviceName={"Drive"}
           handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-          handleEditLinkAction={() => console.log('EDIT CLICKED')}
+          handleEditLinkAction={() => console.log("EDIT CLICKED")}
           handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
-          handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
+          handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}
           handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
           listOfShares={allShares}
         />
@@ -440,7 +477,7 @@ export default function GoogleGranting() {
       )}
 
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}
