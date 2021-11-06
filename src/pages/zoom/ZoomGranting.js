@@ -38,7 +38,7 @@ export default function ZoomGranting() {
     if (!!performWithAuthSig) {
       loadAuth();
     }
-  }, [performWithAuthSig]);
+  }, [performWithAuthSig, storedAuthSig]);
 
   useEffect(() => {
     const humanizeAccessControlConditions = async () => {
