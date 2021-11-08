@@ -52,13 +52,15 @@ h4 {
 }
 
 .service-grid-links {
-  grid-row: 3 / 6;
+  grid-row: 3;
   grid-column: 2 / 5;
 }
 
 .service-grid-login {
-  grid-row: 2 / 4;
-  grid-column: 3 / 4;
+  //grid-row: 2;
+  //grid-column: 3 / 4;
+  min-width: 50rem;
+  width: 80%;
   border: none;
   box-shadow: none !important;
   border-radius: 0 !important;
@@ -130,8 +132,11 @@ h4 {
 }
 
 .unselected-services-container {
-  grid-column: 3 / 4;
-  grid-row-start: 4;
+  //grid-column: 3 / 4;
+  //grid-row-start: 4;
+  min-width: 50rem;
+  width: 80%;
+  flex-wrap: wrap;
   margin-top: 2rem;
 }
 

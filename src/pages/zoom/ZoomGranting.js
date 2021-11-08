@@ -18,6 +18,8 @@ const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 export default function ZoomGranting() {
   const { performWithAuthSig } = useAppContext();
 
+  const [userSignedIn, setUserSignedIn] = useState(false);
+
   const [currentUser, setCurrentUser] = useState({})
   const [allShares, setAllShares] = useState([]);
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
@@ -101,6 +103,7 @@ export default function ZoomGranting() {
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(serviceInfo.data[0]);
+        console.log('SERVICE INFO', serviceInfo.data[0])
         await setUserProfile(serviceInfo.data[0])
         console.log('ZOOM SERVICE', serviceInfo.data[0])
         await loadMeetings(storedAuthSig);

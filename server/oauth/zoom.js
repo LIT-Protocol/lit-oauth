@@ -34,15 +34,15 @@ export default async function (fastify, opts) {
   });
 
   fastify.delete("/api/oauth/zoom/serviceLogout", async (request, reply) => {
-    reply.send({
-      // redirectTo:
-    })
+    // const userToken = request.body.
+    console.log('DELETE REQUEST', request)
+
+    // fastify.delete(`http://zoom.us/oauth/users/${userToken}/token`)
   })
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
     const { state } = request.query;
     const { authSig } = JSON.parse(state);
-    console.log("authSig from zoom", authSig);
 
     if (!authUser(authSig)) {
       reply.code(400);
@@ -96,18 +96,18 @@ export default async function (fastify, opts) {
       .where('user_id', '=', authSig.address)
       .where('service_name', '=', 'zoom');
 
-    // if (connectedService.length) {
-    //   const refreshTokenArgs = {
-    //     connectedServiceId: connectedService[0].id,
-    //     refreshToken: connectedService[0].refresh_token,
-    //     fastify
-    //   }
-    //   await refreshAccessToken(refreshTokenArgs);
-    //
-    //   connectedService = fastify.objection.models.connectedServices.query()
-    //     .where('user_id', '=', authSig.address)
-    //     .where('service_name', '=', 'zoom');
-    // }
+    if (connectedService.length) {
+      const refreshTokenArgs = {
+        connectedServiceId: connectedService[0].id,
+        refreshToken: connectedService[0].refresh_token,
+        fastify
+      }
+      await refreshAccessToken(refreshTokenArgs);
+
+      connectedService = fastify.objection.models.connectedServices.query()
+        .where('user_id', '=', authSig.address)
+        .where('service_name', '=', 'zoom');
+    }
 
     return connectedService;
   });
@@ -126,6 +126,10 @@ export default async function (fastify, opts) {
       .where("user_id", "=", userId)
       .where("service_name", "=", "zoom");
 
+    console.log('SERVICES CONNECTED AND WHATEVER', services[0])
+    const newAccessToken = await refreshAccessToken(services[0].id, services[0].refreshToken, fastify);
+    console.log('LOOK AT ALL THIS ACCESS!!!', newAccessToken)
+
     // add shares
     services = await Promise.all(
       services.map(async (service) => {
@@ -135,6 +139,7 @@ export default async function (fastify, opts) {
         return { ...service, shares };
       })
     );
+
 
     const meetingsAndWebinars = (
       await Promise.all(

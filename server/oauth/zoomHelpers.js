@@ -154,11 +154,11 @@ export const createMeetingInvite = async ({
   });
 };
 
-export const refreshAccessToken = async ({
+export const refreshAccessToken = async (
   connectedServiceId,
   refreshToken,
   fastify,
-}) => {
+) => {
   console.log("Refreshing zoom access token");
   const q = {
     refresh_token: refreshToken,
