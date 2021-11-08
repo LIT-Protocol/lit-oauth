@@ -18,6 +18,8 @@ const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 export default function ZoomGranting() {
   const { performWithAuthSig } = useAppContext();
 
+  const [userSignedIn, setUserSignedIn] = useState(false);
+
   const [currentUser, setCurrentUser] = useState({})
   const [allShares, setAllShares] = useState([]);
   const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
@@ -38,7 +40,7 @@ export default function ZoomGranting() {
     if (!!performWithAuthSig) {
       loadAuth();
     }
-  }, [performWithAuthSig]);
+  }, [performWithAuthSig, storedAuthSig]);
 
   useEffect(() => {
     const humanizeAccessControlConditions = async () => {
@@ -101,9 +103,10 @@ export default function ZoomGranting() {
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(serviceInfo.data[0]);
+        console.log('SERVICE INFO', serviceInfo.data[0])
+        await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
         console.log('ZOOM SERVICE', serviceInfo.data[0])
-        await loadMeetings(storedAuthSig);
         await getAllShares(storedAuthSig)
       } else {
         // if no connection is saved, connect to zoom
@@ -135,6 +138,8 @@ export default function ZoomGranting() {
 
   const loadMeetings = async (authSig) => {
     const resp = await getMeetingsAndWebinars({ authSig });
+
+    console.log('MEETINGS AND WEBINATES', resp)
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
     setMeetings(resp.meetingsAndWebinars);

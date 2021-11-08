@@ -1,11 +1,18 @@
 import axios from "axios";
-import LitJsSdk from "lit-js-sdk";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export const getMeetingsAndWebinars = async ({ authSig }) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/meetingsAndWebinars`, {
     authSig,
+  });
+
+  return resp.data;
+};
+
+export const logout = async (userId) => {
+  const resp = await axios.post(`${API_HOST}/api/zoom/serviceLogout`, {
+    userId,
   });
 
   return resp.data;

@@ -168,7 +168,6 @@ export default function GoogleGranting(props) {
   };
 
   const checkForCurrentLitUser = async (authSig, googleAccountUniqueId) => {
-    console.log('AUTH SID', authSig)
     try {
       const userProfiles = await asyncHelpers.getLitUserProfile(
         authSig,

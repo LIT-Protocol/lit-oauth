@@ -66,7 +66,8 @@ export default function ServiceLogin() {
   }
 
   return (
-    <section className={'service-grid-container'}>
+    // <section className={'service-grid-container'}>
+    <section className={'vertical-flex'}>
       <Card className={'service-grid-login'}>
         <CardContent className={'login-container-top'}>
             <span className={'login-service'}>

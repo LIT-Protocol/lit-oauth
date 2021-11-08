@@ -6,7 +6,7 @@ import {
   getAccessToken,
   getUser,
   getMeetingsAndWebinars,
-  createMeetingInvite, refreshAccessToken,
+  createMeetingInvite, refreshAccessToken, refreshTokenIfNeeded,
 } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
@@ -34,15 +34,15 @@ export default async function (fastify, opts) {
   });
 
   fastify.delete("/api/oauth/zoom/serviceLogout", async (request, reply) => {
-    reply.send({
-      // redirectTo:
-    })
+    // const userToken = request.body.
+    console.log('DELETE REQUEST', request)
+
+    // fastify.delete(`http://zoom.us/oauth/users/${userToken}/token`)
   })
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
     const { state } = request.query;
     const { authSig } = JSON.parse(state);
-    console.log("authSig from zoom", authSig);
 
     if (!authUser(authSig)) {
       reply.code(400);
@@ -100,9 +100,11 @@ export default async function (fastify, opts) {
     //   const refreshTokenArgs = {
     //     connectedServiceId: connectedService[0].id,
     //     refreshToken: connectedService[0].refresh_token,
-    //     fastify
+    //     accessToken: connectedService[0].access_token,
+    //     fastify,
+    //     req: request
     //   }
-    //   await refreshAccessToken(refreshTokenArgs);
+    //   await refreshTokenIfNeeded(refreshTokenArgs);
     //
     //   connectedService = fastify.objection.models.connectedServices.query()
     //     .where('user_id', '=', authSig.address)
@@ -136,23 +138,23 @@ export default async function (fastify, opts) {
       })
     );
 
+    // console.log('SERVICES AND ALL SORTS OF FUN STUFF', services)
+
     const meetingsAndWebinars = (
       await Promise.all(
-        services.map((s) =>
-          getMeetingsAndWebinars({
+        services.map((s) => {
+          return getMeetingsAndWebinars({
             accessToken: s.accessToken,
             refreshToken: s.refreshToken,
             connectedServiceId: s.id,
             fastify,
             shares: s.shares,
           })
-        )
+        })
       )
     )
     .flat()
     .filter((mw) => new Date(mw.start_time) > new Date());
-
-    // console.log("meetingsAndWebinars", meetingsAndWebinars);
 
     return {
       meetingsAndWebinars,
@@ -171,7 +173,8 @@ export default async function (fastify, opts) {
 
     const shares = await fastify.objection.models.shares
       .query()
-      .where("asset_id_on_service", "=", meetingId);
+      // .where("asset_id_on_service", "=", meetingId);
+      .where("id", "=", meetingId);
 
     return {
       shares: shares.map((s) => {
