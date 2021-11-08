@@ -6,7 +6,7 @@ import {
   getAccessToken,
   getUser,
   getMeetingsAndWebinars,
-  createMeetingInvite, refreshAccessToken,
+  createMeetingInvite, refreshAccessToken, refreshTokenIfNeeded,
 } from "./zoomHelpers.js";
 
 export default async function (fastify, opts) {
@@ -96,18 +96,20 @@ export default async function (fastify, opts) {
       .where('user_id', '=', authSig.address)
       .where('service_name', '=', 'zoom');
 
-    if (connectedService.length) {
-      const refreshTokenArgs = {
-        connectedServiceId: connectedService[0].id,
-        refreshToken: connectedService[0].refresh_token,
-        fastify
-      }
-      await refreshAccessToken(refreshTokenArgs);
-
-      connectedService = fastify.objection.models.connectedServices.query()
-        .where('user_id', '=', authSig.address)
-        .where('service_name', '=', 'zoom');
-    }
+    // if (connectedService.length) {
+    //   const refreshTokenArgs = {
+    //     connectedServiceId: connectedService[0].id,
+    //     refreshToken: connectedService[0].refresh_token,
+    //     accessToken: connectedService[0].access_token,
+    //     fastify,
+    //     req: request
+    //   }
+    //   await refreshTokenIfNeeded(refreshTokenArgs);
+    //
+    //   connectedService = fastify.objection.models.connectedServices.query()
+    //     .where('user_id', '=', authSig.address)
+    //     .where('service_name', '=', 'zoom');
+    // }
 
     return connectedService;
   });
@@ -126,10 +128,6 @@ export default async function (fastify, opts) {
       .where("user_id", "=", userId)
       .where("service_name", "=", "zoom");
 
-    console.log('SERVICES CONNECTED AND WHATEVER', services[0])
-    const newAccessToken = await refreshAccessToken(services[0].id, services[0].refreshToken, fastify);
-    console.log('LOOK AT ALL THIS ACCESS!!!', newAccessToken)
-
     // add shares
     services = await Promise.all(
       services.map(async (service) => {
@@ -140,24 +138,23 @@ export default async function (fastify, opts) {
       })
     );
 
+    // console.log('SERVICES AND ALL SORTS OF FUN STUFF', services)
 
     const meetingsAndWebinars = (
       await Promise.all(
-        services.map((s) =>
-          getMeetingsAndWebinars({
+        services.map((s) => {
+          return getMeetingsAndWebinars({
             accessToken: s.accessToken,
             refreshToken: s.refreshToken,
             connectedServiceId: s.id,
             fastify,
             shares: s.shares,
           })
-        )
+        })
       )
     )
     .flat()
     .filter((mw) => new Date(mw.start_time) > new Date());
-
-    // console.log("meetingsAndWebinars", meetingsAndWebinars);
 
     return {
       meetingsAndWebinars,
@@ -176,7 +173,8 @@ export default async function (fastify, opts) {
 
     const shares = await fastify.objection.models.shares
       .query()
-      .where("asset_id_on_service", "=", meetingId);
+      // .where("asset_id_on_service", "=", meetingId);
+      .where("id", "=", meetingId);
 
     return {
       shares: shares.map((s) => {

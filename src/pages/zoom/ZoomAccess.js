@@ -28,6 +28,7 @@ export default function ZoomAccess() {
         details: "Please make sure you entered the correct URL",
       });
     }
+    console.log('MEETING ID', meetingId)
   }, [meetingId]);
 
   const showNotAuthorizedMessage = async ({ shares }) => {
@@ -133,7 +134,6 @@ export default function ZoomAccess() {
     return (
       <>
         <h3>Connecting to Lit Protocol, please wait...</h3>
-        {/*<ProgressSpin />*/}
         <CircularProgress/>
       </>
     );

@@ -104,9 +104,9 @@ export default function ZoomGranting() {
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(serviceInfo.data[0]);
         console.log('SERVICE INFO', serviceInfo.data[0])
+        await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
         console.log('ZOOM SERVICE', serviceInfo.data[0])
-        await loadMeetings(storedAuthSig);
         await getAllShares(storedAuthSig)
       } else {
         // if no connection is saved, connect to zoom
@@ -138,6 +138,8 @@ export default function ZoomGranting() {
 
   const loadMeetings = async (authSig) => {
     const resp = await getMeetingsAndWebinars({ authSig });
+
+    console.log('MEETINGS AND WEBINATES', resp)
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
     setMeetings(resp.meetingsAndWebinars);
