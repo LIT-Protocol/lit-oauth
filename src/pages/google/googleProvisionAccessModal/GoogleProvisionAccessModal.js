@@ -25,6 +25,14 @@ export default function GoogleProvisionAccessModal(props) {
     props.setOpenProvisionAccessDialog(false);
 
     if (props.accessToken?.length) {
+      let origin;
+      if (window.location != window.parent.location) {
+        // use parent origin
+        origin = document.referrer;
+      } else {
+        // use current origin
+        origin = window.location.protocol + "//" + window.location.host;
+      }
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .addView(view)
@@ -33,6 +41,7 @@ export default function GoogleProvisionAccessModal(props) {
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
         )
+        .setOrigin(origin)
         .setCallback(pickerCallback)
         .build();
       picker.setVisible(true);
