@@ -22,6 +22,7 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const createPicker = async () => {
+    console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
