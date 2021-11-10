@@ -153,7 +153,8 @@ export default async function (fastify, opts) {
     const serialized = connectedGoogleServices.map((s) => ({
       id: s.id,
       email: s.email,
-      idOnService: s.id_on_service,
+      idOnService: s.idOnService,
+      accessToken: s.accessToken,
     }));
 
     return { connectedServices: serialized };
