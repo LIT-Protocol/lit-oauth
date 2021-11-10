@@ -204,7 +204,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig, connectedServiceId, token } = req.body;
+    const { authSig, connectedServiceId, token, idOnService } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -213,6 +213,8 @@ export default async function (fastify, opts) {
     const connectedService = (
       await fastify.objection.models.connectedServices
         .query()
+        .where("service_name", "=", "google")
+        .where("id_on_service", "=", idOnService)
         .where("user_id", "=", authSig.address)
     )[// .where("id", "=", connectedServiceId)
     0];

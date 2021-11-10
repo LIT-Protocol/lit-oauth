@@ -28,7 +28,7 @@ export const storeConnectedServiceAccessToken = async (authSig, token) => {
 }
 
 export const share = async (requestData, requestOptions) => {
-  const {driveId, role, token, connectedServiceId, accessControlConditions, authSig} = requestData
+  const {driveId, role, token, connectedServiceId, accessControlConditions, authSig, idOnService} = requestData
   return await axios
     .post(
       API_HOST + "/api/google/share",
@@ -39,6 +39,7 @@ export const share = async (requestData, requestOptions) => {
         connectedServiceId,
         accessControlConditions,
         authSig,
+        idOnService
       },
       requestOptions
     );

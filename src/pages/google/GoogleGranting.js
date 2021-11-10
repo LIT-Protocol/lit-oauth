@@ -336,6 +336,7 @@ export default function GoogleGranting(props) {
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
+      idOnService: currentUser.idOnService
     };
 
     try {
