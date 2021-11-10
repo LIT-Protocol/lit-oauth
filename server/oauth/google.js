@@ -84,7 +84,7 @@ export default async function (fastify, opts) {
       id: s.id,
       email: s.email,
       idOnService: s.idOnService,
-      // accessToken: s.accessToken,
+      accessToken: s.accessToken,
     }));
 
     return { connectedServices: serialized };
