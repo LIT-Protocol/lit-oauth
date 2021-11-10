@@ -189,11 +189,12 @@ export default function GoogleGranting(props) {
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
-        googleAuthResponse, idOnService
+        googleAuthResponse,
+        idOnService
       );
       console.log('VERIFY TOKEN RESPONSE', response)
       setConnectedServiceId(response.data.connectedServices[0].id);
-      setToken(googleAuthResponse.access_token);
+      setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject);
       await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
@@ -272,7 +273,7 @@ export default function GoogleGranting(props) {
       const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
       const currentUserObject = await googleAuthInstance.currentUser.get();
       const idOnService = await currentUserObject.getId();
-      const tokens = await currentUserObject.getAuthResponse(true);
+      // const tokens = await currentUserObject.getAuthResponse(true);
       if (!!response.data["connectedServices"]) {
         console.log(
           'response.data["connectedServices"]',
@@ -280,7 +281,7 @@ export default function GoogleGranting(props) {
         );
         await setConnectedServiceId(response.data.connectedServices[0].id);
 
-        await setToken(tokens.access_token);
+        await setToken(response.data['accessToken']);
         // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
@@ -300,8 +301,9 @@ export default function GoogleGranting(props) {
     setAccessControlConditions([]);
     setToken("");
     setCurrentUser({});
+    // setConnectedServiceId("");
     const auth2 = await window.gapi.auth2.getAuthInstance();
-    await auth2.signOut().then(function () {
+    await auth2.signOut().then(async () => {
       auth2.disconnect();
       window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
     });
