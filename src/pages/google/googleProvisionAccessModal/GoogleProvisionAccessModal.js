@@ -33,8 +33,6 @@ export default function GoogleProvisionAccessModal(props) {
         // use current origin
         origin = window.location.protocol + "//" + window.location.host;
       }
-      console.log('ACCESS TOKEN', props.accessToken)
-      console.log('GOOGLE OBJECT', google)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .addView(view)

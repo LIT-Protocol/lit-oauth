@@ -67,14 +67,18 @@ export default function GoogleGranting(props) {
       });
     };
 
-    console.log('ACCONDITI', accessControlConditions)
-
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
   }, [accessControlConditions]);
+
+  //TODO: erase this
+  const compareAccessTokens = (ac1, ac2) => {
+    console.log('AC1:', ac1)
+    console.log('AC2:', ac2)
+  }
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -185,14 +189,14 @@ export default function GoogleGranting(props) {
   }
 
   const setLatestAccessToken = async (currentUserObject, idOnService) => {
-    const googleAuthResponse = currentUserObject.getAuthResponse();
+    const googleAuthResponse = currentUserObject.getAuthResponse(true);
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
         googleAuthResponse,
         idOnService
       );
-      console.log('VERIFY TOKEN RESPONSE', response)
+      compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject);
@@ -276,7 +280,8 @@ export default function GoogleGranting(props) {
         );
         await setConnectedServiceId(response.data.connectedServices[0].id);
 
-        await setToken(response.data['accessToken']);
+        await setToken(response.data.connectedServices[0].accessToken);
+        console.log('AUTH RESPONSE SET', token)
         // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
