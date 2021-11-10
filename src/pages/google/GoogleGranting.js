@@ -274,9 +274,9 @@ export default function GoogleGranting(props) {
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
 
-        const token = currentUserObject.getAuthResponse(true).access_token;
-        console.log("access_token", token);
-        setToken(token);
+        const token = await currentUserObject.getAuthResponse(true);
+        console.log("ACCESS_TOKEN", token);
+        setToken(token.access_token);
         console.log(
           "currentUserObject after getting auth response with tokens",
           currentUserObject
@@ -287,7 +287,7 @@ export default function GoogleGranting(props) {
     } catch (err) {
       console.log(`Error storing access token:, ${err.errors}`, err);
       handleOpenSnackBar(`Error storing access token:, ${err}`, "error");
-      await signOut();
+      // await signOut();
     }
   };
 

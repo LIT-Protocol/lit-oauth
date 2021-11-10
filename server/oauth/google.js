@@ -42,6 +42,8 @@ export default async function (fastify, opts) {
       return errorObject;
     }
 
+    console.log('ASJDI', tokens)
+
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
@@ -166,10 +168,13 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
-    return await fastify.objection.models.shares
+    const recoveredShares = await fastify.objection.models.shares
       .query()
       .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
+
+    console.log('Connected Services!ASDASFASEAWA', connectedService)
+    return recoveredShares;
   });
 
   fastify.post("/api/google/deleteShare", async (req, res) => {
@@ -224,7 +229,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    console.log("REQ FOR SHARE!", req.body);
 
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
@@ -348,6 +352,8 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+
+    console.log('SHARE SHARE SHARE ASHWHIFE', share)
 
     try {
       await drive.permissions.create({

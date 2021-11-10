@@ -137,6 +137,7 @@ export default function ZoomGranting() {
   }
 
   const loadMeetings = async (authSig) => {
+    console.log('start of meetings and webinars')
     const resp = await getMeetingsAndWebinars({ authSig });
 
     console.log('MEETINGS AND WEBINATES', resp)

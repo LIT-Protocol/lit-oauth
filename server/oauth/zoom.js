@@ -138,7 +138,7 @@ export default async function (fastify, opts) {
       })
     );
 
-    // console.log('SERVICES AND ALL SORTS OF FUN STUFF', services)
+    console.log('GET MEETING AND WEBINARS ZOOM.JS')
 
     const meetingsAndWebinars = (
       await Promise.all(
