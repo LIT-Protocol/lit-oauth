@@ -26,8 +26,9 @@ export default function GoogleProvisionAccessModal(props) {
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
+    const googleUserScope = googleUser.getGrantedScopes();
 
-    console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
+    console.log('GOOGLE AUTH INSTANCE', googleUserScope)
     console.log('INCLUDED TOKEN', props.accessToken)
     if (props.accessToken?.length) {
       let origin;
@@ -38,6 +39,7 @@ export default function GoogleProvisionAccessModal(props) {
         // use current origin
         origin = window.location.protocol + "//" + window.location.host;
       }
+      console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .addView(view)
