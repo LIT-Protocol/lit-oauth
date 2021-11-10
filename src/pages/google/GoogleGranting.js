@@ -66,6 +66,9 @@ export default function GoogleGranting(props) {
         myWalletAddress: storedAuthSig.address,
       });
     };
+
+    console.log('ACCONDITI', accessControlConditions)
+
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
