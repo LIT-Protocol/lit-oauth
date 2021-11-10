@@ -189,11 +189,12 @@ export default function GoogleGranting(props) {
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
-        googleAuthResponse, idOnService
+        googleAuthResponse,
+        idOnService
       );
       console.log('VERIFY TOKEN RESPONSE', response)
       setConnectedServiceId(response.data.connectedServices[0].id);
-      setToken(googleAuthResponse.access_token);
+      setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject);
       await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
