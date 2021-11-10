@@ -17,9 +17,10 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
+import LitJsSdk from "lit-js-sdk";
 
 export default function GoogleLinks(props) {
 
@@ -37,7 +38,9 @@ export default function GoogleLinks(props) {
   }
 
   const getAccessControlConditions = (accessControl) => {
-    return JSON.parse(accessControl)[0].chain;
+    const parsedAcc = JSON.parse(accessControl);
+    console.log('PARSED ACC', parsedAcc)
+    return parsedAcc[0].chain;
   }
 
   return (
