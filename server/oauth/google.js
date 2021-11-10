@@ -135,6 +135,7 @@ export default async function (fastify, opts) {
     await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where("user_id", "=", authSig.address)
       .where("id_on_service", "=", userId)
       .patch({
         access_token: access_token,
@@ -176,7 +177,6 @@ export default async function (fastify, opts) {
       .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
 
-    console.log('Connected Services!ASDASFASEAWA', connectedService)
     return recoveredShares;
   });
 
@@ -216,8 +216,7 @@ export default async function (fastify, opts) {
         .where("service_name", "=", "google")
         .where("id_on_service", "=", idOnService)
         .where("user_id", "=", authSig.address)
-    )[// .where("id", "=", connectedServiceId)
-    0];
+    )[0];
 
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
