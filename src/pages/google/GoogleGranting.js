@@ -189,7 +189,7 @@ export default function GoogleGranting(props) {
   }
 
   const setLatestAccessToken = async (currentUserObject, idOnService) => {
-    const googleAuthResponse = currentUserObject.getAuthResponse();
+    const googleAuthResponse = currentUserObject.getAuthResponse(true);
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
@@ -280,7 +280,8 @@ export default function GoogleGranting(props) {
         );
         await setConnectedServiceId(response.data.connectedServices[0].id);
 
-        await setToken(response.data['accessToken']);
+        await setToken(response.data.connectedServices[0].accessToken);
+        console.log('AUTH RESPONSE SET', token)
         // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
