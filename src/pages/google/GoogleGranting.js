@@ -67,14 +67,18 @@ export default function GoogleGranting(props) {
       });
     };
 
-    console.log('ACCONDITI', accessControlConditions)
-
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
   }, [accessControlConditions]);
+
+  //TODO: erase this
+  const compareAccessTokens = (ac1, ac2) => {
+    console.log('AC1:', ac1)
+    console.log('AC2:', ac2)
+  }
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -185,14 +189,14 @@ export default function GoogleGranting(props) {
   }
 
   const setLatestAccessToken = async (currentUserObject, idOnService) => {
-    const googleAuthResponse = currentUserObject.getAuthResponse();
+    const googleAuthResponse = currentUserObject.getAuthResponse(true);
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
         googleAuthResponse,
         idOnService
       );
-      console.log('VERIFY TOKEN RESPONSE', response)
+      compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject);
@@ -224,12 +228,7 @@ export default function GoogleGranting(props) {
   };
 
   const setUserProfile = async (currentUserObject) => {
-    const userBasicProfile = currentUserObject.getBasicProfile();
-    // TODO: replace with google user photo
-    const avatar = userBasicProfile.getName()
-      .split(" ")
-      .map((s) => s.split("")[0])
-      .join("");
+    const userBasicProfile = await currentUserObject.getBasicProfile();
 
     const userProfile = {
       idOnService: userBasicProfile.getId(),
@@ -256,11 +255,11 @@ export default function GoogleGranting(props) {
     setAllShares(allSharesHolder.data.reverse());
   };
 
-  const storeToken = async (authSig, token) => {
+  const storeToken = async (authSig, code) => {
     try {
       const response = await asyncHelpers.storeConnectedServiceAccessToken(
         authSig,
-        token
+        code
       );
       if (response.data["errorStatus"]) {
         handleOpenSnackBar(
@@ -273,7 +272,7 @@ export default function GoogleGranting(props) {
       const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
       const currentUserObject = await googleAuthInstance.currentUser.get();
       const idOnService = await currentUserObject.getId();
-      // const tokens = await currentUserObject.getAuthResponse(true);
+      const tokens = await currentUserObject.getAuthResponse(true);
       if (!!response.data["connectedServices"]) {
         console.log(
           'response.data["connectedServices"]',
@@ -281,7 +280,8 @@ export default function GoogleGranting(props) {
         );
         await setConnectedServiceId(response.data.connectedServices[0].id);
 
-        await setToken(response.data['accessToken']);
+        await setToken(response.data.connectedServices[0].accessToken);
+        console.log('AUTH RESPONSE SET', tokens)
         // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
@@ -301,7 +301,7 @@ export default function GoogleGranting(props) {
     setAccessControlConditions([]);
     setToken("");
     setCurrentUser({});
-    // setConnectedServiceId("");
+    setConnectedServiceId("");
     const auth2 = await window.gapi.auth2.getAuthInstance();
     await auth2.signOut().then(async () => {
       auth2.disconnect();

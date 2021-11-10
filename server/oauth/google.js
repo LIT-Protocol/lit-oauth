@@ -6,7 +6,7 @@ import { parseJwt } from "../utils.js";
 export default async function (fastify, opts) {
   // store the user's access token
   fastify.post("/api/google/connect", async (req, res) => {
-    const { authSig, token } = req.body;
+    const { authSig, code } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -18,7 +18,7 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    const { tokens } = await oauth_client.getToken(token);
+    const { tokens } = await oauth_client.getToken(code);
     oauth_client.setCredentials(tokens);
 
     const parsedJwt = parseJwt(tokens.id_token);
