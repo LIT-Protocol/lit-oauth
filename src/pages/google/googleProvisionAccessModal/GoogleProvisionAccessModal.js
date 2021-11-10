@@ -92,7 +92,7 @@ export default function GoogleProvisionAccessModal(props) {
                     <Button
                       style={{ marginRight: "1rem", width: "10rem" }}
                       onClick={() => {
-                        console.log('CREATE PICKER')
+                        console.log('CREATE PICKER ORIGIN', window.location.protocol + "//" + window.location.host)
                         createPicker()
                       }}
                     >
