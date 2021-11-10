@@ -67,14 +67,18 @@ export default function GoogleGranting(props) {
       });
     };
 
-    console.log('ACCONDITI', accessControlConditions)
-
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
   }, [accessControlConditions]);
+
+  //TODO: erase this
+  const compareAccessTokens = (ac1, ac2) => {
+    console.log('AC1:', ac1)
+    console.log('AC2:', ac2)
+  }
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -192,7 +196,7 @@ export default function GoogleGranting(props) {
         googleAuthResponse,
         idOnService
       );
-      console.log('VERIFY TOKEN RESPONSE', response)
+      compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject);
