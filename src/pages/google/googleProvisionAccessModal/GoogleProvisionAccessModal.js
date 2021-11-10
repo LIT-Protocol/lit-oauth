@@ -91,7 +91,10 @@ export default function GoogleProvisionAccessModal(props) {
                   startAdornment: (
                     <Button
                       style={{ marginRight: "1rem", width: "10rem" }}
-                      onClick={() => createPicker()}
+                      onClick={() => {
+                        console.log('CREATE PICKER ORIGIN', window.location.protocol + "//" + window.location.host)
+                        createPicker()
+                      }}
                     >
                       Choose File
                     </Button>
