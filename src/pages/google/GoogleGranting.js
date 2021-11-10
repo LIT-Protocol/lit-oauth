@@ -146,11 +146,11 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const googleAccountUniqueId = currentUserObject.getId();
-        const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, googleAccountUniqueId);
+        const idOnService = currentUserObject.getId();
+        const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
         if (currentLitUserProfile[0]) {
-          await setLatestAccessToken(currentUserObject);
+          await setLatestAccessToken(currentUserObject, idOnService);
         } else {
           console.log('No user found locally. Please log in again.')
           handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
@@ -167,11 +167,11 @@ export default function GoogleGranting(props) {
     }
   };
 
-  const checkForCurrentLitUser = async (authSig, googleAccountUniqueId) => {
+  const checkForCurrentLitUser = async (authSig, idOnService) => {
     try {
       const userProfiles = await asyncHelpers.getLitUserProfile(
         authSig,
-        googleAccountUniqueId
+        idOnService
       );
       return userProfiles.data;
     } catch(err) {
@@ -181,12 +181,12 @@ export default function GoogleGranting(props) {
     }
   }
 
-  const setLatestAccessToken = async (currentUserObject) => {
+  const setLatestAccessToken = async (currentUserObject, idOnService) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
-        googleAuthResponse
+        googleAuthResponse, idOnService
       );
       console.log('VERIFY TOKEN RESPONSE', response)
       setConnectedServiceId(response.data.connectedServices[0].id);
@@ -228,6 +228,7 @@ export default function GoogleGranting(props) {
       .join("");
 
     const userProfile = {
+      idOnService: userBasicProfile.getId(),
       email: userBasicProfile.getEmail(),
       displayName: userBasicProfile.getName(),
       givenName: userBasicProfile.getGivenName(),

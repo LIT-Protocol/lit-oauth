@@ -42,8 +42,6 @@ export default async function (fastify, opts) {
       return errorObject;
     }
 
-    console.log('ASJDI', tokens)
-
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
@@ -79,8 +77,9 @@ export default async function (fastify, opts) {
       await fastify.objection.models.connectedServices
         .query()
         .where("user_id", "=", authSig.address)
+        .where('idOnService', '=', idOnService)
         .where("service_name", "=", "google");
-    console.log('CONNECTED GOOGLE SERVICES', connectedGoogleServices)
+
     const serialized = connectedGoogleServices.map((s) => ({
       id: s.id,
       email: s.email,
@@ -93,6 +92,7 @@ export default async function (fastify, opts) {
   // verify token and update if necessary
   fastify.post("/api/google/verifyToken", async (req, res) => {
     const { id_token, access_token, email } = req.body.googleAuthResponse;
+    const idOnService = req.body.idOnService;
     const authSig = req.body.authSig;
 
     const oauth_client = new google.auth.OAuth2(
@@ -110,6 +110,7 @@ export default async function (fastify, opts) {
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where('idOnService', '=', idOnService)
       .where("id_on_service", "=", userId);
 
     if (!existingRows.length) {
@@ -186,7 +187,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
-    const uniqueId = req.body.googleAccountUniqueId;
+    const uniqueId = req.body.idOnService;
     const authSigAddress = req.body.authSig.address;
     const connectedServices = await fastify.objection.models.connectedServices
       .query()

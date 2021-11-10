@@ -2,19 +2,20 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const verifyToken = async (authSig, googleAuthResponse) => {
+export const verifyToken = async (authSig, googleAuthResponse, idOnService) => {
   return await axios
     .post(API_HOST + "/api/google/verifyToken", {
       authSig,
       googleAuthResponse,
+      idOnService
     });
 }
 
-export const getLitUserProfile = async (authSig, googleAccountUniqueId) => {
+export const getLitUserProfile = async (authSig, idOnService) => {
   return await axios
     .post(API_HOST + "/api/google/getUserProfile", {
       authSig,
-      googleAccountUniqueId,
+      idOnService,
     });
 }
 
