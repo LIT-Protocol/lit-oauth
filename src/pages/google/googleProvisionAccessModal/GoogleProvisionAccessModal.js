@@ -21,9 +21,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 export default function GoogleProvisionAccessModal(props) {
   let picker;
 
-  const createPicker = () => {
+  const createPicker = async () => {
     props.setOpenProvisionAccessDialog(false);
+    const googleAuth = await window.gapi.auth2.getAuthInstance();
+    const googleUser = await googleAuth.currentUser.get()
+    const googleAuthInstance = await googleUser.getAuthResponse(true);
 
+    console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
+    console.log('INCLUDED TOKEN', props.accessToken)
     if (props.accessToken?.length) {
       let origin;
       if (window.location != window.parent.location) {
@@ -36,7 +41,7 @@ export default function GoogleProvisionAccessModal(props) {
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .addView(view)
-        .setOAuthToken(props.accessToken)
+        .setOAuthToken(googleAuthInstance.access_token)
         .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
