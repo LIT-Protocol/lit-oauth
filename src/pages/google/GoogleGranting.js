@@ -269,19 +269,19 @@ export default function GoogleGranting(props) {
         // await signOut();
         return;
       }
+      const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
+      const currentUserObject = await googleAuthInstance.currentUser.get();
+      const idOnService = await currentUserObject.getId();
+      // const tokens = await currentUserObject.getAuthResponse(true);
       if (!!response.data["connectedServices"]) {
         console.log(
           'response.data["connectedServices"]',
           response.data["connectedServices"]
         );
         await setConnectedServiceId(response.data.connectedServices[0].id);
-        const googleAuthInstance = window.gapi.auth2.getAuthInstance();
-        const currentUserObject = googleAuthInstance.currentUser.get();
-        const idOnService = currentUserObject.getId();
 
-        const tokens = await currentUserObject.getAuthResponse(true);
-        console.log("ACCESS_TOKEN", tokens);
-        setToken(tokens.access_token);
+        await setToken(response.data['accessToken']);
+        // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
           currentUserObject
@@ -300,8 +300,9 @@ export default function GoogleGranting(props) {
     setAccessControlConditions([]);
     setToken("");
     setCurrentUser({});
+    // setConnectedServiceId("");
     const auth2 = await window.gapi.auth2.getAuthInstance();
-    await auth2.signOut().then(function () {
+    await auth2.signOut().then(async () => {
       auth2.disconnect();
       window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
     });
