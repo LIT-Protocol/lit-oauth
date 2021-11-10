@@ -19,11 +19,11 @@ export const getLitUserProfile = async (authSig, idOnService) => {
     });
 }
 
-export const storeConnectedServiceAccessToken = async (authSig, token) => {
+export const storeConnectedServiceAccessToken = async (authSig, code) => {
   return await axios
     .post(API_HOST + "/api/google/connect", {
       authSig,
-      token,
+      code,
     });
 }
 
