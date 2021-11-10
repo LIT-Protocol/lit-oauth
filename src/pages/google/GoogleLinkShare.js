@@ -158,9 +158,6 @@ function GoogleLinkShare() {
       console.log('HANDLE SUBMIT')
       try {
         const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
-        window.location = `https://docs.google.com/${getFileTypeUrl(
-          linkData.share.assetType
-        )}/d/${shareLinkResponse.data.fileId}`;
         console.log("DATA", shareLinkResponse);
         console.log(
           "LINK",
@@ -168,6 +165,9 @@ function GoogleLinkShare() {
             linkData.share.assetType
           )}/d/${shareLinkResponse.data.fileId}`
         );
+        window.location = `https://docs.google.com/${getFileTypeUrl(
+          linkData.share.assetType
+        )}/d/${shareLinkResponse.data.fileId}`;
       } catch(err) {
         console.log('An error occurred while accessing link:', err)
         setSnackbarInfo({

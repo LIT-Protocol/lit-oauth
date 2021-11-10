@@ -2,19 +2,20 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const verifyToken = async (authSig, googleAuthResponse) => {
+export const verifyToken = async (authSig, googleAuthResponse, idOnService) => {
   return await axios
     .post(API_HOST + "/api/google/verifyToken", {
       authSig,
       googleAuthResponse,
+      idOnService
     });
 }
 
-export const getLitUserProfile = async (authSig, googleAccountUniqueId) => {
+export const getLitUserProfile = async (authSig, idOnService) => {
   return await axios
     .post(API_HOST + "/api/google/getUserProfile", {
       authSig,
-      googleAccountUniqueId,
+      idOnService,
     });
 }
 
@@ -27,7 +28,7 @@ export const storeConnectedServiceAccessToken = async (authSig, token) => {
 }
 
 export const share = async (requestData, requestOptions) => {
-  const {driveId, role, token, connectedServiceId, accessControlConditions, authSig} = requestData
+  const {driveId, role, token, connectedServiceId, accessControlConditions, authSig, idOnService} = requestData
   return await axios
     .post(
       API_HOST + "/api/google/share",
@@ -38,14 +39,16 @@ export const share = async (requestData, requestOptions) => {
         connectedServiceId,
         accessControlConditions,
         authSig,
+        idOnService
       },
       requestOptions
     );
 }
 
-export const getAllShares = async (authSig) => {
+export const getAllShares = async (authSig, idOnService) => {
   return await axios.post(`${API_HOST}/api/google/getAllShares`, {
     authSig,
+    idOnService
   });
 }
 

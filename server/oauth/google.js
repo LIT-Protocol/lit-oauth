@@ -77,8 +77,9 @@ export default async function (fastify, opts) {
       await fastify.objection.models.connectedServices
         .query()
         .where("user_id", "=", authSig.address)
+        .where('idOnService', '=', idOnService)
         .where("service_name", "=", "google");
-    console.log('CONNECTED GOOGLE SERVICES', connectedGoogleServices)
+
     const serialized = connectedGoogleServices.map((s) => ({
       id: s.id,
       email: s.email,
@@ -91,6 +92,7 @@ export default async function (fastify, opts) {
   // verify token and update if necessary
   fastify.post("/api/google/verifyToken", async (req, res) => {
     const { id_token, access_token, email } = req.body.googleAuthResponse;
+    const idOnService = req.body.idOnService;
     const authSig = req.body.authSig;
 
     const oauth_client = new google.auth.OAuth2(
@@ -108,6 +110,7 @@ export default async function (fastify, opts) {
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where('idOnService', '=', idOnService)
       .where("id_on_service", "=", userId);
 
     if (!existingRows.length) {
@@ -132,6 +135,7 @@ export default async function (fastify, opts) {
     await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where("user_id", "=", authSig.address)
       .where("id_on_service", "=", userId)
       .patch({
         access_token: access_token,
@@ -156,6 +160,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
     const authSig = req.body.authSig;
+    const idOnService = req.body.idOnService;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -164,12 +169,15 @@ export default async function (fastify, opts) {
     const connectedService = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSig.address);
 
-    return await fastify.objection.models.shares
+    const recoveredShares = await fastify.objection.models.shares
       .query()
       .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
+
+    return recoveredShares;
   });
 
   fastify.post("/api/google/deleteShare", async (req, res) => {
@@ -181,12 +189,12 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
-    const uniqueId = req.body.googleAccountUniqueId;
+    const idOnService = req.body.idOnService;
     const authSigAddress = req.body.authSig.address;
     const connectedServices = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("id_on_service", "=", uniqueId)
+      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSigAddress);
 
     if (connectedServices?.length && connectedServices[0]['refreshToken']) {
@@ -196,7 +204,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig, connectedServiceId, token } = req.body;
+    const { authSig, connectedServiceId, token, idOnService } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -205,9 +213,10 @@ export default async function (fastify, opts) {
     const connectedService = (
       await fastify.objection.models.connectedServices
         .query()
+        .where("service_name", "=", "google")
+        .where("id_on_service", "=", idOnService)
         .where("user_id", "=", authSig.address)
-    )[// .where("id", "=", connectedServiceId)
-    0];
+    )[0];
 
     const oauth_client = new google.auth.OAuth2(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -224,7 +233,6 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
-    console.log("REQ FOR SHARE!", req.body);
 
     const fileInfo = await drive.files.get({
       fileId: req.body.driveId,
@@ -348,6 +356,8 @@ export default async function (fastify, opts) {
       version: "v3",
       auth: oauth_client,
     });
+
+    console.log('SHARE SHARE SHARE ASHWHIFE', share)
 
     try {
       await drive.permissions.create({
