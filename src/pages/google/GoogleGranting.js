@@ -224,12 +224,7 @@ export default function GoogleGranting(props) {
   };
 
   const setUserProfile = async (currentUserObject) => {
-    const userBasicProfile = currentUserObject.getBasicProfile();
-    // TODO: replace with google user photo
-    const avatar = userBasicProfile.getName()
-      .split(" ")
-      .map((s) => s.split("")[0])
-      .join("");
+    const userBasicProfile = await currentUserObject.getBasicProfile();
 
     const userProfile = {
       idOnService: userBasicProfile.getId(),
@@ -301,7 +296,7 @@ export default function GoogleGranting(props) {
     setAccessControlConditions([]);
     setToken("");
     setCurrentUser({});
-    // setConnectedServiceId("");
+    setConnectedServiceId("");
     const auth2 = await window.gapi.auth2.getAuthInstance();
     await auth2.signOut().then(async () => {
       auth2.disconnect();
