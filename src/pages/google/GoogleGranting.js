@@ -66,6 +66,9 @@ export default function GoogleGranting(props) {
         myWalletAddress: storedAuthSig.address,
       });
     };
+
+    console.log('ACCONDITI', accessControlConditions)
+
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
@@ -146,11 +149,11 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const googleAccountUniqueId = currentUserObject.getId();
-        const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, googleAccountUniqueId);
+        const idOnService = currentUserObject.getId();
+        const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
         if (currentLitUserProfile[0]) {
-          await setLatestAccessToken(currentUserObject);
+          await setLatestAccessToken(currentUserObject, idOnService);
         } else {
           console.log('No user found locally. Please log in again.')
           handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
@@ -167,11 +170,11 @@ export default function GoogleGranting(props) {
     }
   };
 
-  const checkForCurrentLitUser = async (authSig, googleAccountUniqueId) => {
+  const checkForCurrentLitUser = async (authSig, idOnService) => {
     try {
       const userProfiles = await asyncHelpers.getLitUserProfile(
         authSig,
-        googleAccountUniqueId
+        idOnService
       );
       return userProfiles.data;
     } catch(err) {
@@ -181,18 +184,18 @@ export default function GoogleGranting(props) {
     }
   }
 
-  const setLatestAccessToken = async (currentUserObject) => {
+  const setLatestAccessToken = async (currentUserObject, idOnService) => {
     const googleAuthResponse = currentUserObject.getAuthResponse();
     try {
       const response = await asyncHelpers.verifyToken(
         storedAuthSig,
-        googleAuthResponse
+        googleAuthResponse, idOnService
       );
       console.log('VERIFY TOKEN RESPONSE', response)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(googleAuthResponse.access_token);
       await setUserProfile(currentUserObject);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
       console.log("Error verifying user:", err);
       handleOpenSnackBar(`Error verifying user:, ${err}`, "error");
@@ -228,6 +231,7 @@ export default function GoogleGranting(props) {
       .join("");
 
     const userProfile = {
+      idOnService: userBasicProfile.getId(),
       email: userBasicProfile.getEmail(),
       displayName: userBasicProfile.getName(),
       givenName: userBasicProfile.getGivenName(),
@@ -246,8 +250,8 @@ export default function GoogleGranting(props) {
     });
   };
 
-  const getAllShares = async (authSig) => {
-    const allSharesHolder = await asyncHelpers.getAllShares(authSig);
+  const getAllShares = async (authSig, idOnService) => {
+    const allSharesHolder = await asyncHelpers.getAllShares(authSig, idOnService);
     setAllShares(allSharesHolder.data.reverse());
   };
 
@@ -273,21 +277,22 @@ export default function GoogleGranting(props) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
+        const idOnService = currentUserObject.getId();
 
-        const token = currentUserObject.getAuthResponse(true).access_token;
-        console.log("access_token", token);
-        setToken(token);
+        const token = await currentUserObject.getAuthResponse(true);
+        console.log("ACCESS_TOKEN", token);
+        setToken(token.access_token);
         console.log(
           "currentUserObject after getting auth response with tokens",
           currentUserObject
         );
         await setUserProfile(currentUserObject)
-        await getAllShares(storedAuthSig);
+        await getAllShares(storedAuthSig, idOnService);
       }
     } catch (err) {
       console.log(`Error storing access token:, ${err.errors}`, err);
       handleOpenSnackBar(`Error storing access token:, ${err}`, "error");
-      await signOut();
+      // await signOut();
     }
   };
 
@@ -318,6 +323,7 @@ export default function GoogleGranting(props) {
   };
 
   const handleSubmit = async () => {
+    console.log('CURRENT USER IN HANDLE SUBMIT', currentUser)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
@@ -333,6 +339,7 @@ export default function GoogleGranting(props) {
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
+      idOnService: currentUser.idOnService
     };
 
     try {
@@ -363,7 +370,7 @@ export default function GoogleGranting(props) {
         "success"
       );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, currentUser.idOnService);
     } catch(err) {
       console.log(`'Error sharing share', ${err}`)
       handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
@@ -371,9 +378,10 @@ export default function GoogleGranting(props) {
   };
 
   const handleDeleteShare = async (shareInfo) => {
+    console.log('USER DATA IN DELETE SHARE', currentUser)
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, currentUser.idOnService);
       handleOpenSnackBar(`${shareInfo.name} has been deleted.`, "success");
     } catch (err) {
       console.log(`'Error deleting share', ${err}`);

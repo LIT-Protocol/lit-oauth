@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "startDev": "nodemon index.js",
+    "startDev": "nodemon --inspect index.js",
     "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js ",
     "migrateProd": "knex migrate:latest --esm --knexfile=./knexfile.js --env production"
   },
