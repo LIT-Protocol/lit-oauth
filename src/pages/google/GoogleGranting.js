@@ -228,6 +228,7 @@ export default function GoogleGranting(props) {
   };
 
   const setUserProfile = async (currentUserObject) => {
+    console.log('CURRENT USER OBEJCT', currentUserObject)
     const userBasicProfile = await currentUserObject.getBasicProfile();
 
     const userProfile = {
