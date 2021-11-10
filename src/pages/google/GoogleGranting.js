@@ -166,7 +166,7 @@ export default function GoogleGranting(props) {
     } else {
       console.log(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
       handleOpenSnackBar(`Insufficient Permission: Request had insufficient authentication scopes.`, 'error');
-      await signOut();
+      // await signOut();
     }
   };
 
@@ -266,7 +266,7 @@ export default function GoogleGranting(props) {
           `Error logging in: ${response.data.errors[0]["message"]}`,
           "error"
         );
-        await signOut();
+        // await signOut();
         return;
       }
       if (!!response.data["connectedServices"]) {
@@ -279,9 +279,9 @@ export default function GoogleGranting(props) {
         const currentUserObject = googleAuthInstance.currentUser.get();
         const idOnService = currentUserObject.getId();
 
-        const token = await currentUserObject.getAuthResponse(true);
-        console.log("ACCESS_TOKEN", token);
-        setToken(token.access_token);
+        const tokens = await currentUserObject.getAuthResponse(true);
+        console.log("ACCESS_TOKEN", tokens);
+        setToken(tokens.access_token);
         console.log(
           "currentUserObject after getting auth response with tokens",
           currentUserObject
@@ -291,7 +291,7 @@ export default function GoogleGranting(props) {
       }
     } catch (err) {
       console.log(`Error storing access token:, ${err.errors}`, err);
-      handleOpenSnackBar(`Error storing access token:, ${err}`, "error");
+      handleOpenSnackBar(`Error storing access token, please reload:, ${err}`, "error");
       // await signOut();
     }
   };
@@ -425,6 +425,7 @@ export default function GoogleGranting(props) {
               handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
               handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
               listOfShares={allShares}
+              authSig={storedAuthSig}
             />
           </div>
           <GoogleProvisionAccessModal
