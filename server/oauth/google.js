@@ -159,6 +159,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
     const authSig = req.body.authSig;
+    const idOnService = req.body.idOnService;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -167,6 +168,7 @@ export default async function (fastify, opts) {
     const connectedService = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
+      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSig.address);
 
     const recoveredShares = await fastify.objection.models.shares
@@ -187,12 +189,12 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (req, res) => {
-    const uniqueId = req.body.idOnService;
+    const idOnService = req.body.idOnService;
     const authSigAddress = req.body.authSig.address;
     const connectedServices = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("id_on_service", "=", uniqueId)
+      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSigAddress);
 
     if (connectedServices?.length && connectedServices[0]['refreshToken']) {

@@ -44,9 +44,10 @@ export const share = async (requestData, requestOptions) => {
     );
 }
 
-export const getAllShares = async (authSig) => {
+export const getAllShares = async (authSig, idOnService) => {
   return await axios.post(`${API_HOST}/api/google/getAllShares`, {
     authSig,
+    idOnService
   });
 }
 

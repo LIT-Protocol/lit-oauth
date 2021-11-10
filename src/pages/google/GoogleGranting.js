@@ -192,7 +192,7 @@ export default function GoogleGranting(props) {
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(googleAuthResponse.access_token);
       await setUserProfile(currentUserObject);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
       console.log("Error verifying user:", err);
       handleOpenSnackBar(`Error verifying user:, ${err}`, "error");
@@ -247,8 +247,8 @@ export default function GoogleGranting(props) {
     });
   };
 
-  const getAllShares = async (authSig) => {
-    const allSharesHolder = await asyncHelpers.getAllShares(authSig);
+  const getAllShares = async (authSig, idOnService) => {
+    const allSharesHolder = await asyncHelpers.getAllShares(authSig, idOnService);
     setAllShares(allSharesHolder.data.reverse());
   };
 
@@ -274,6 +274,7 @@ export default function GoogleGranting(props) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
         const googleAuthInstance = window.gapi.auth2.getAuthInstance();
         const currentUserObject = googleAuthInstance.currentUser.get();
+        const idOnService = currentUserObject.getId();
 
         const token = await currentUserObject.getAuthResponse(true);
         console.log("ACCESS_TOKEN", token);
@@ -283,7 +284,7 @@ export default function GoogleGranting(props) {
           currentUserObject
         );
         await setUserProfile(currentUserObject)
-        await getAllShares(storedAuthSig);
+        await getAllShares(storedAuthSig, idOnService);
       }
     } catch (err) {
       console.log(`Error storing access token:, ${err.errors}`, err);
@@ -319,6 +320,7 @@ export default function GoogleGranting(props) {
   };
 
   const handleSubmit = async () => {
+    console.log('CURRENT USER IN HANDLE SUBMIT', currentUser)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
@@ -364,7 +366,7 @@ export default function GoogleGranting(props) {
         "success"
       );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, currentUser.idOnService);
     } catch(err) {
       console.log(`'Error sharing share', ${err}`)
       handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
@@ -372,9 +374,10 @@ export default function GoogleGranting(props) {
   };
 
   const handleDeleteShare = async (shareInfo) => {
+    console.log('USER DATA IN DELETE SHARE', currentUser)
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
-      await getAllShares(storedAuthSig);
+      await getAllShares(storedAuthSig, currentUser.idOnService);
       handleOpenSnackBar(`${shareInfo.name} has been deleted.`, "success");
     } catch (err) {
       console.log(`'Error deleting share', ${err}`);
