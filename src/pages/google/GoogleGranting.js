@@ -279,9 +279,9 @@ export default function GoogleGranting(props) {
         const currentUserObject = googleAuthInstance.currentUser.get();
         const idOnService = currentUserObject.getId();
 
-        const token = await currentUserObject.getAuthResponse(true);
-        console.log("ACCESS_TOKEN", token);
-        setToken(token.access_token);
+        const tokens = await currentUserObject.getAuthResponse(true);
+        console.log("ACCESS_TOKEN", tokens);
+        setToken(tokens.access_token);
         console.log(
           "currentUserObject after getting auth response with tokens",
           currentUserObject
