@@ -127,6 +127,7 @@ export default function GoogleProvisionAccessModal(props) {
               <List dense={true}>
                 {props.humanizedAccessControlArray.map((acc, i) => (
                   <ListItem
+                    key={i}
                     className={"provision-access-control-item"}
                     secondaryAction={
                       <IconButton
