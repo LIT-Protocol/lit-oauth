@@ -189,6 +189,7 @@ export default function GoogleGranting(props) {
   }
 
   const setLatestAccessToken = async (currentUserObject, idOnService) => {
+    // console.log('GAPI CHECK', window.gapi.i)
     const googleAuthResponse = currentUserObject.getAuthResponse(true);
     try {
       const response = await asyncHelpers.verifyToken(
@@ -228,8 +229,8 @@ export default function GoogleGranting(props) {
   };
 
   const setUserProfile = async (currentUserObject) => {
-    console.log('CURRENT USER OBEJCT', currentUserObject)
     const userBasicProfile = await currentUserObject.getBasicProfile();
+    console.log('userBasicProfile', userBasicProfile)
 
     const userProfile = {
       idOnService: userBasicProfile.getId(),
@@ -238,6 +239,16 @@ export default function GoogleGranting(props) {
       givenName: userBasicProfile.getGivenName(),
       avatar: userBasicProfile.getImageUrl(),
     };
+    // const userBasicProfile = currentUserObject['it'];
+    //
+    // console.log('userBasicProfile', userBasicProfile)
+    // const userProfile = {
+    //   idOnService: userBasicProfile['hT'],
+    //   email: userBasicProfile['Tt'],
+    //   displayName: userBasicProfile['Se'],
+    //   givenName: userBasicProfile['wU'],
+    //   avatar: userBasicProfile['SJ'],
+    // };
     setCurrentUser(userProfile);
   }
 
