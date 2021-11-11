@@ -40,19 +40,19 @@ export default function GoogleProvisionAccessModal(props) {
         // use current origin
         origin = window.location.protocol + "//" + window.location.host;
       }
-      console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
-      picker = new google.picker.PickerBuilder()
-        .addView(view)
-        .setOAuthToken(googleAuthInstance.access_token)
-        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
-        .setDeveloperKey(
-          process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-        )
-        .setOrigin(origin)
-        .setCallback(pickerCallback)
-        .build();
-      picker.setVisible(true);
+      console.log('WINDOW ORIGIN', origin)
+    //   const view = new google.picker.View(google.picker.ViewId.DOCS);
+    //   picker = new google.picker.PickerBuilder()
+    //     .addView(view)
+    //     .setOAuthToken(googleAuthInstance.access_token)
+    //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+    //     .setDeveloperKey(
+    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+    //     )
+    //     .setOrigin(origin)
+    //     .setCallback(pickerCallback)
+    //     .build();
+    //   picker.setVisible(true);
     }
   };
 
@@ -91,10 +91,7 @@ export default function GoogleProvisionAccessModal(props) {
                   startAdornment: (
                     <Button
                       style={{ marginRight: "1rem", width: "10rem" }}
-                      onClick={() => {
-                        console.log('CREATE PICKER ORIGIN', window.location.protocol + "//" + window.location.host)
-                        createPicker()
-                      }}
+                      onClick={() => createPicker()}
                     >
                       Choose File
                     </Button>
