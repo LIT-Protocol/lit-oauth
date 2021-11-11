@@ -34,8 +34,7 @@ export default function GoogleProvisionAccessModal(props) {
     const googleAuthInstance = await googleUser.getAuthResponse(true);
     const accessToken = googleAuthInstance.access_token
 
-    console.log('window.gapi', window.gapi)
-    console.log('window.pickerbuilder', window.google.picker.PickerBuilder)
+    console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
 
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
