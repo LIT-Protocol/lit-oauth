@@ -40,10 +40,12 @@ export default function GoogleProvisionAccessModal(props) {
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
         )
-        .setOrigin(origin)
-        .setCallback(pickerCallback)
-        .build();
-      picker.setVisible(true);
+        // .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        // .setOrigin(origin)
+        // .setCallback(pickerCallback)
+        // .build();
+      console.log('PICKER', picker)
+      // picker.setVisible(true);
     }
 
     // props.setOpenProvisionAccessDialog(false);
@@ -65,9 +67,9 @@ export default function GoogleProvisionAccessModal(props) {
       // const view = new google.picker.View(google.picker.ViewId.DOCS);
       // picker = new google.picker.PickerBuilder()
       //   .addView(view)
-      //   // .setOrigin(origin)
+        // .setOrigin(origin)
       //   .setOAuthToken(googleAuthInstance.access_token)
-      //   // .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        // .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
       //   .setDeveloperKey(
       //     process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
       //   )
