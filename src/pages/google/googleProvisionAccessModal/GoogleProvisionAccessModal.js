@@ -22,7 +22,7 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const createPicker = async () => {
-    console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
+    console.log('WINDOW ORIGIN NEW', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
@@ -41,7 +41,7 @@ export default function GoogleProvisionAccessModal(props) {
         origin = window.location.protocol + "//" + window.location.host;
       }
       console.log('WINDOW ORIGIN', origin)
-    //   const view = new google.picker.View(google.picker.ViewId.DOCS);
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
     //   picker = new google.picker.PickerBuilder()
     //     .addView(view)
     //     .setOAuthToken(googleAuthInstance.access_token)
