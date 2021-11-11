@@ -24,10 +24,9 @@ export default function GoogleProvisionAccessModal(props) {
   const createPicker = async () => {
     console.log('WINDOW ORIGIN NEW', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
-    // const googleAuth = await window.gapi.auth2.getAuthInstance();
-    // const googleUser = await googleAuth.currentUser.get()
-    // const googleAuthInstance = await googleUser.getAuthResponse(true);
-    // const googleUserScope = googleUser.getGrantedScopes();
+    const googleAuth = await window.gapi.auth2.getAuthInstance();
+    const googleUser = await googleAuth.currentUser.get()
+    const googleAuthInstance = await googleUser.getAuthResponse(true);
 
     // console.log('GOOGLE AUTH INSTANCE', googleUserScope)
     console.log('INCLUDED TOKEN', props.accessToken)
@@ -42,17 +41,17 @@ export default function GoogleProvisionAccessModal(props) {
       }
       console.log('WINDOW ORIGIN', origin)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-    //   picker = new google.picker.PickerBuilder()
-    //     .addView(view)
-    //     .setOAuthToken(googleAuthInstance.access_token)
+      picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(googleAuthInstance.access_token)
     //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
-    //     .setDeveloperKey(
-    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-    //     )
+        .setDeveloperKey(
+          process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+        )
     //     .setOrigin(origin)
-    //     .setCallback(pickerCallback)
-    //     .build();
-    //   picker.setVisible(true);
+        .setCallback(pickerCallback)
+        .build();
+      picker.setVisible(true);
     }
   };
 
