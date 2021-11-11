@@ -22,7 +22,7 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const createPicker = async () => {
-    props.setOpenProvisionAccessDialog(false);
+    // props.setOpenProvisionAccessDialog(false);
 
     // if (props.accessToken?.length) {
     //   let origin;
@@ -46,7 +46,6 @@ export default function GoogleProvisionAccessModal(props) {
     //   picker.setVisible(true);
     // }
 
-    props.setOpenProvisionAccessDialog(false);
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
@@ -75,6 +74,7 @@ export default function GoogleProvisionAccessModal(props) {
         .setCallback(pickerCallback)
         .build();
       console.log('PICKER', picker)
+      props.setOpenProvisionAccessDialog(false);
       picker.setVisible(true);
     }
   };
