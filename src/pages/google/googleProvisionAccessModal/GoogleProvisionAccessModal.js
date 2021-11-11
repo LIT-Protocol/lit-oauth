@@ -58,7 +58,7 @@ export default function GoogleProvisionAccessModal(props) {
       console.log('ALL PICKER DATA', {
         origin,
         view: view,
-        access: googleAuthInstance.access_token,
+        access: accessToken,
         processId: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
         processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
       })
