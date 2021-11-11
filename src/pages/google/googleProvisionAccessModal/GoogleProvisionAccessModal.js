@@ -27,17 +27,37 @@ export default function GoogleProvisionAccessModal(props) {
     });
   }
 
+  const checkToken = (access_token) => {
+    fetch("https://www.googleapis.com/oauth2/v1/tokeninfo", {
+      method: "GET",
+      headers: {
+        'Authorization': 'Bearer ' + access_token
+      }
+    }).then(response => {
+      if (response.status === 200) {
+        return response.json();
+      } else {
+        console.log('User Token Expired');
+      }
+    }).then(data => {
+      console.log('User Token Still Valid');
+    }).catch((error) => {
+      console.error('User Token Check Error:', error);
+    })
+  }
+
   const createPicker = async () => {
     console.log('picker loaded')
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
     const accessToken = googleAuthInstance.access_token
+    checkToken(accessToken)
 
     console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
 
     if (accessToken?.length) {
-      const origin = `${window.location.protocol}//${window.location.host}/`;
+      const origin = `${window.location.protocol}//${window.location.host}`;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
 
       picker = new google.picker.PickerBuilder()
