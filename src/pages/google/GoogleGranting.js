@@ -153,7 +153,7 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const idOnService = currentUserObject.getId();
+        const idOnService = await currentUserObject.getId();
         const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
         if (currentLitUserProfile[0]) {
