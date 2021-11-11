@@ -50,23 +50,24 @@ export default function GoogleProvisionAccessModal(props) {
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
+    const accessToken = googleAuthInstance.access_token
 
     console.log('GOOGLE AUTH INSTANCE', googleUser.getBasicProfile())
     console.log('INCLUDED TOKEN', props.accessToken)
-    if (props.accessToken?.length) {
-      let origin;
-      if (window.location != window.parent.location) {
-        // use parent origin
-        origin = document.referrer;
-      } else {
-        // use current origin
-        origin = window.location.protocol + "//" + window.location.host;
-      }
+    if (accessToken?.length) {
+      const origin = window.location.protocol + "//" + window.location.host;
+      console.log('ALL PICKER DATA', {
+        origin,
+        view: view,
+        access: googleAuthInstance.access_token,
+        processId: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+        processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+      })
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
-        .setOAuthToken(googleAuthInstance.access_token)
+        .setOAuthToken(accessToken)
         .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
