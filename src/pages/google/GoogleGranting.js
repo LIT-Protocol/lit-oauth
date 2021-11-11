@@ -228,6 +228,7 @@ export default function GoogleGranting(props) {
   };
 
   const setUserProfile = async (currentUserObject) => {
+    console.log('CURRENT USER OBEJCT', currentUserObject)
     const userBasicProfile = await currentUserObject.getBasicProfile();
 
     const userProfile = {
@@ -255,11 +256,11 @@ export default function GoogleGranting(props) {
     setAllShares(allSharesHolder.data.reverse());
   };
 
-  const storeToken = async (authSig, token) => {
+  const storeToken = async (authSig, code) => {
     try {
       const response = await asyncHelpers.storeConnectedServiceAccessToken(
         authSig,
-        token
+        code
       );
       if (response.data["errorStatus"]) {
         handleOpenSnackBar(
@@ -272,7 +273,7 @@ export default function GoogleGranting(props) {
       const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
       const currentUserObject = await googleAuthInstance.currentUser.get();
       const idOnService = await currentUserObject.getId();
-      // const tokens = await currentUserObject.getAuthResponse(true);
+      const tokens = await currentUserObject.getAuthResponse(true);
       if (!!response.data["connectedServices"]) {
         console.log(
           'response.data["connectedServices"]',
@@ -281,7 +282,7 @@ export default function GoogleGranting(props) {
         await setConnectedServiceId(response.data.connectedServices[0].id);
 
         await setToken(response.data.connectedServices[0].accessToken);
-        console.log('AUTH RESPONSE SET', token)
+        console.log('AUTH RESPONSE SET', tokens)
         // setToken(response.data.connectedServices[0].accessToken);
         console.log(
           "currentUserObject after getting auth response with tokens",
