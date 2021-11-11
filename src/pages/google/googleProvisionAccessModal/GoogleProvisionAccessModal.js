@@ -55,6 +55,7 @@ export default function GoogleProvisionAccessModal(props) {
     console.log('INCLUDED TOKEN', props.accessToken)
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
       console.log('ALL PICKER DATA', {
         origin,
         view: view,
@@ -62,7 +63,6 @@ export default function GoogleProvisionAccessModal(props) {
         processId: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
         processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
       })
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
