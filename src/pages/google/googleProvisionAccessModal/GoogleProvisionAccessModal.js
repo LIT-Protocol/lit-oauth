@@ -22,39 +22,14 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const loadPicker = () => {
-    window.gapi.load("auth2", function () {
-      window.gapi.load("picker", {callback: createPicker()});
-    });
-  }
-
-  const checkToken = (access_token) => {
-    fetch("https://www.googleapis.com/oauth2/v1/tokeninfo", {
-      method: "GET",
-      headers: {
-        'Authorization': 'Bearer ' + access_token
-      }
-    }).then(response => {
-      if (response.status === 200) {
-        return response.json();
-      } else {
-        console.log('User Token Expired');
-      }
-    }).then(data => {
-      console.log('User Token Still Valid');
-    }).catch((error) => {
-      console.error('User Token Check Error:', error);
-    })
+    window.gapi.load("picker", {callback: createPicker()});
   }
 
   const createPicker = async () => {
-    console.log('picker loaded')
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
     const accessToken = googleAuthInstance.access_token
-    checkToken(accessToken)
-
-    console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
 
     if (accessToken?.length) {
       const origin = `${window.location.protocol}//${window.location.host}`;
@@ -70,20 +45,15 @@ export default function GoogleProvisionAccessModal(props) {
         )
         .setCallback(pickerCallback)
         .build();
-      console.log('PICKER', picker)
       props.setOpenProvisionAccessDialog(false);
       picker.setVisible(true);
     }
   };
 
-
-
   const pickerCallback = (data) => {
     if (data?.action === "loaded") {
       return;
     }
-    console.log('PICKER CALLBACK END', data)
-    // console.log("DATA FROM PICKER", data);
     props.setOpenProvisionAccessDialog(true);
     if (data?.action === "picked") {
       props.setFile(data.docs[0]);
@@ -155,21 +125,24 @@ export default function GoogleProvisionAccessModal(props) {
             <h4>Current Access Control Conditions</h4>
             {props.humanizedAccessControlArray.length > 0 && (
               <List dense={true}>
-                <ListItem
-                  className={"provision-access-control-item"}
-                  secondaryAction={
-                    <IconButton
-                      onClick={() => props.removeAccessControlCondition}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText
-                    primary={props.humanizedAccessControlArray.join(" and ")}
-                  />
-                </ListItem>
+                {props.humanizedAccessControlArray.map((acc, i) => (
+                  <ListItem
+                    className={"provision-access-control-item"}
+                    secondaryAction={
+                      <IconButton
+                        onClick={() => props.removeIthAccessControlCondition(i)}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText
+                      primary={acc}
+                    />
+                  </ListItem>
+                ))}
               </List>
+
             )}
             {!props.humanizedAccessControlArray.length && (
               <span>No current access control conditions</span>

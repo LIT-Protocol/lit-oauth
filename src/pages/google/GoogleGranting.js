@@ -154,6 +154,7 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
+        console.log('CURRENT GET USER ID WHATEVER WHO CARES', currentUserObject.it.hT)
         const idOnService = await currentUserObject.getId();
         const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
@@ -201,7 +202,7 @@ export default function GoogleGranting(props) {
       compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
-      await setUserProfile(currentUserObject);
+      await setUserProfile(currentUserObject, idOnService);
       await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
       console.log("Error verifying user:", err);
@@ -229,28 +230,63 @@ export default function GoogleGranting(props) {
     }
   };
 
-  const setUserProfile = async (currentUserObject) => {
-    console.log('CURRENT USER OBJECT', currentUserObject)
-    const userBasicProfile = await currentUserObject.getBasicProfile();
-    console.log('userBasicProfile', userBasicProfile)
+  const storeToken = async (authSig, code) => {
+    try {
+      const response = await asyncHelpers.storeConnectedServiceAccessToken(
+        authSig,
+        code
+      );
+      if (response.data["errorStatus"]) {
+        handleOpenSnackBar(
+          `Error logging in: ${response.data.errors[0]["message"]}`,
+          "error"
+        );
+        // await signOut();
+        return;
+      }
 
-    const userProfile = {
-      idOnService: userBasicProfile.getId(),
+      let currentUserObject = await window.gapi.auth2.getAuthInstance().currentUser.get();
+      const idOnService = response.data.connectedServices[0].idOnService;
+      if (!!response.data["connectedServices"]) {
+        console.log(
+          'response.data["connectedServices"]',
+          response.data["connectedServices"]
+        );
+        await setConnectedServiceId(idOnService);
+
+        await setToken(response.data.connectedServices[0].accessToken);
+
+        if (!currentUserObject.getBasicProfile()) {
+          setTimeout(async () => {
+            console.log('Reload current user object.')
+            currentUserObject = await window.gapi.auth2.getAuthInstance().currentUser.get();
+            await setUserProfile(currentUserObject, idOnService);
+            await getAllShares(storedAuthSig, idOnService);
+          }, 300)
+        } else {
+          console.log('Current user object present.')
+          await setUserProfile(currentUserObject, idOnService);
+          await getAllShares(storedAuthSig, idOnService);
+        }
+      }
+    } catch (err) {
+      console.log(`Error storing access token:, ${err.errors}`, err);
+      handleOpenSnackBar(`Error storing access token, please reload:, ${err}`, "error");
+      // await signOut();
+    }
+  };
+
+  const setUserProfile = async (currentUserObject, idOnService) => {
+    let userBasicProfile = await currentUserObject.getBasicProfile();
+
+    let userProfile = {
+      idOnService: idOnService,
       email: userBasicProfile.getEmail(),
       displayName: userBasicProfile.getName(),
       givenName: userBasicProfile.getGivenName(),
       avatar: userBasicProfile.getImageUrl(),
     };
-    // const userBasicProfile = currentUserObject['it'];
-    //
-    // console.log('userBasicProfile', userBasicProfile)
-    // const userProfile = {
-    //   idOnService: userBasicProfile['hT'],
-    //   email: userBasicProfile['Tt'],
-    //   displayName: userBasicProfile['Se'],
-    //   givenName: userBasicProfile['wU'],
-    //   avatar: userBasicProfile['SJ'],
-    // };
+
     setCurrentUser(userProfile);
   }
 
@@ -266,49 +302,28 @@ export default function GoogleGranting(props) {
 
   const getAllShares = async (authSig, idOnService) => {
     const allSharesHolder = await asyncHelpers.getAllShares(authSig, idOnService);
-    setAllShares(allSharesHolder.data.reverse());
-  };
 
-  const storeToken = async (authSig, code) => {
-    try {
-      const response = await asyncHelpers.storeConnectedServiceAccessToken(
-        authSig,
-        code
-      );
-      if (response.data["errorStatus"]) {
-        handleOpenSnackBar(
-          `Error logging in: ${response.data.errors[0]["message"]}`,
-          "error"
-        );
-        // await signOut();
-        return;
+    const humanizeAccPromiseArray = allSharesHolder.data.map(s => {
+      const shareAcConditions = JSON.parse(s.accessControlConditions);
+      console.log('SHARE TEST', shareAcConditions)
+      return LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions: shareAcConditions,
+        myWalletAddress: storedAuthSig.address,
+      })
+    })
+    console.log('HUMAZ ACC', humanizeAccPromiseArray)
+    Promise.all(humanizeAccPromiseArray).then(humanizedAcc => {
+      console.log('PROMISE YO!', humanizedAcc)
+      let combinedAllShares = [];
+      console.log('TEST FOR ALL SHARES', allSharesHolder)
+      for(let i = 0; i < allSharesHolder.data.length; i++) {
+        let singleShare = allSharesHolder.data[i];
+        singleShare['humanizedAccessControlConditions'] = humanizedAcc[i];
+        console.log('singleShare', i, singleShare)
+        combinedAllShares.push(singleShare);
       }
-      const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
-      const currentUserObject = await googleAuthInstance.currentUser.get();
-      const idOnService = await currentUserObject.getId();
-      const tokens = await currentUserObject.getAuthResponse(true);
-      if (!!response.data["connectedServices"]) {
-        console.log(
-          'response.data["connectedServices"]',
-          response.data["connectedServices"]
-        );
-        await setConnectedServiceId(response.data.connectedServices[0].id);
-
-        await setToken(response.data.connectedServices[0].accessToken);
-        console.log('AUTH RESPONSE SET', tokens)
-        // setToken(response.data.connectedServices[0].accessToken);
-        console.log(
-          "currentUserObject after getting auth response with tokens",
-          currentUserObject
-        );
-        await setUserProfile(currentUserObject)
-        await getAllShares(storedAuthSig, idOnService);
-      }
-    } catch (err) {
-      console.log(`Error storing access token:, ${err.errors}`, err);
-      handleOpenSnackBar(`Error storing access token, please reload:, ${err}`, "error");
-      // await signOut();
-    }
+      setAllShares(combinedAllShares.reverse());
+    })
   };
 
   const signOut = async () => {
@@ -339,11 +354,9 @@ export default function GoogleGranting(props) {
   };
 
   const handleSubmit = async () => {
-    console.log('CURRENT USER IN HANDLE SUBMIT', currentUser)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-    // const id = file.embedUrl.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -394,7 +407,6 @@ export default function GoogleGranting(props) {
   };
 
   const handleDeleteShare = async (shareInfo) => {
-    console.log('USER DATA IN DELETE SHARE', currentUser)
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig, currentUser.idOnService);

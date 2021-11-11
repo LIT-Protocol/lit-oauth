@@ -12,7 +12,7 @@ import {
   TableBody,
   Dialog,
   DialogTitle,
-  DialogContent, DialogActions, Tooltip
+  DialogContent, DialogActions, Tooltip, List, ListItem, Divider
 } from "@mui/material";
 import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
@@ -37,11 +37,10 @@ export default function GoogleLinks(props) {
     setOpenDeleteWarningModal(false);
   }
 
-  const getAccessControlConditions = (accessControl) => {
-    const parsedAcc = JSON.parse(accessControl);
-    console.log('PARSED ACC', parsedAcc)
-    return parsedAcc[0].chain;
-  }
+  // const getAccessControlConditions = (accessControl) => {
+  //   const parsedAcc = JSON.parse(accessControl);
+  //   return parsedAcc[0].chain;
+  // }
 
   return (
     <section>
@@ -72,7 +71,13 @@ export default function GoogleLinks(props) {
                   <TableCell component="th" scope="row">
                     {share.name}
                   </TableCell>
-                  <TableCell align="left">{getAccessControlConditions(share.accessControlConditions)}</TableCell>
+                  <TableCell align="left">
+                    <List>
+                      {share.humanizedAccessControlConditions.map((acc, i) => (
+                        <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
+                      ))}
+                    </List>
+                  </TableCell>
                   <TableCell align="left">{share.assetType}</TableCell>
                   <TableCell align="left">{share.role}</TableCell>
                   <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
