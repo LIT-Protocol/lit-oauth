@@ -42,18 +42,18 @@ export default function GoogleProvisionAccessModal(props) {
       console.log('WINDOW ORIGIN', origin)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       console.log('WINDOW GOOGLE', window.google)
-      // picker = new google.picker.PickerBuilder()
-        // .addView(view)
-        // .setOAuthToken(googleAuthInstance.access_token)
-    //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
-    //     .setDeveloperKey(
-    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-    //     )
+      picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .setOAuthToken(googleAuthInstance.access_token)
+        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        .setDeveloperKey(
+          process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+        )
     //     .setOrigin(origin)
-    //     .setCallback(pickerCallback)
-    //     .build();
-    //   console.log('PICKER', picker)
-    //   picker.setVisible(true);
+        .setCallback(pickerCallback)
+        .build();
+      console.log('PICKER', picker)
+      picker.setVisible(true);
     }
   };
 
