@@ -24,36 +24,36 @@ export default function GoogleProvisionAccessModal(props) {
   const createPicker = async () => {
     console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
-    const googleAuth = await window.gapi.auth2.getAuthInstance();
-    const googleUser = await googleAuth.currentUser.get()
-    const googleAuthInstance = await googleUser.getAuthResponse(true);
-    const googleUserScope = googleUser.getGrantedScopes();
-
-    console.log('GOOGLE AUTH INSTANCE', googleUserScope)
-    console.log('INCLUDED TOKEN', props.accessToken)
-    if (props.accessToken?.length) {
-      let origin;
-      if (window.location != window.parent.location) {
-        // use parent origin
-        origin = document.referrer;
-      } else {
-        // use current origin
-        origin = window.location.protocol + "//" + window.location.host;
-      }
-      console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
-      picker = new google.picker.PickerBuilder()
-        .addView(view)
-        .setOAuthToken(googleAuthInstance.access_token)
-        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
-        .setDeveloperKey(
-          process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-        )
-        .setOrigin(origin)
-        .setCallback(pickerCallback)
-        .build();
-      picker.setVisible(true);
-    }
+    // const googleAuth = await window.gapi.auth2.getAuthInstance();
+    // const googleUser = await googleAuth.currentUser.get()
+    // const googleAuthInstance = await googleUser.getAuthResponse(true);
+    // const googleUserScope = googleUser.getGrantedScopes();
+    //
+    // console.log('GOOGLE AUTH INSTANCE', googleUserScope)
+    // console.log('INCLUDED TOKEN', props.accessToken)
+    // if (props.accessToken?.length) {
+    //   let origin;
+    //   if (window.location != window.parent.location) {
+    //     // use parent origin
+    //     origin = document.referrer;
+    //   } else {
+    //     // use current origin
+    //     origin = window.location.protocol + "//" + window.location.host;
+    //   }
+    //   console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
+    //   const view = new google.picker.View(google.picker.ViewId.DOCS);
+    //   picker = new google.picker.PickerBuilder()
+    //     .addView(view)
+    //     .setOAuthToken(googleAuthInstance.access_token)
+    //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+    //     .setDeveloperKey(
+    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+    //     )
+    //     .setOrigin(origin)
+    //     .setCallback(pickerCallback)
+    //     .build();
+    //   picker.setVisible(true);
+    // }
   };
 
   const pickerCallback = (data) => {
@@ -91,10 +91,7 @@ export default function GoogleProvisionAccessModal(props) {
                   startAdornment: (
                     <Button
                       style={{ marginRight: "1rem", width: "10rem" }}
-                      onClick={() => {
-                        console.log('CREATE PICKER ORIGIN', window.location.protocol + "//" + window.location.host)
-                        createPicker()
-                      }}
+                      onClick={() => createPicker()}
                     >
                       Choose File
                     </Button>
