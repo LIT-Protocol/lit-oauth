@@ -425,9 +425,6 @@ export default function GoogleGranting(props) {
         </div>
       ) : (
         <section className={"service-grid-container"}>
-          <Button aria-label="delete" size="large" startIcon={<ArrowBackIcon/>} onClick={() => window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`}>
-            Back to all Apps
-          </Button>
           <div className={'service-grid-header'}>
             <ServiceHeader
               serviceName={"Google Drive App"}
