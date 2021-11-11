@@ -58,7 +58,6 @@ function GoogleLinkShare() {
           console.log(res.data["requirements"]);
           console.log(typeof res.data["role"]);
           setLinkData(res.data);
-          console.log("LINK DATA", res.data);
         })
         .catch((err) => {
           setError("Invalid link");
@@ -67,11 +66,10 @@ function GoogleLinkShare() {
   }, []);
 
   const provisionAccess = async () => {
-    console.log("LINK DATA", linkData);
     const accessControlConditions = JSON.parse(
       linkData.share.accessControlConditions
     );
-    console.log("PARSE ACC", accessControlConditions);
+
     const chain = accessControlConditions[0].chain;
     const resourceId = {
       baseUrl: BASE_URL,
@@ -155,7 +153,6 @@ function GoogleLinkShare() {
       const role = linkData.share["role"];
       const body = { email, role, uuid, jwt };
       const headers = { "Content-Type": "application/json" };
-      console.log('HANDLE SUBMIT')
       try {
         const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
         console.log("DATA", shareLinkResponse);

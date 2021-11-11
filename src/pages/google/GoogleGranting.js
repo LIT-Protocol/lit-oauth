@@ -117,6 +117,7 @@ export default function GoogleGranting(props) {
   };
 
   const loadAuth = async () => {
+    console.log('Updated at 4:21pm - 2021.11.10')
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
 
@@ -133,7 +134,6 @@ export default function GoogleGranting(props) {
           }).then(async (googleObject) => {
             window.gapi.load("picker", {callback: onPickerApiLoad});
             const userIsSignedIn = googleObject.isSignedIn.get();
-            console.log('Updated at 6:29')
             if (!userIsSignedIn) {
               // if no google user exists, push toward authenticate
               await authenticate();
@@ -154,7 +154,6 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        console.log('CURRENT GET USER ID WHATEVER WHO CARES', currentUserObject.it.hT)
         const idOnService = await currentUserObject.getId();
         const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
@@ -191,7 +190,6 @@ export default function GoogleGranting(props) {
   }
 
   const setLatestAccessToken = async (currentUserObject, idOnService) => {
-    // console.log('GAPI CHECK', window.gapi.i)
     const googleAuthResponse = currentUserObject.getAuthResponse(true);
     try {
       const response = await asyncHelpers.verifyToken(
@@ -305,21 +303,17 @@ export default function GoogleGranting(props) {
 
     const humanizeAccPromiseArray = allSharesHolder.data.map(s => {
       const shareAcConditions = JSON.parse(s.accessControlConditions);
-      console.log('SHARE TEST', shareAcConditions)
       return LitJsSdk.humanizeAccessControlConditions({
         accessControlConditions: shareAcConditions,
         myWalletAddress: storedAuthSig.address,
       })
-    })
-    console.log('HUMAZ ACC', humanizeAccPromiseArray)
+    });
+
     Promise.all(humanizeAccPromiseArray).then(humanizedAcc => {
-      console.log('PROMISE YO!', humanizedAcc)
       let combinedAllShares = [];
-      console.log('TEST FOR ALL SHARES', allSharesHolder)
       for(let i = 0; i < allSharesHolder.data.length; i++) {
         let singleShare = allSharesHolder.data[i];
         singleShare['humanizedAccessControlConditions'] = humanizedAcc[i];
-        console.log('singleShare', i, singleShare)
         combinedAllShares.push(singleShare);
       }
       setAllShares(combinedAllShares.reverse());
