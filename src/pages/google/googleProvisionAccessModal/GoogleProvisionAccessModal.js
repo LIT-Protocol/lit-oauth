@@ -26,37 +26,12 @@ export default function GoogleProvisionAccessModal(props) {
   }
 
   const createPicker = async () => {
-    // props.setOpenProvisionAccessDialog(false);
-
-    // if (props.accessToken?.length) {
-    //   let origin;
-    //   if (window.location != window.parent.location) {
-    //     // use parent origin
-    //     origin = document.referrer;
-    //   } else {
-    //     // use current origin
-    //     origin = window.location.protocol + "//" + window.location.host;
-    //   }
-    //   const view = new google.picker.View(google.picker.ViewId.DOCS);
-    //   picker = new google.picker.PickerBuilder()
-    //     .addView(view)
-    //     .setOAuthToken(props.accessToken)
-    //     .setDeveloperKey(
-    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-    //     )
-    //     .setOrigin(origin)
-    //     .setCallback(pickerCallback)
-    //     .build();
-    //   picker.setVisible(true);
-    // }
-
+    console.log('picker loaded')
     const googleAuth = await window.gapi.auth2.getAuthInstance();
     const googleUser = await googleAuth.currentUser.get()
     const googleAuthInstance = await googleUser.getAuthResponse(true);
     const accessToken = googleAuthInstance.access_token
 
-    console.log('GOOGLE AUTH INSTANCE', googleUser.getBasicProfile())
-    console.log('INCLUDED TOKEN', props.accessToken)
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
@@ -68,10 +43,10 @@ export default function GoogleProvisionAccessModal(props) {
         processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
       })
       picker = new google.picker.PickerBuilder()
-        // .setOrigin(origin)
+        .setOrigin(origin)
         .addView(view)
         .setOAuthToken(accessToken)
-        // .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
         )
