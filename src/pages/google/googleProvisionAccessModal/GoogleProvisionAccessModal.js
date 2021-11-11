@@ -41,7 +41,8 @@ export default function GoogleProvisionAccessModal(props) {
       }
       console.log('WINDOW ORIGIN', origin)
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-      picker = new google.picker.PickerBuilder()
+      console.log('WINDOW GOOGLE', window.google)
+      // picker = new google.picker.PickerBuilder()
         // .addView(view)
         // .setOAuthToken(googleAuthInstance.access_token)
     //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
@@ -51,7 +52,7 @@ export default function GoogleProvisionAccessModal(props) {
     //     .setOrigin(origin)
     //     .setCallback(pickerCallback)
     //     .build();
-      console.log('PICKER', picker)
+    //   console.log('PICKER', picker)
     //   picker.setVisible(true);
     }
   };
