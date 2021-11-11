@@ -37,7 +37,7 @@ export default function GoogleProvisionAccessModal(props) {
     console.log('GOOGLE AUTH INSTANCE', googleAuthInstance)
 
     if (accessToken?.length) {
-      const origin = window.location.protocol + "//" + window.location.host;
+      const origin = `${window.location.protocol}//${window.location.host}/`;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
 
       picker = new google.picker.PickerBuilder()
