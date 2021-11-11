@@ -127,6 +127,7 @@ export default function GoogleGranting(props) {
       window.gapi.load("client:auth2", function () {
         window.gapi.auth2
           .init({
+            access_type: 'offline',
             client_id: GOOGLE_CLIENT_KEY,
             scope: "https://www.googleapis.com/auth/drive.file",
           }).then(async (googleObject) => {

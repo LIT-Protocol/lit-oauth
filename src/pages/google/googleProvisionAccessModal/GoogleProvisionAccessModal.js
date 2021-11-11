@@ -22,7 +22,9 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const loadPicker = () => {
-    window.gapi.load("picker", {callback: createPicker()});
+    window.gapi.load("auth2", function () {
+      window.gapi.load("picker", {callback: createPicker()});
+    });
   }
 
   const createPicker = async () => {
@@ -32,16 +34,13 @@ export default function GoogleProvisionAccessModal(props) {
     const googleAuthInstance = await googleUser.getAuthResponse(true);
     const accessToken = googleAuthInstance.access_token
 
+    console.log('window.gapi', window.gapi)
+    console.log('window.pickerbuilder', window.google.picker.PickerBuilder)
+
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-      console.log('ALL PICKER DATA', {
-        origin,
-        view: view,
-        access: accessToken,
-        processId: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-        processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-      })
+
       picker = new google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
