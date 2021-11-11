@@ -22,26 +22,26 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const createPicker = async () => {
-    console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
+    console.log('WINDOW ORIGIN NEW', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
     // const googleAuth = await window.gapi.auth2.getAuthInstance();
     // const googleUser = await googleAuth.currentUser.get()
     // const googleAuthInstance = await googleUser.getAuthResponse(true);
     // const googleUserScope = googleUser.getGrantedScopes();
-    //
+
     // console.log('GOOGLE AUTH INSTANCE', googleUserScope)
-    // console.log('INCLUDED TOKEN', props.accessToken)
-    // if (props.accessToken?.length) {
-    //   let origin;
-    //   if (window.location != window.parent.location) {
-    //     // use parent origin
-    //     origin = document.referrer;
-    //   } else {
-    //     // use current origin
-    //     origin = window.location.protocol + "//" + window.location.host;
-    //   }
-    //   console.log('WINDOW ORIGIN', window.location.protocol + "//" + window.location.host)
-    //   const view = new google.picker.View(google.picker.ViewId.DOCS);
+    console.log('INCLUDED TOKEN', props.accessToken)
+    if (props.accessToken?.length) {
+      let origin;
+      if (window.location != window.parent.location) {
+        // use parent origin
+        origin = document.referrer;
+      } else {
+        // use current origin
+        origin = window.location.protocol + "//" + window.location.host;
+      }
+      console.log('WINDOW ORIGIN', origin)
+      const view = new google.picker.View(google.picker.ViewId.DOCS);
     //   picker = new google.picker.PickerBuilder()
     //     .addView(view)
     //     .setOAuthToken(googleAuthInstance.access_token)
@@ -53,7 +53,7 @@ export default function GoogleProvisionAccessModal(props) {
     //     .setCallback(pickerCallback)
     //     .build();
     //   picker.setVisible(true);
-    // }
+    }
   };
 
   const pickerCallback = (data) => {

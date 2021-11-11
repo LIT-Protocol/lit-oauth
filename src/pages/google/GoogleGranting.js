@@ -124,7 +124,6 @@ export default function GoogleGranting(props) {
         console.log('Stop auth if authSig is not yet available');
         return;
       }
-      console.log('AuthSIg', storedAuthSig)
       window.gapi.load("client:auth2", function () {
         window.gapi.auth2
           .init({
@@ -133,6 +132,7 @@ export default function GoogleGranting(props) {
           }).then(async (googleObject) => {
             window.gapi.load("picker", {callback: onPickerApiLoad});
             const userIsSignedIn = googleObject.isSignedIn.get();
+            console.log('Updated at 5:24')
             if (!userIsSignedIn) {
               // if no google user exists, push toward authenticate
               await authenticate();
@@ -153,7 +153,7 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const idOnService = currentUserObject.getId();
+        const idOnService = await currentUserObject.getId();
         const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
         if (currentLitUserProfile[0]) {
