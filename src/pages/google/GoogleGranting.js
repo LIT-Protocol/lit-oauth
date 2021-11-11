@@ -132,7 +132,7 @@ export default function GoogleGranting(props) {
           }).then(async (googleObject) => {
             window.gapi.load("picker", {callback: onPickerApiLoad});
             const userIsSignedIn = googleObject.isSignedIn.get();
-            console.log('Updated at 6:05')
+            console.log('Updated at 6:29')
             if (!userIsSignedIn) {
               // if no google user exists, push toward authenticate
               await authenticate();
