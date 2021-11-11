@@ -61,11 +61,12 @@ export default function GoogleProvisionAccessModal(props) {
     if (data?.action === "loaded") {
       return;
     }
-    console.log("DATA FROM PICKER", data);
-    props.setOpenProvisionAccessDialog(true);
-    if (data?.action === "picked") {
-      props.setFile(data.docs[0]);
-    }
+    console.log('PICKER CALLBACK END', data)
+    // console.log("DATA FROM PICKER", data);
+    // props.setOpenProvisionAccessDialog(true);
+    // if (data?.action === "picked") {
+    //   props.setFile(data.docs[0]);
+    // }
   };
 
   return (
