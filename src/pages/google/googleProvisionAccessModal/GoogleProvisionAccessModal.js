@@ -68,10 +68,10 @@ export default function GoogleProvisionAccessModal(props) {
         processKey: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
       })
       picker = new google.picker.PickerBuilder()
-        .setOrigin(origin)
+        // .setOrigin(origin)
         .addView(view)
         .setOAuthToken(accessToken)
-        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        // .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
         )
