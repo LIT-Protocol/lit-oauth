@@ -21,6 +21,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 export default function GoogleProvisionAccessModal(props) {
   let picker;
 
+  const loadPicker = () => {
+    window.gapi.load("picker", {callback: createPicker()});
+  }
+
   const createPicker = async () => {
     // props.setOpenProvisionAccessDialog(false);
 
@@ -117,7 +121,7 @@ export default function GoogleProvisionAccessModal(props) {
                   startAdornment: (
                     <Button
                       style={{ marginRight: "1rem", width: "10rem" }}
-                      onClick={() => createPicker()}
+                      onClick={() => loadPicker()}
                     >
                       Choose File
                     </Button>
