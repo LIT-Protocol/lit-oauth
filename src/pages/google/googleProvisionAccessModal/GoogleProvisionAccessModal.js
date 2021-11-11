@@ -24,12 +24,12 @@ export default function GoogleProvisionAccessModal(props) {
   const createPicker = async () => {
     console.log('WINDOW ORIGIN NEW', window.location.protocol + "//" + window.location.host)
     props.setOpenProvisionAccessDialog(false);
-    const googleAuth = await window.gapi.auth2.getAuthInstance();
-    const googleUser = await googleAuth.currentUser.get()
-    const googleAuthInstance = await googleUser.getAuthResponse(true);
-    const googleUserScope = googleUser.getGrantedScopes();
+    // const googleAuth = await window.gapi.auth2.getAuthInstance();
+    // const googleUser = await googleAuth.currentUser.get()
+    // const googleAuthInstance = await googleUser.getAuthResponse(true);
+    // const googleUserScope = googleUser.getGrantedScopes();
 
-    console.log('GOOGLE AUTH INSTANCE', googleUserScope)
+    // console.log('GOOGLE AUTH INSTANCE', googleUserScope)
     console.log('INCLUDED TOKEN', props.accessToken)
     if (props.accessToken?.length) {
       let origin;
