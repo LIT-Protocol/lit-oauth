@@ -36,6 +36,7 @@ export default function GoogleProvisionAccessModal(props) {
       const view = new google.picker.View(google.picker.ViewId.DOCS);
       picker = new google.picker.PickerBuilder()
         .addView(view)
+        .setOAuthToken(props.accessToken)
         .setDeveloperKey(
           process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
         )
