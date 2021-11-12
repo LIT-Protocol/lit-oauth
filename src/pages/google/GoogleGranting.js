@@ -404,7 +404,7 @@ export default function GoogleGranting(props) {
       {((!storedAuthSig['sig'] || token === "") && !currentUser['idOnService']) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
-          <h3>Working...</h3>
+          <h3>Waiting for Google Account - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
         <section className={"service-grid-container"}>
