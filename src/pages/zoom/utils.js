@@ -20,6 +20,8 @@ export const getResourceIdForMeeting = ({ meeting, share }) => {
     role: "",
     extraData: JSON.stringify({
       shareId: share.id,
+      assetIdOnService: share.assetIdOnService,
+      assetType: share.assetType,
     }),
   };
   return resourceId;

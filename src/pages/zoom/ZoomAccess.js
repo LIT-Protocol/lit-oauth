@@ -51,8 +51,9 @@ export default function ZoomAccess() {
   };
 
   const handleConnectAndJoin = async () => {
+    console.log('PERFORM AUTH SIG', performWithAuthSig)
     await performWithAuthSig(async (authSig) => {
-      // console.log("authSig when granting access", authSig);
+      console.log("authSig when granting access", authSig);
       const shares = (
         await getShares({
           authSig,
@@ -71,9 +72,16 @@ export default function ZoomAccess() {
         share = shares[i];
         console.log("getting jwt for share", share);
         const resourceId = getResourceIdForMeeting({
-          meeting: { id: meetingId },
+          meeting: { id: share.id },
           share,
         });
+
+        console.log('NODE CLIENT ARGS', {
+          accessControlConditions: share.accessControlConditions,
+          chain: share.accessControlConditions[0].chain,
+          authSig,
+          resourceId,
+        })
 
         try {
           jwt = await window.litNodeClient.getSignedToken({
@@ -102,12 +110,17 @@ export default function ZoomAccess() {
         return;
       }
 
+      console.log('SHARE SHARE SHARE', share)
+
       // submit jwt to backend to get zoom url
       const data = await getMeetingUrl({
-        meetingId,
+        assetType: share.assetType,
         shareId: share.id,
+        assetIdOnService: share.assetIdOnService,
         jwt,
       });
+
+      console.log('DATA', data)
 
       if (!data.joinUrl) {
         if (data.errorCode && data.errorCode === "not_authorized") {

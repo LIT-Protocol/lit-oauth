@@ -2,11 +2,10 @@ import axios from "axios";
 import LitJsSdk from "lit-js-sdk";
 import ZoomMeetings from "./ZoomGrantingComponents/ZoomMeetings";
 import { useAppContext } from "../../context";
-import { Alert, Avatar, Button, Card, CardContent, CircularProgress, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import React, { useEffect, useState } from "react";
-import { createMeetingShare, getAllShares, getMeetingsAndWebinars, getServiceInfo } from "./zoomAsyncHelpers";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
@@ -16,7 +15,7 @@ const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
 export default function ZoomGranting() {
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [userSignedIn, setUserSignedIn] = useState(false);
 
@@ -65,7 +64,8 @@ export default function ZoomGranting() {
     await handleSubmit();
   };
 
-  const handleOpenProvisionAccessDialog = () => {
+  const handleOpenProvisionAccessDialog = async () => {
+    await loadMeetings(storedAuthSig);
     setOpenProvisionAccessDialog(true);
   };
 
@@ -90,7 +90,7 @@ export default function ZoomGranting() {
     setOpenSnackbar(false);
   };
 
-  const loadAuth = async() => {
+  const loadAuth = async () => {
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
 
@@ -104,7 +104,7 @@ export default function ZoomGranting() {
       if (serviceInfo?.data[0]) {
         setCurrentServiceInfo(serviceInfo.data[0]);
         console.log('SERVICE INFO', serviceInfo.data[0])
-        await loadMeetings(storedAuthSig);
+        // await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
         console.log('ZOOM SERVICE', serviceInfo.data[0])
         await getAllShares(storedAuthSig)
@@ -127,7 +127,7 @@ export default function ZoomGranting() {
     setCurrentUser(userProfile);
   }
 
-  const connectToZoom = async(authSig) => {
+  const connectToZoom = async (authSig) => {
     const resp = await axios.post(`${API_HOST}/api/oauth/zoom/serviceLogin`, {
       authSig,
     });
@@ -138,7 +138,7 @@ export default function ZoomGranting() {
 
   const loadMeetings = async (authSig) => {
     console.log('start of meetings and webinars')
-    const resp = await getMeetingsAndWebinars({ authSig });
+    const resp = await getMeetingsAndWebinars({authSig});
 
     console.log('MEETINGS AND WEBINATES', resp)
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
@@ -184,7 +184,9 @@ export default function ZoomGranting() {
         accessControlConditions,
       });
       console.log('CREATE SHARE RESP', resp);
-      await getLinkFromShare(resp.data[0]);
+      // const linkFromShareResponse = await getLinkFromShare(resp.data[0]);
+
+      // console.log('LINK FROM SHARE RESPONSE', linkFromShareResponse)
 
       // reload meeting with share so that when the user clicks "copy link"
       // in the access control modal, it actually works
@@ -192,21 +194,32 @@ export default function ZoomGranting() {
       // console.log("meetings after sharing", meetingsHolder);
       const meeting = meetings.find((m) => m.id === selectedMeeting.id);
       setSelectedMeeting(meeting);
-      const share = meeting.shares[0];
-      console.log('SHARESHARE', meeting)
+      const share = meeting.shares[0] ?? resp.data[0];
+
+      console.log('SELECTED MEETING', share)
 
       const resourceId = getResourceIdForMeeting({
-        meeting: selectedMeeting,
+        meeting: { id: share.id },
         share,
       });
+
+      const parsedAccessControlConditions = JSON.parse(share.accessControlConditions);
+
+      console.log('NODE CLIENT ARGS', {
+        accessControlConditions: parsedAccessControlConditions,
+        chain: parsedAccessControlConditions[0].chain,
+        authSig,
+        resourceId,
+      })
+
       await window.litNodeClient.saveSigningCondition({
-        accessControlConditions,
-        chain,
+        accessControlConditions: parsedAccessControlConditions,
+        chain: parsedAccessControlConditions[0].chain,
         authSig,
         resourceId,
       });
-      setSelectedMeeting( null);
-      setAccessControlConditions( []);
+      setSelectedMeeting(null);
+      setAccessControlConditions([]);
       // getLinkFromShare()
       await getAllShares(storedAuthSig);
     });
@@ -217,7 +230,7 @@ export default function ZoomGranting() {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig);
       handleOpenSnackBar(`${shareInfo.name} has been deleted.`, 'success');
-    } catch(err) {
+    } catch (err) {
       console.log(`'Error deleting share', ${err}`)
       handleOpenSnackBar(`Error deleting share: ${err}`, 'error');
     }
@@ -283,7 +296,7 @@ export default function ZoomGranting() {
       {(!storedAuthSig['sig'] || !currentServiceInfo) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
-          <h3>Working...</h3>
+          <h3>Waiting for Zoom - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
         <section className={"service-grid-container"}>
@@ -343,7 +356,7 @@ export default function ZoomGranting() {
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

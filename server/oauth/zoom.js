@@ -199,7 +199,7 @@ export default async function (fastify, opts) {
   })
 
   fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
-    const { jwt, meetingId, shareId } = request.body;
+    const { jwt, assetType, assetIdOnService, shareId } = request.body;
 
     // verify the jwt
     const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
@@ -210,15 +210,27 @@ export default async function (fastify, opts) {
     // This means you need to look at "payload.baseUrl" which should match the hostname of the server, and you must also look at "payload.path" which should match the path being accessed, and you must also look at payload.orgId, payload.role, and payload.extraData which will probably be empty
     // If these do not match what you're expecting, you should reject the request!!
 
-    const sharedLinkPath = getSharingLinkPath({ id: meetingId });
+    const sharedLinkPath = getSharingLinkPath({ id: shareId });
 
     const extraData = JSON.stringify({
-      shareId,
+      shareId: shareId,
+      assetIdOnService: assetIdOnService,
+      assetType: assetType
     });
 
     console.log("payload is", payload);
     console.log("correct extra data is ", extraData);
     console.log("shared link path is", sharedLinkPath);
+
+    console.log('CHECK CONDITIONS FOR SUCCESS', {
+      verified: verified,
+      baseUrl: `${payload.baseUrl} || ${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`,
+      path: `${payload.path} || ${sharedLinkPath}`,
+      orgId: `${payload.orgId}`,
+      role: `${payload.role}`,
+      extraData1: JSON.parse(payload.extraData),
+      extraData2: JSON.parse(extraData)
+    })
 
     if (
       !verified ||
@@ -229,6 +241,7 @@ export default async function (fastify, opts) {
       payload.role !== "" ||
       payload.extraData !== extraData
     ) {
+
       // Reject this request!
       return { success: false, errorCode: "not_authorized" };
     }
@@ -237,7 +250,7 @@ export default async function (fastify, opts) {
     const meeting = (
       await fastify.objection.models.shares
         .query()
-        .where("asset_id_on_service", "=", meetingId)
+        .where("asset_id_on_service", "=", assetIdOnService)
     )[0];
 
     const service = (
@@ -253,8 +266,8 @@ export default async function (fastify, opts) {
       connectedServiceId: service.id,
       fastify,
       userId,
-      meetingId,
-      assetType: meeting.asset_type,
+      meetingId: assetIdOnService,
+      assetType: assetType,
     });
 
     return {

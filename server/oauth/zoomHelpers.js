@@ -124,6 +124,7 @@ export const createMeetingInvite = async ({
     fastify,
     connectedServiceId,
     req: async (accessToken) => {
+      console.log('CHECK ON REFRESH')
       let url;
       if (assetType === "meeting") {
         url = `https://api.zoom.us/v2/meetings/${meetingId}/invite_links`;
@@ -147,7 +148,11 @@ export const createMeetingInvite = async ({
         }
       );
 
+      console.log('RESPONSE JOIN', resp.data)
+
       const joinUrl = resp.data.attendees[0].join_url;
+
+      console.log('JOIN URL', joinUrl)
 
       return { joinUrl };
     },

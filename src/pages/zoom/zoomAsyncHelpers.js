@@ -27,10 +27,11 @@ export const getShares = async ({ authSig, meetingId }) => {
   return resp.data;
 };
 
-export const getMeetingUrl = async ({ meetingId, jwt, shareId }) => {
+export const getMeetingUrl = async ({ assetType, jwt, assetIdOnService, shareId }) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/getMeetingUrl`, {
     jwt,
-    meetingId,
+    assetType,
+    assetIdOnService,
     shareId,
   });
 
