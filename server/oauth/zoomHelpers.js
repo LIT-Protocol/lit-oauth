@@ -148,11 +148,7 @@ export const createMeetingInvite = async ({
         }
       );
 
-      console.log('RESPONSE JOIN', resp.data)
-
       const joinUrl = resp.data.attendees[0].join_url;
-
-      console.log('JOIN URL', joinUrl)
 
       return { joinUrl };
     },

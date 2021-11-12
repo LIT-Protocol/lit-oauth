@@ -10,9 +10,9 @@ export const getMeetingsAndWebinars = async ({ authSig }) => {
   return resp.data;
 };
 
-export const logout = async (userId) => {
+export const logout = async (user) => {
   const resp = await axios.post(`${API_HOST}/api/zoom/serviceLogout`, {
-    userId,
+    user,
   });
 
   return resp.data;

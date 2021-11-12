@@ -5,11 +5,12 @@ import { useAppContext } from "../../context";
 import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import React, { useEffect, useState } from "react";
-import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo } from "./zoomAsyncHelpers";
+import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo, logout } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
+import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -25,7 +26,7 @@ export default function ZoomGranting() {
   const [storedAuthSig, setStoredAuthSig] = useState({});
   const [humanizedAccessControlArray, setHumanizedAccessControlArray] = useState([]);
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [token, setToken] = useState("");
+  // const [token, setToken] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [meetings, setMeetings] = useState([]);
 
@@ -102,11 +103,10 @@ export default function ZoomGranting() {
       const serviceInfo = await getServiceInfo(storedAuthSig);
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
+        console.log('SSSSSSS', serviceInfo.data[0])
         setCurrentServiceInfo(serviceInfo.data[0]);
-        console.log('SERVICE INFO', serviceInfo.data[0])
         // await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
-        console.log('ZOOM SERVICE', serviceInfo.data[0])
         await getAllShares(storedAuthSig)
       } else {
         // if no connection is saved, connect to zoom
@@ -140,7 +140,6 @@ export default function ZoomGranting() {
     console.log('start of meetings and webinars')
     const resp = await getMeetingsAndWebinars({authSig});
 
-    console.log('MEETINGS AND WEBINATES', resp)
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
     setMeetings(resp.meetingsAndWebinars);
@@ -148,7 +147,24 @@ export default function ZoomGranting() {
 
   const getAllShares = async (authSig) => {
     const allSharesHolder = await asyncHelpers.getAllShares(authSig);
-    setAllShares(allSharesHolder.data.reverse());
+
+    const humanizeAccPromiseArray = allSharesHolder.data.map(s => {
+      const shareAcConditions = JSON.parse(s.accessControlConditions);
+      return LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions: shareAcConditions,
+        myWalletAddress: storedAuthSig.address,
+      })
+    });
+
+    Promise.all(humanizeAccPromiseArray).then(humanizedAcc => {
+      let combinedAllShares = [];
+      for (let i = 0; i < allSharesHolder.data.length; i++) {
+        let singleShare = allSharesHolder.data[i];
+        singleShare['humanizedAccessControlConditions'] = humanizedAcc[i];
+        combinedAllShares.push(singleShare);
+      }
+      setAllShares(allSharesHolder.data.reverse());
+    });
   };
 
   const addToAccessControlConditions = async (r) => {
@@ -166,11 +182,14 @@ export default function ZoomGranting() {
   };
 
   const signOut = async () => {
-    await setCurrentServiceInfo(() => null);
-    setAccessControlConditions([]);
-    setCurrentUser({});
-    // TODO: figure out how to sign out of zoom
-    window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
+    console.log('currentServiceInfo', currentServiceInfo)
+    // logout(currentServiceInfo.email).then((res) => {
+      setAccessControlConditions([]);
+      setCurrentUser({});
+      setCurrentServiceInfo(null);
+      // TODO: figure out how to sign out of zoom
+      window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
+    // });
   };
 
   const handleSubmit = async () => {
@@ -183,10 +202,6 @@ export default function ZoomGranting() {
         meeting: selectedMeeting,
         accessControlConditions,
       });
-      console.log('CREATE SHARE RESP', resp);
-      // const linkFromShareResponse = await getLinkFromShare(resp.data[0]);
-
-      // console.log('LINK FROM SHARE RESPONSE', linkFromShareResponse)
 
       // reload meeting with share so that when the user clicks "copy link"
       // in the access control modal, it actually works
@@ -205,13 +220,6 @@ export default function ZoomGranting() {
 
       const parsedAccessControlConditions = JSON.parse(share.accessControlConditions);
 
-      console.log('NODE CLIENT ARGS', {
-        accessControlConditions: parsedAccessControlConditions,
-        chain: parsedAccessControlConditions[0].chain,
-        authSig,
-        resourceId,
-      })
-
       await window.litNodeClient.saveSigningCondition({
         accessControlConditions: parsedAccessControlConditions,
         chain: parsedAccessControlConditions[0].chain,
@@ -220,7 +228,7 @@ export default function ZoomGranting() {
       });
       setSelectedMeeting(null);
       setAccessControlConditions([]);
-      // getLinkFromShare()
+      await getLinkFromShare()
       await getAllShares(storedAuthSig);
     });
   };
@@ -245,51 +253,6 @@ export default function ZoomGranting() {
     setOpenSnackbar(true);
     await navigator.clipboard.writeText(link)
   };
-
-  // if (!storedAuthSig['sig'] || !currentServiceInfo) {
-  //   return (
-  //   <section className={'service-grid-container'}>
-  //     <Card className={'service-grid-login'}>
-  //       <CardContent>
-  //         {/*<CircularProgress/>*/}
-  //         <Button onClick={() => loadAuth()}>Connect your Zoom account</Button>
-  //         {/*<h3>Working...</h3>*/}
-  //       </CardContent>
-  //       {/*<CardContent className={'login-container-top'}>*/}
-  //       {/*    <span className={'login-service'}>*/}
-  //       {/*      <Avatar sx={{width: 60, height: 60}}>Z</Avatar>*/}
-  //       {/*      <div>*/}
-  //       {/*        <h2 className={'service-title'}>Zoom</h2>*/}
-  //       {/*        <p className={'service-category'}>Productivity</p>*/}
-  //       {/*      </div>*/}
-  //       {/*    </span>*/}
-  //       {/*  {!storedAuthSig['sig'] ? (*/}
-  //       {/*    <p>*/}
-  //       {/*      Login with your wallet to proceed.*/}
-  //       {/*    </p>*/}
-  //       {/*  ) : (*/}
-  //       {/*    <Button className={'service-launch-button'} variant={'contained'} onClick={() => connect("zoom")}>*/}
-  //       {/*      Launch*/}
-  //       {/*    </Button>*/}
-  //       {/*  )}*/}
-  //       {/*</CardContent>*/}
-  //       {/*<CardContent class={'service-description'}>*/}
-  //       {/*  <p>Create permissions based on wallet contents for your already-existing Zoom meetings. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>*/}
-  //       {/*  <p>Once files are permissioned on the Lit Zoom App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>*/}
-  //       {/*  <p>Wallets that meet the conditions will enter their email address for access.</p>*/}
-  //       {/*</CardContent>*/}
-  //     </Card>
-  //     {/*<Snackbar*/}
-  //     {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}*/}
-  //     {/*  open={openSnackbar}*/}
-  //     {/*  autoHideDuration={4000}*/}
-  //     {/*  onClose={handleCloseSnackbar}*/}
-  //     {/*>*/}
-  //     {/*  <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>*/}
-  //     {/*</Snackbar>*/}
-  //   </section>
-  //   )
-  // }
 
   return (
     <div>
@@ -329,7 +292,6 @@ export default function ZoomGranting() {
             humanizedAccessControlArray={humanizedAccessControlArray}
             handleAddAccessControl={handleAddAccessControl}
             handleGetShareLink={handleGetShareLink}
-            accessToken={token}
             authSig={storedAuthSig}
             selectedMeeting={selectedMeeting}
             setSelectedMeeting={setSelectedMeeting}
@@ -353,6 +315,9 @@ export default function ZoomGranting() {
               showStep="ableToAccess"
             />
           )}
+          <LitProtocolConnection
+            className={'lit-protocol-connection'}
+            connection={!!storedAuthSig['sig']}/>
         </section>
       )}
       <Snackbar

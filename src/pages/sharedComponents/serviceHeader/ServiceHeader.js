@@ -12,7 +12,6 @@ export default function ServiceHeader(props) {
 
   useEffect(() => {
     currentUser = props.currentUser;
-    console.log('CURRENT USER UPDATE', props.currentUser)
   }, [props.currentUser])
 
   const handleUserMenuClick = (event) => {

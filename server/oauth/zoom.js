@@ -6,8 +6,9 @@ import {
   getAccessToken,
   getUser,
   getMeetingsAndWebinars,
-  createMeetingInvite, refreshAccessToken, refreshTokenIfNeeded,
+  createMeetingInvite,
 } from "./zoomHelpers.js";
+import axios from "axios";
 
 export default async function (fastify, opts) {
   fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
@@ -33,11 +34,17 @@ export default async function (fastify, opts) {
     });
   });
 
-  fastify.delete("/api/oauth/zoom/serviceLogout", async (request, reply) => {
-    // const userToken = request.body.
-    console.log('DELETE REQUEST', request)
+  fastify.post("/api/zoom/serviceLogout", async (request, reply) => {
+    const user = request.body.user
+    console.log('DELETE REQUEST', request.body.user)
 
-    // fastify.delete(`http://zoom.us/oauth/users/${userToken}/token`)
+    // fastify.delete(`http://zoom.us/oauth/users/${user}/token`)
+    await axios.delete(`https://zoom.us/oauth/users/${user}/token`).then(res => {
+      console.log('RESULT OF DELETE USER', res)
+      return res;
+    }).catch(err => {
+      console.log('DELETE ERR', err)
+    });
   })
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
@@ -110,6 +117,8 @@ export default async function (fastify, opts) {
     //     .where('user_id', '=', authSig.address)
     //     .where('service_name', '=', 'zoom');
     // }
+
+    delete connectedService.refresh_token;
 
     return connectedService;
   });

@@ -1,0 +1,23 @@
+.lit-protocol-connection-container {
+  display: flex;
+  align-items: center;
+  width: 20rem;
+  //border: 1px solid blue;
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+}
+
+.lit-protocol-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 100%;
+}
+
+.lit-protocol-connection-text {
+  width: 14rem;
+  margin: 0 0 0 0.5rem;
+  padding: 0;
+  font-size: 0.9rem;
+  text-align: left;
+}

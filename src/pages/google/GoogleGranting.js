@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
@@ -10,6 +10,7 @@ import { Alert, CircularProgress, Snackbar, } from "@mui/material";
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
+import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -462,6 +463,9 @@ export default function GoogleGranting(props) {
               }}
             />
           )}
+          <LitProtocolConnection
+            className={'lit-protocol-connection'}
+            connection={!!storedAuthSig['sig']}/>
         </section>
       )}
       <Snackbar
