@@ -27,12 +27,12 @@ export default function GoogleProvisionAccessModal(props) {
 
   const createPicker = async () => {
     const googleAuth = await window.gapi.auth2.getAuthInstance();
-    const googleUser = await googleAuth.currentUser.get()
+    const googleUser = await googleAuth.currentUser.get();
     const googleAuthInstance = await googleUser.getAuthResponse(true);
-    const accessToken = googleAuthInstance.access_token
+    const accessToken = googleAuthInstance.access_token;
 
     if (accessToken?.length) {
-      const origin = `${window.location.protocol}//${window.location.host}`;
+      const origin = window.location.protocol + "//" + window.location.host;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
 
       picker = new google.picker.PickerBuilder()
