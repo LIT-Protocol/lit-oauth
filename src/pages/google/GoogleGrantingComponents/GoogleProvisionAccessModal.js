@@ -2,18 +2,18 @@
 
 import {
   Button,
-  FormControl,
-  MenuItem,
-  Select,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
-  TextField,
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Select,
+  TextField,
 } from "@mui/material";
 import "./GoogleProvisionAccessModal.scss";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -70,7 +70,7 @@ export default function GoogleProvisionAccessModal(props) {
         <DialogTitle className={"provision-access-header"}>
           Provision Access
         </DialogTitle>
-        <DialogContent style={{ paddingBottom: "0" }}>
+        <DialogContent style={{paddingBottom: "0"}}>
           <section className={"provision-access-container"}>
             <p>Google Drive Link</p>
             <span>
@@ -78,12 +78,12 @@ export default function GoogleProvisionAccessModal(props) {
                 disabled
                 value={props["file"] ? props.file["name"] : ""}
                 autoFocus
-                style={{ paddingLeft: "0 !important" }}
+                style={{paddingLeft: "0 !important"}}
                 fullWidth
                 InputProps={{
                   startAdornment: (
                     <Button
-                      style={{ marginRight: "1rem", width: "10rem" }}
+                      style={{marginRight: "1rem", width: "10rem"}}
                       onClick={() => loadPicker()}
                     >
                       Choose File
@@ -91,13 +91,13 @@ export default function GoogleProvisionAccessModal(props) {
                   ),
                   endAdornment: (
                     <IconButton
-                      style={{ marginLeft: "0.5rem" }}
+                      style={{marginLeft: "0.5rem"}}
                       onClick={() => {
                         props.setFile(null);
                         props.setAccessControlConditions([]);
                       }}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon/>
                     </IconButton>
                   ),
                 }}
@@ -120,7 +120,7 @@ export default function GoogleProvisionAccessModal(props) {
             </FormControl>
           </section>
         </DialogContent>
-        <DialogContent style={{ paddingTop: "0" }}>
+        <DialogContent style={{paddingTop: "0"}}>
           <section className={"provision-access-current-controls"}>
             <h4>Current Access Control Conditions</h4>
             {props.humanizedAccessControlArray.length > 0 && (
@@ -133,7 +133,7 @@ export default function GoogleProvisionAccessModal(props) {
                       <IconButton
                         onClick={() => props.removeIthAccessControlCondition(i)}
                       >
-                        <DeleteIcon />
+                        <DeleteIcon/>
                       </IconButton>
                     }
                   >

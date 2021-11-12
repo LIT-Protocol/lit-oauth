@@ -4,21 +4,11 @@ import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import GoogleLinks from "./GoogleGrantingComponents/GoogleLinks";
-import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
-import {
-  Alert,
-  Button,
-  Card,
-  Snackbar,
-  IconButton,
-  CardContent, CircularProgress,
-} from "@mui/material";
-// import googleDriveLogo from '../../assets/googledrive.png';
-import googleLoginButton from "../../assets/btn_google_signin_dark_normal_web@2x.png";
+import GoogleProvisionAccessModal from "./GoogleGrantingComponents/GoogleProvisionAccessModal";
+import { Alert, CircularProgress, Snackbar, } from "@mui/material";
 
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppContext } from "../../context";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
@@ -34,7 +24,7 @@ const googleRoleMap = {
 
 export default function GoogleGranting(props) {
   const parsedEnv = dotenv.config();
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [file, setFile] = useState(null);
   const [allShares, setAllShares] = useState([]);
@@ -73,12 +63,6 @@ export default function GoogleGranting(props) {
       }
     );
   }, [accessControlConditions]);
-
-  //TODO: erase this
-  const compareAccessTokens = (ac1, ac2) => {
-    console.log('AC1:', ac1)
-    console.log('AC2:', ac2)
-  }
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -132,18 +116,18 @@ export default function GoogleGranting(props) {
             client_id: GOOGLE_CLIENT_KEY,
             scope: "https://www.googleapis.com/auth/drive.file",
           }).then(async (googleObject) => {
-            window.gapi.load("picker", {callback: onPickerApiLoad});
-            const userIsSignedIn = googleObject.isSignedIn.get();
-            if (!userIsSignedIn) {
-              // if no google user exists, push toward authenticate
-              await authenticate();
-            } else {
-              // if a google user does exist, load user from lit DB
-              const currentUserObject = window.gapi.auth2
-                .getAuthInstance()
-                .currentUser.get();
-              await handleLoadCurrentUser(currentUserObject);
-            }
+          window.gapi.load("picker", {callback: onPickerApiLoad});
+          const userIsSignedIn = googleObject.isSignedIn.get();
+          if (!userIsSignedIn) {
+            // if no google user exists, push toward authenticate
+            await authenticate();
+          } else {
+            // if a google user does exist, load user from lit DB
+            const currentUserObject = window.gapi.auth2
+              .getAuthInstance()
+              .currentUser.get();
+            await handleLoadCurrentUser(currentUserObject);
+          }
         })
       })
     })
@@ -164,7 +148,7 @@ export default function GoogleGranting(props) {
           handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
           await authenticate();
         }
-      } catch(err) {
+      } catch (err) {
         console.log('No user found locally:', err)
         handleOpenSnackBar(`No user found locally: ${err}`, 'error');
       }
@@ -182,7 +166,7 @@ export default function GoogleGranting(props) {
         idOnService
       );
       return userProfiles.data;
-    } catch(err) {
+    } catch (err) {
       console.log('No user found locally:', err)
       handleOpenSnackBar(`No user found locally: ${err}`, 'error');
       return [];
@@ -197,7 +181,6 @@ export default function GoogleGranting(props) {
         googleAuthResponse,
         idOnService
       );
-      compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
       await setUserProfile(currentUserObject, idOnService);
@@ -218,7 +201,7 @@ export default function GoogleGranting(props) {
       if (authResult.code) {
         await storeToken(storedAuthSig, authResult.code);
       }
-    } catch(err) {
+    } catch (err) {
       if (err.error === 'popup_blocked_by_browser') {
         handleOpenSnackBar(`Pop up was blocked by browser, please enable popups to continue.`, 'error');
       } else {
@@ -311,7 +294,7 @@ export default function GoogleGranting(props) {
 
     Promise.all(humanizeAccPromiseArray).then(humanizedAcc => {
       let combinedAllShares = [];
-      for(let i = 0; i < allSharesHolder.data.length; i++) {
+      for (let i = 0; i < allSharesHolder.data.length; i++) {
         let singleShare = allSharesHolder.data[i];
         singleShare['humanizedAccessControlConditions'] = humanizedAcc[i];
         combinedAllShares.push(singleShare);
@@ -353,7 +336,7 @@ export default function GoogleGranting(props) {
     });
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
     };
     const requestData = {
       driveId: file.id,
@@ -367,7 +350,7 @@ export default function GoogleGranting(props) {
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
-      const { data } = response;
+      const {data} = response;
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
@@ -394,7 +377,7 @@ export default function GoogleGranting(props) {
       );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(storedAuthSig, currentUser.idOnService);
-    } catch(err) {
+    } catch (err) {
       console.log(`'Error sharing share', ${err}`)
       handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
     }
@@ -418,7 +401,7 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      {(!storedAuthSig['sig'] || token === "") ? (
+      {((!storedAuthSig['sig'] || token === "") && !currentUser['idOnService']) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
           <h3>Working...</h3>
@@ -471,7 +454,7 @@ export default function GoogleGranting(props) {
               className={"share-modal"}
               show={false}
               onClose={() => setOpenShareModal(false)}
-              sharingItems={[{ name: file.embedUrl }]}
+              sharingItems={[{name: file.embedUrl}]}
               onAccessControlConditionsSelected={async (restriction) => {
                 await addToAccessControlConditions(restriction);
                 setOpenShareModal(false);
@@ -482,7 +465,7 @@ export default function GoogleGranting(props) {
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

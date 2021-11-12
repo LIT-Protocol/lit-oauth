@@ -1,11 +1,10 @@
-import { Alert, Avatar, Button, Card, CardContent, CardMedia, Typography, CardActions, Snackbar } from "@mui/material";
+import { Alert, Button, Card, CardActions, CardContent, CardMedia, Snackbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import LitJsSdk from "lit-js-sdk";
 import { serviceLoginConfig } from "./serviceLoginConfig";
 import { useAppContext } from "../../context";
 
 export default function ServiceLogin() {
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
@@ -53,7 +52,7 @@ export default function ServiceLogin() {
       return;
     }
 
-    console.log('LOGIN' ,service);
+    console.log('LOGIN', service);
     window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${service}`
   }
 
@@ -71,7 +70,8 @@ export default function ServiceLogin() {
       <Card className={'service-grid-login'}>
         <CardContent className={'login-container-top'}>
             <span className={'login-service'}>
-              <div className={'service-image'} style={{backgroundImage: `url(${currentSelectedService.serviceImageUrl}`}}/>
+              <div className={'service-image'}
+                   style={{backgroundImage: `url(${currentSelectedService.serviceImageUrl}`}}/>
               <div>
                 <h2 className={'service-title'}>{currentSelectedService.serviceName}</h2>
                 <p className={'service-category'}>{currentSelectedService.serviceClassification}</p>
@@ -84,32 +84,37 @@ export default function ServiceLogin() {
           ) : (
             <span>
               {currentSelectedService.serviceTag === 'google' ? (
-                  <img
-                    src={'/btn_google_signin_dark_normal_web@2x.png'}
-                    className="service-launch-button-google"
-                    onClick={() => authenticate("google")}
-                  />
-                ): (
-              // TODO: abstract custom button solution to differentiate each service
-              <Button className={'service-launch-button'} variant={'contained'} onClick={() => authenticate(currentSelectedService.serviceTag)}>
-                Launch
-              </Button>
+                <img
+                  src={'/btn_google_signin_dark_normal_web@2x.png'}
+                  className="service-launch-button-google"
+                  onClick={() => authenticate("google")}
+                />
+              ) : (
+                // TODO: abstract custom button solution to differentiate each service
+                <Button className={'service-launch-button'} variant={'contained'}
+                        onClick={() => authenticate(currentSelectedService.serviceTag)}>
+                  Launch
+                </Button>
               )}
             </span>
           )}
         </CardContent>
         <CardContent className={'service-description'}>
-          <p>Create permissions based on wallet contents for your already-existing {currentSelectedService.serviceName} files. Our flexible permissions builders allows you to allow access based on token or NFT ownership as well as other wallet attributes, like membership in a DAO.</p>
-          <p>Once files are permissioned on the Lit {currentSelectedService.serviceName} App, you can edit wallet parameters, view/edit access, and delete it from the app which removes that access.</p>
+          <p>Create permissions based on wallet contents for your
+            already-existing {currentSelectedService.serviceName} files. Our flexible permissions builders allows you to
+            allow access based on token or NFT ownership as well as other wallet attributes, like membership in a
+            DAO.</p>
+          <p>Once files are permissioned on the Lit {currentSelectedService.serviceName} App, you can edit wallet
+            parameters, view/edit access, and delete it from the app which removes that access.</p>
           <p>Wallets that meet the conditions will enter their email address for access.</p>
         </CardContent>
       </Card>
       <section className={'unselected-services-container'}>
         <h2 className={'unselected-services-title'}>More Apps</h2>
         <span className={'unselected-services'}>
-          { !!currentUnselectedServices.length && (
+          {!!currentUnselectedServices.length && (
             currentUnselectedServices.map((s, i) => (
-              <Card key={i} className={'unselected-service-card'} sx={{ maxWidth: 345 }}>
+              <Card key={i} className={'unselected-service-card'} sx={{maxWidth: 345}}>
                 <CardMedia
                   component="img"
                   height="60"
@@ -129,7 +134,7 @@ export default function ServiceLogin() {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button variant={'outlined'} onClick={() => changeService(s.serviceTag)}size="small">Select</Button>
+                  <Button variant={'outlined'} onClick={() => changeService(s.serviceTag)} size="small">Select</Button>
                 </CardActions>
               </Card>
 
@@ -138,7 +143,7 @@ export default function ServiceLogin() {
         </span>
       </section>
       <Snackbar
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}

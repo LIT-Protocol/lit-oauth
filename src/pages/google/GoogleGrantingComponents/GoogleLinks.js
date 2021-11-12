@@ -12,15 +12,13 @@ import {
   TableBody,
   Dialog,
   DialogTitle,
-  DialogContent, DialogActions, Tooltip, List, ListItem, Divider
+  DialogContent, DialogActions, Tooltip, List, ListItem
 } from "@mui/material";
-import EditIcon from '@mui/icons-material/Edit';
 import LinkIcon from '@mui/icons-material/Link';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
-import LitJsSdk from "lit-js-sdk";
 
 export default function GoogleLinks(props) {
 
@@ -36,11 +34,6 @@ export default function GoogleLinks(props) {
     props.handleDeleteLinkAction(deleteShareInfo);
     setOpenDeleteWarningModal(false);
   }
-
-  // const getAccessControlConditions = (accessControl) => {
-  //   const parsedAcc = JSON.parse(accessControl);
-  //   return parsedAcc[0].chain;
-  // }
 
   return (
     <section>

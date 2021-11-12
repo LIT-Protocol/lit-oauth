@@ -7,7 +7,7 @@ import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import React, { useEffect, useState } from "react";
 import { createMeetingShare, getAllShares, getMeetingsAndWebinars, getServiceInfo } from "./zoomAsyncHelpers";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ZoomProvisionAccessModal from "./zoomProvisionAccessModal/ZoomProvisionAccessModal";
+import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";

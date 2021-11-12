@@ -1,14 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
-import {
-  Button,
-  Card,
-  CardActions,
-  CardHeader,
-  CardContent,
-  TextField, Snackbar, Alert,
-} from "@mui/material";
+import { Alert, Button, Card, CardActions, CardContent, CardHeader, Snackbar, TextField, } from "@mui/material";
 import "./GoogleLinkShare.scss";
 
 const GOOGLE_CLIENT_KEY =
@@ -44,10 +37,10 @@ function GoogleLinkShare() {
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
-      const body = JSON.stringify({ uuid: uuid });
-      const headers = { "Content-Type": "application/json" };
+      const body = JSON.stringify({uuid: uuid});
+      const headers = {"Content-Type": "application/json"};
       axios
-        .post(`${BASE_URL}/api/google/conditions`, body, { headers })
+        .post(`${BASE_URL}/api/google/conditions`, body, {headers})
         .then(async (res) => {
           console.log("OUT THROUGH CONDITIONS", res.data);
           setConditionsFetched(true);
@@ -79,7 +72,7 @@ function GoogleLinkShare() {
       extraData: "",
     };
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({chain});
 
     console.log("BEFORE FINAL SAVE", {
       accessControlConditions: accessControlConditions,
@@ -151,10 +144,10 @@ function GoogleLinkShare() {
   const handleSubmit = async () => {
     provisionAccess().then(async (jwt) => {
       const role = linkData.share["role"];
-      const body = { email, role, uuid, jwt };
-      const headers = { "Content-Type": "application/json" };
+      const body = {email, role, uuid, jwt};
+      const headers = {"Content-Type": "application/json"};
       try {
-        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
+        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, {headers});
         console.log("DATA", shareLinkResponse);
         console.log(
           "LINK",
@@ -165,7 +158,7 @@ function GoogleLinkShare() {
         window.location = `https://docs.google.com/${getFileTypeUrl(
           linkData.share.assetType
         )}/d/${shareLinkResponse.data.fileId}`;
-      } catch(err) {
+      } catch (err) {
         console.log('An error occurred while accessing link:', err)
         setSnackbarInfo({
           message: `An error occurred while accessing link: ${err}`,
@@ -249,7 +242,7 @@ function GoogleLinkShare() {
           {/*</div>*/}
         </Card>
         <Snackbar
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
           open={openSnackbar}
           autoHideDuration={4000}
           onClose={handleCloseSnackbar}
