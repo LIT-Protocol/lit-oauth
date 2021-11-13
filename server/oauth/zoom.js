@@ -12,11 +12,11 @@ import axios from "axios";
 
 export default async function (fastify, opts) {
   fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
-    const { authSig } = request.body;
+    const {authSig} = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const q = {
@@ -48,19 +48,19 @@ export default async function (fastify, opts) {
   })
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
-    const { state } = request.query;
-    const { authSig } = JSON.parse(state);
+    const {state} = request.query;
+    const {authSig} = JSON.parse(state);
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
     const userId = authSig.address;
 
-    const data = await getAccessToken({ code: request.query.code });
+    const data = await getAccessToken({code: request.query.code});
     const accessToken = data.access_token;
 
-    const user = await getUser({ accessToken });
+    const user = await getUser({accessToken});
     console.log("user", user);
 
     // check for existing access token
@@ -90,7 +90,7 @@ export default async function (fastify, opts) {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         scope: data.scope,
-        extraData: JSON.stringify({ token: data, user }),
+        extraData: JSON.stringify({token: data, user}),
       });
     }
 
@@ -124,11 +124,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
-    const { authSig } = request.body;
+    const {authSig} = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
     const userId = authSig.address;
 
@@ -143,7 +143,7 @@ export default async function (fastify, opts) {
         const shares = await fastify.objection.models.shares
           .query()
           .where("connected_service_id", "=", service.id);
-        return { ...service, shares };
+        return {...service, shares};
       })
     );
 
@@ -162,8 +162,8 @@ export default async function (fastify, opts) {
         })
       )
     )
-    .flat()
-    .filter((mw) => new Date(mw.start_time) > new Date());
+      .flat()
+      .filter((mw) => new Date(mw.start_time) > new Date());
 
     return {
       meetingsAndWebinars,
@@ -325,4 +325,25 @@ export default async function (fastify, opts) {
 
     return mostRecentShare;
   });
+
+
+  fastify.post('/api/zoom/emergencyDelete', async (request, reply) => {
+    const {address, idOnService} = request.body
+    const shareResponse = (
+      await fastify.objection.models.shares
+        .query()
+        .delete()
+        .where("user_id", "=", address)
+    )
+
+    const response = (
+      await fastify.objection.models.connectedServices
+        .query()
+        .delete()
+        .where("user_id", "=", address)
+        .where("id_on_service", "=", idOnService)
+    )
+
+    return response;
+  })
 }

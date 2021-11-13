@@ -11,6 +11,7 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
+import address from "address";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -100,9 +101,12 @@ export default function ZoomGranting() {
         return;
       }
 
+      console.log('STORED AUTH SIG', storedAuthSig)
+
       const serviceInfo = await getServiceInfo(storedAuthSig);
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
+        console.log('SERVICE INFO', serviceInfo.data[0])
         setCurrentServiceInfo(serviceInfo.data[0]);
         // await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
@@ -318,6 +322,14 @@ export default function ZoomGranting() {
           <LitProtocolConnection
             className={'lit-protocol-connection'}
             connection={!!storedAuthSig['sig']}/>
+          <button onClick={async () => {
+            const resp = await axios.post(`${API_HOST}/api/zoom/emergencyDelete`, {
+              address: storedAuthSig.address,
+              idOnService: currentServiceInfo.idOnService
+            });
+
+            console.log('DELETED', resp);
+          }}>DELETE USER</button>
         </section>
       )}
       <Snackbar
