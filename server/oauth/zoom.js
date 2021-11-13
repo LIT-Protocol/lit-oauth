@@ -328,7 +328,7 @@ export default async function (fastify, opts) {
 
 
   // // TODO: remove this
-  // fastify.post('/api/zoom/emergencyDelete', async (request, reply) => {
+  // fastify.post('/api/zoom/deleteUser', async (request, reply) => {
   //   const {address, idOnService} = request.body
   //   const shareResponse = (
   //     await fastify.objection.models.shares
