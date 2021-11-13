@@ -103,7 +103,6 @@ export default function ZoomGranting() {
       const serviceInfo = await getServiceInfo(storedAuthSig);
       // if previous connection exists, retrieve it from DB
       if (serviceInfo?.data[0]) {
-        console.log('SSSSSSS', serviceInfo.data[0])
         setCurrentServiceInfo(serviceInfo.data[0]);
         // await loadMeetings(storedAuthSig);
         await setUserProfile(serviceInfo.data[0])
@@ -228,7 +227,7 @@ export default function ZoomGranting() {
       });
       setSelectedMeeting(null);
       setAccessControlConditions([]);
-      await getLinkFromShare()
+      await getLinkFromShare(share);
       await getAllShares(storedAuthSig);
     });
   };
@@ -245,6 +244,7 @@ export default function ZoomGranting() {
   };
 
   const getLinkFromShare = async (share) => {
+    console.log('SHARE!', share)
     const link = getSharingLink(share);
     setSnackbarInfo({
       message: `Link has been copied to clipboard.`,

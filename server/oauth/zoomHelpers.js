@@ -165,7 +165,7 @@ export const refreshAccessToken = async ({
     refresh_token: refreshToken,
     grant_type: "refresh_token",
   };
-  console.log('REFRESHFRESH TOKEN!', refreshToken)
+  console.log('REFRESH TOKEN BEFORE!', refreshToken)
   const url =
     "https://zoom.us/oauth/token?" + new URLSearchParams(q).toString();
 
@@ -183,6 +183,8 @@ export const refreshAccessToken = async ({
       },
     }
   );
+
+  console.log('REFRESH TOKEN AFTER', resp)
 
   await fastify.objection.models.connectedServices
     .query()
