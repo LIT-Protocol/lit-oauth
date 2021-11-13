@@ -322,14 +322,14 @@ export default function ZoomGranting() {
           <LitProtocolConnection
             className={'lit-protocol-connection'}
             connection={!!storedAuthSig['sig']}/>
-          <button onClick={async () => {
-            const resp = await axios.post(`${API_HOST}/api/zoom/emergencyDelete`, {
-              address: storedAuthSig.address,
-              idOnService: currentServiceInfo.idOnService
-            });
+          {/*<button onClick={async () => {*/}
+          {/*  const resp = await axios.post(`${API_HOST}/api/zoom/emergencyDelete`, {*/}
+          {/*    address: storedAuthSig.address,*/}
+          {/*    idOnService: currentServiceInfo.idOnService*/}
+          {/*  });*/}
 
-            console.log('DELETED', resp);
-          }}>DELETE USER</button>
+          {/*  console.log('DELETED', resp);*/}
+          {/*}}>DELETE USER</button>*/}
         </section>
       )}
       <Snackbar
