@@ -12,7 +12,6 @@ export const getSharingLink = (meeting) => {
 
 export const getResourceIdForMeeting = ({ meeting, share }) => {
   const path = getSharingLinkPath(meeting);
-  console.log('GET ID SHARE INFO', share)
   const resourceId = {
     baseUrl: HOST,
     path,

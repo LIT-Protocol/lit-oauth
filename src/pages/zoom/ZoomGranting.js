@@ -279,9 +279,9 @@ export default function ZoomGranting() {
               serviceName={"Drive"}
               handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
               handleEditLinkAction={() => console.log('EDIT CLICKED')}
-              handleCopyLinkAction={(linkUuid) => getLinkFromShare(linkUuid)}
+              handleCopyLinkAction={(share) => getLinkFromShare(share)}
               handleDownloadLinkAction={() => console.log('DOWNLOAD CLICKED')}
-              handleDeleteLinkAction={(linkUuid) => handleDeleteShare(linkUuid)}
+              handleDeleteLinkAction={(share) => handleDeleteShare(share)}
               listOfShares={allShares}/>
           </div>
           <ZoomProvisionAccessModal
