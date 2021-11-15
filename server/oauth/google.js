@@ -6,10 +6,10 @@ import { parseJwt } from "../utils.js";
 export default async function (fastify, opts) {
   // store the user's access token
   fastify.post("/api/google/connect", async (req, res) => {
-    const { authSig, code } = req.body;
+    const {authSig, code} = req.body;
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     // First - get Google Drive refresh token (given acct email and drive)
@@ -18,7 +18,7 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    const { tokens } = await oauth_client.getToken(code);
+    const {tokens} = await oauth_client.getToken(code);
     oauth_client.setCredentials(tokens);
 
     const parsedJwt = parseJwt(tokens.id_token);
@@ -87,12 +87,12 @@ export default async function (fastify, opts) {
       accessToken: s.accessToken,
     }));
 
-    return { connectedServices: serialized };
+    return {connectedServices: serialized};
   });
 
   // verify token and update if necessary
   fastify.post("/api/google/verifyToken", async (req, res) => {
-    const { id_token, access_token, email } = req.body.googleAuthResponse;
+    const {id_token, access_token, email} = req.body.googleAuthResponse;
     const idOnService = req.body.idOnService;
     const authSig = req.body.authSig;
 
@@ -116,16 +116,16 @@ export default async function (fastify, opts) {
 
     if (!existingRows.length) {
       res.code(400);
-      return { error: "User not found." };
+      return {error: "User not found."};
     }
 
     if (
       payload.aud !==
-        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID ||
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID ||
       userId !== existingRows[0].idOnService
     ) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     existingRows[0].patch({
@@ -157,7 +157,7 @@ export default async function (fastify, opts) {
       accessToken: s.accessToken,
     }));
 
-    return { connectedServices: serialized };
+    return {connectedServices: serialized};
   });
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
@@ -165,7 +165,7 @@ export default async function (fastify, opts) {
     const idOnService = req.body.idOnService;
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const connectedService = await fastify.objection.models.connectedServices
@@ -206,10 +206,10 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig, connectedServiceId, token, idOnService } = req.body;
+    const {authSig, connectedServiceId, token, idOnService} = req.body;
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const connectedService = (
@@ -271,7 +271,7 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
-    const { tokens } = await oauth_client.getToken(req.body.token);
+    const {tokens} = await oauth_client.getToken(req.body.token);
     oauth_client.setCredentials(tokens);
 
     const drive = google.drive({
@@ -305,7 +305,7 @@ export default async function (fastify, opts) {
       await fastify.objection.models.shares.query().where("id", "=", uuid)
     )[0];
 
-    return { share };
+    return {share};
   });
 
   fastify.post("/api/google/shareLink", async (req, res) => {
@@ -314,11 +314,11 @@ export default async function (fastify, opts) {
     const role = req.body.role;
     const uuid = req.body.uuid;
     const jwt = req.body.jwt;
-    const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
+    const {verified, header, payload} = LitJsSdk.verifyJwt({jwt});
     if (
       !verified ||
       payload.baseUrl !==
-        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
@@ -359,8 +359,6 @@ export default async function (fastify, opts) {
       auth: oauth_client,
     });
 
-    console.log('SHARE SHARE SHARE ASHWHIFE', share)
-
     try {
       await drive.permissions.create({
         resource: permission,
@@ -372,7 +370,7 @@ export default async function (fastify, opts) {
     }
 
     // Send drive ID back and redirect
-    return { fileId: share.assetIdOnService };
+    return {fileId: share.assetIdOnService};
   });
 
   fastify.get("/api/oauth/google/callback", async (request, response) => {

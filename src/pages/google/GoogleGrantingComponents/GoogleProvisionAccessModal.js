@@ -2,18 +2,18 @@
 
 import {
   Button,
-  FormControl,
-  MenuItem,
-  Select,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
-  TextField,
   List,
   ListItem,
   ListItemText,
+  MenuItem,
+  Select,
+  TextField,
 } from "@mui/material";
 import "./GoogleProvisionAccessModal.scss";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -21,38 +21,32 @@ import DeleteIcon from "@mui/icons-material/Delete";
 export default function GoogleProvisionAccessModal(props) {
   let picker;
 
-  const createPicker = async () => {
-    console.log('WINDOW ORIGIN NEW', window.location.protocol + "//" + window.location.host)
-    props.setOpenProvisionAccessDialog(false);
-    const googleAuth = await window.gapi.auth2.getAuthInstance();
-    const googleUser = await googleAuth.currentUser.get()
-    const googleAuthInstance = await googleUser.getAuthResponse(true);
-    const googleUserScope = googleUser.getGrantedScopes();
+  const loadPicker = () => {
+    window.gapi.load("picker", {callback: createPicker()});
+  }
 
-    console.log('GOOGLE AUTH INSTANCE', googleUserScope)
-    console.log('INCLUDED TOKEN', props.accessToken)
-    if (props.accessToken?.length) {
-      let origin;
-      if (window.location != window.parent.location) {
-        // use parent origin
-        origin = document.referrer;
-      } else {
-        // use current origin
-        origin = window.location.protocol + "//" + window.location.host;
-      }
-      console.log('WINDOW ORIGIN', origin)
+  const createPicker = async () => {
+    const googleAuth = await window.gapi.auth2.getAuthInstance();
+    const googleUser = await googleAuth.currentUser.get();
+    const googleAuthInstance = await googleUser.getAuthResponse(true);
+    const accessToken = googleAuthInstance.access_token;
+
+    if (accessToken?.length) {
+      const origin = window.location.protocol + "//" + window.location.host;
       const view = new google.picker.View(google.picker.ViewId.DOCS);
-    //   picker = new google.picker.PickerBuilder()
-    //     .addView(view)
-    //     .setOAuthToken(googleAuthInstance.access_token)
-    //     .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
-    //     .setDeveloperKey(
-    //       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
-    //     )
-    //     .setOrigin(origin)
-    //     .setCallback(pickerCallback)
-    //     .build();
-    //   picker.setVisible(true);
+
+      picker = new google.picker.PickerBuilder()
+        .setOrigin(origin)
+        .addView(view)
+        .setOAuthToken(accessToken)
+        .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
+        .setDeveloperKey(
+          process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_WEB_API_KEY
+        )
+        .setCallback(pickerCallback)
+        .build();
+      props.setOpenProvisionAccessDialog(false);
+      picker.setVisible(true);
     }
   };
 
@@ -60,7 +54,6 @@ export default function GoogleProvisionAccessModal(props) {
     if (data?.action === "loaded") {
       return;
     }
-    console.log("DATA FROM PICKER", data);
     props.setOpenProvisionAccessDialog(true);
     if (data?.action === "picked") {
       props.setFile(data.docs[0]);
@@ -77,7 +70,7 @@ export default function GoogleProvisionAccessModal(props) {
         <DialogTitle className={"provision-access-header"}>
           Provision Access
         </DialogTitle>
-        <DialogContent style={{ paddingBottom: "0" }}>
+        <DialogContent style={{paddingBottom: "0"}}>
           <section className={"provision-access-container"}>
             <p>Google Drive Link</p>
             <span>
@@ -85,26 +78,26 @@ export default function GoogleProvisionAccessModal(props) {
                 disabled
                 value={props["file"] ? props.file["name"] : ""}
                 autoFocus
-                style={{ paddingLeft: "0 !important" }}
+                style={{paddingLeft: "0 !important"}}
                 fullWidth
                 InputProps={{
                   startAdornment: (
                     <Button
-                      style={{ marginRight: "1rem", width: "10rem" }}
-                      onClick={() => createPicker()}
+                      style={{marginRight: "1rem", width: "10rem"}}
+                      onClick={() => loadPicker()}
                     >
                       Choose File
                     </Button>
                   ),
                   endAdornment: (
                     <IconButton
-                      style={{ marginLeft: "0.5rem" }}
+                      style={{marginLeft: "0.5rem"}}
                       onClick={() => {
                         props.setFile(null);
                         props.setAccessControlConditions([]);
                       }}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon/>
                     </IconButton>
                   ),
                 }}
@@ -127,26 +120,30 @@ export default function GoogleProvisionAccessModal(props) {
             </FormControl>
           </section>
         </DialogContent>
-        <DialogContent style={{ paddingTop: "0" }}>
+        <DialogContent style={{paddingTop: "0"}}>
           <section className={"provision-access-current-controls"}>
             <h4>Current Access Control Conditions</h4>
             {props.humanizedAccessControlArray.length > 0 && (
               <List dense={true}>
-                <ListItem
-                  className={"provision-access-control-item"}
-                  secondaryAction={
-                    <IconButton
-                      onClick={() => props.removeAccessControlCondition}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  }
-                >
-                  <ListItemText
-                    primary={props.humanizedAccessControlArray.join(" and ")}
-                  />
-                </ListItem>
+                {props.humanizedAccessControlArray.map((acc, i) => (
+                  <ListItem
+                    key={i}
+                    className={"provision-access-control-item"}
+                    secondaryAction={
+                      <IconButton
+                        onClick={() => props.removeIthAccessControlCondition(i)}
+                      >
+                        <DeleteIcon/>
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText
+                      primary={acc}
+                    />
+                  </ListItem>
+                ))}
               </List>
+
             )}
             {!props.humanizedAccessControlArray.length && (
               <span>No current access control conditions</span>
@@ -161,7 +158,7 @@ export default function GoogleProvisionAccessModal(props) {
               props.handleAddAccessControl();
             }}
           >
-            Add Access Control Conditions
+            Create Requirement
           </Button>
           <Button
             disabled={!props.accessControlConditions.length}

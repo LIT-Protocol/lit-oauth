@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
 import {
+  Alert,
   Button,
   Card,
   CardActions,
-  CardHeader,
   CardContent,
-  TextField, Snackbar, Alert,
+  CardHeader,
+  Snackbar,
+  TextField,
+  Tooltip,
 } from "@mui/material";
 import "./GoogleLinkShare.scss";
 
@@ -20,7 +23,7 @@ function GoogleLinkShare() {
   const [conditionsFetched, setConditionsFetched] = useState(false);
   const [error, setError] = useState("");
   const [litNodeClient, setLitNodeClient] = useState({});
-  const [linkData, setLinkData] = useState([]);
+  const [linkData, setLinkData] = useState(null);
   const [email, setEmail] = useState("");
   const [uuid, setUuid] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -41,24 +44,24 @@ function GoogleLinkShare() {
   };
 
   useEffect(() => {
+    console.log('SHARE TEST', linkData)
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
-      const body = JSON.stringify({ uuid: uuid });
-      const headers = { "Content-Type": "application/json" };
+      const body = JSON.stringify({uuid: uuid});
+      const headers = {"Content-Type": "application/json"};
       axios
-        .post(`${BASE_URL}/api/google/conditions`, body, { headers })
+        .post(`${BASE_URL}/api/google/conditions`, body, {headers})
         .then(async (res) => {
           console.log("OUT THROUGH CONDITIONS", res.data);
-          setConditionsFetched(true);
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
           setLitNodeClient(litNodeClient);
-          console.log(res.data["requirements"]);
+          console.log('GOOGLE LINK DATA', res.data.share);
           console.log(typeof res.data["role"]);
-          setLinkData(res.data);
-          console.log("LINK DATA", res.data);
+          setLinkData(res.data.share);
+          setConditionsFetched(true);
         })
         .catch((err) => {
           setError("Invalid link");
@@ -67,21 +70,20 @@ function GoogleLinkShare() {
   }, []);
 
   const provisionAccess = async () => {
-    console.log("LINK DATA", linkData);
     const accessControlConditions = JSON.parse(
-      linkData.share.accessControlConditions
+      linkData.accessControlConditions
     );
-    console.log("PARSE ACC", accessControlConditions);
+
     const chain = accessControlConditions[0].chain;
     const resourceId = {
       baseUrl: BASE_URL,
       path: "/google/l/" + uuid,
       orgId: "",
-      role: linkData.share["role"].toString(),
+      role: linkData["role"].toString(),
       extraData: "",
     };
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({chain});
 
     console.log("BEFORE FINAL SAVE", {
       accessControlConditions: accessControlConditions,
@@ -152,23 +154,22 @@ function GoogleLinkShare() {
 
   const handleSubmit = async () => {
     provisionAccess().then(async (jwt) => {
-      const role = linkData.share["role"];
-      const body = { email, role, uuid, jwt };
-      const headers = { "Content-Type": "application/json" };
-      console.log('HANDLE SUBMIT')
+      const role = linkData["role"];
+      const body = {email, role, uuid, jwt};
+      const headers = {"Content-Type": "application/json"};
       try {
-        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
+        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, {headers});
         console.log("DATA", shareLinkResponse);
         console.log(
           "LINK",
           `https://docs.google.com/${getFileTypeUrl(
-            linkData.share.assetType
+            linkData.assetType
           )}/d/${shareLinkResponse.data.fileId}`
         );
         window.location = `https://docs.google.com/${getFileTypeUrl(
-          linkData.share.assetType
+          linkData.assetType
         )}/d/${shareLinkResponse.data.fileId}`;
-      } catch(err) {
+      } catch (err) {
         console.log('An error occurred while accessing link:', err)
         setSnackbarInfo({
           message: `An error occurred while accessing link: ${err}`,
@@ -176,83 +177,86 @@ function GoogleLinkShare() {
         })
         setOpenSnackbar(true);
       }
-      // axios
-      //   .post(`${BASE_URL}/api/google/shareLink`, body, { headers })
-      //   .then((data) => {
-      //     window.location = `https://docs.google.com/${getFileTypeUrl(
-      //       linkData.share.assetType
-      //     )}/d/${data.data.fileId}`;
-      //     console.log("DATA", data);
-      //     console.log(
-      //       "LINK",
-      //       `https://docs.google.com/${getFileTypeUrl(
-      //         linkData.share.assetType
-      //       )}/d/${data.data.fileId}`
-      //     );
-      //   })
-      //   .catch((err) => {
-      //     console.log('Error navigating to link.')
-      // });
     });
   };
+
+  const getButtonClasses = () => {
+    if (!validateEmail(email)) {
+      return 'disabled-access-service-card-launch-button';
+    } else {
+      return 'access-service-card-launch-button';
+    }
+  }
+
+  const getSubmitTooltip = () => {
+    if (!validateEmail(email)) {
+      return 'Please enter a valid email to continue.';
+    } else {
+      return 'Click to redeem access.';
+    }
+  }
+
+  // TODO: move to validate file
+  const validateEmail = (email) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
 
   if (error !== "") {
     return <div>{error}</div>;
   }
 
-  if (conditionsFetched === false) {
+  if (conditionsFetched === false || !linkData) {
     return <div>Getting data...</div>;
   } else {
     return (
-      <section>
-        <Card className={"request-link-card"}>
-          {/*<ServiceHeader/>*/}
-          <CardHeader
-            title={"Enter your Google Account email to access this file"}
-          />
-          {/*  Enter your Google Account email here*/}
-          {/*</CardHeader>*/}
-          <CardContent>
-            <TextField
-              fullWidth
-              autoFocus
-              onChange={(e) => setEmail(e.target.value)}
-            />
+      <section className={'access-service-card-container'}>
+        <Card className={'access-service-card'}>
+          <CardContent className={'access-service-card-header'}>
+          <span className={'access-service-card-header-left'}>
+            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+            <div className={'access-service-card-title'}>
+              <h2>Lit Apps</h2>
+              <p>The power of blockchain-defined access combine with your current tool suite.</p>
+            </div>
+          </span>
+            <span className={'access-service-card-header-right'}>
+            <p>Find more apps on the <strong>Lit Gateway</strong></p>
+          </span>
           </CardContent>
-          <CardActions className={"request-link-actions"}>
-            {/* <Button
-              variant={"outlined"}
-              label="Delete This Link"
-              className="top-margin-buffer"
-              type="button"
-              onClick={handleDelete}
-            >
-              Delete This Link
-            </Button> */}
-            <Button
-              disabled={!email.length}
-              variant={"outlined"}
-              label="Request Access"
-              className="top-margin-buffer"
-              type="button"
-              onClick={handleSubmit}
-            >
-              View File
-            </Button>
+          <CardContent className={'access-service-card-content'}>
+            {/*<div className={'access-service-card-content-left'}></div>*/}
+            {/*<div className={'access-service-card-content-right'}></div>*/}
+            <section className={'access-service-card-google-content'}>
+              <p>You have been invited to view a file on Google Drive.</p>
+              <p>Title: <strong>{linkData.name}</strong></p>
+              <p>Type: <strong>{getFileTypeUrl(linkData.assetType)}</strong></p>
+              <p>Permission: <strong>{linkData.role}</strong></p>
+              <p>Enter your email to redeem access.</p>
+                <TextField
+                  helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
+                  fullWidth
+                  autoFocus
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+            </section>
+          </CardContent>
+          <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+            <Tooltip title={getSubmitTooltip()}>
+              <span className={getButtonClasses()} onClick={async () => {
+                if (!email.length) return;
+                await handleSubmit()
+              }}>
+                Connect Wallet
+                <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+                </svg>
+              </span>
+            </Tooltip>
           </CardActions>
-          {/*<div className={"vertical-flex top-margin-buffer"}>*/}
-          {/*  <label>Enter your Google Account email here*/}
-          {/*    <input*/}
-          {/*      type="text"*/}
-          {/*      name="email-input"*/}
-          {/*      id="email-input"*/}
-          {/*      onChange={(e) => setEmail(e.target.value)}*/}
-          {/*    />*/}
-          {/*  </label>*/}
-          {/*</div>*/}
         </Card>
         <Snackbar
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center'}}
+          anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
           open={openSnackbar}
           autoHideDuration={4000}
           onClose={handleCloseSnackbar}

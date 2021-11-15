@@ -1,25 +1,16 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
 import GoogleLinks from "./GoogleGrantingComponents/GoogleLinks";
-import GoogleProvisionAccessModal from "./googleProvisionAccessModal/GoogleProvisionAccessModal";
-import {
-  Alert,
-  Button,
-  Card,
-  Snackbar,
-  IconButton,
-  CardContent, CircularProgress,
-} from "@mui/material";
-// import googleDriveLogo from '../../assets/googledrive.png';
-import googleLoginButton from "../../assets/btn_google_signin_dark_normal_web@2x.png";
+import GoogleProvisionAccessModal from "./GoogleGrantingComponents/GoogleProvisionAccessModal";
+import { Alert, CircularProgress, Snackbar, } from "@mui/material";
 
 import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppContext } from "../../context";
+import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -34,7 +25,7 @@ const googleRoleMap = {
 
 export default function GoogleGranting(props) {
   const parsedEnv = dotenv.config();
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [file, setFile] = useState(null);
   const [allShares, setAllShares] = useState([]);
@@ -74,12 +65,6 @@ export default function GoogleGranting(props) {
     );
   }, [accessControlConditions]);
 
-  //TODO: erase this
-  const compareAccessTokens = (ac1, ac2) => {
-    console.log('AC1:', ac1)
-    console.log('AC2:', ac2)
-  }
-
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
     setOpenProvisionAccessDialog(false);
@@ -117,6 +102,7 @@ export default function GoogleGranting(props) {
   };
 
   const loadAuth = async () => {
+    console.log('Updated at 4:21pm - 2021.11.10')
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
 
@@ -127,22 +113,22 @@ export default function GoogleGranting(props) {
       window.gapi.load("client:auth2", function () {
         window.gapi.auth2
           .init({
+            access_type: 'offline',
             client_id: GOOGLE_CLIENT_KEY,
             scope: "https://www.googleapis.com/auth/drive.file",
           }).then(async (googleObject) => {
-            window.gapi.load("picker", {callback: onPickerApiLoad});
-            const userIsSignedIn = googleObject.isSignedIn.get();
-            console.log('Updated at 5:24')
-            if (!userIsSignedIn) {
-              // if no google user exists, push toward authenticate
-              await authenticate();
-            } else {
-              // if a google user does exist, load user from lit DB
-              const currentUserObject = window.gapi.auth2
-                .getAuthInstance()
-                .currentUser.get();
-              await handleLoadCurrentUser(currentUserObject);
-            }
+          window.gapi.load("picker", {callback: onPickerApiLoad});
+          const userIsSignedIn = googleObject.isSignedIn.get();
+          if (!userIsSignedIn) {
+            // if no google user exists, push toward authenticate
+            await authenticate();
+          } else {
+            // if a google user does exist, load user from lit DB
+            const currentUserObject = window.gapi.auth2
+              .getAuthInstance()
+              .currentUser.get();
+            await handleLoadCurrentUser(currentUserObject);
+          }
         })
       })
     })
@@ -153,7 +139,7 @@ export default function GoogleGranting(props) {
     // check for google drive scope and sign user out if scope is not present
     if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const idOnService = currentUserObject.getId();
+        const idOnService = await currentUserObject.getId();
         const currentLitUserProfile = await checkForCurrentLitUser(storedAuthSig, idOnService);
 
         if (currentLitUserProfile[0]) {
@@ -163,7 +149,7 @@ export default function GoogleGranting(props) {
           handleOpenSnackBar(`No user found locally. Please log in again.`, 'error');
           await authenticate();
         }
-      } catch(err) {
+      } catch (err) {
         console.log('No user found locally:', err)
         handleOpenSnackBar(`No user found locally: ${err}`, 'error');
       }
@@ -181,7 +167,7 @@ export default function GoogleGranting(props) {
         idOnService
       );
       return userProfiles.data;
-    } catch(err) {
+    } catch (err) {
       console.log('No user found locally:', err)
       handleOpenSnackBar(`No user found locally: ${err}`, 'error');
       return [];
@@ -196,10 +182,9 @@ export default function GoogleGranting(props) {
         googleAuthResponse,
         idOnService
       );
-      compareAccessTokens(response.data.connectedServices[0].accessToken, googleAuthResponse.access_token)
       setConnectedServiceId(response.data.connectedServices[0].id);
       setToken(response.data.connectedServices[0].accessToken);
-      await setUserProfile(currentUserObject);
+      await setUserProfile(currentUserObject, idOnService);
       await getAllShares(storedAuthSig, idOnService);
     } catch (err) {
       console.log("Error verifying user:", err);
@@ -217,7 +202,7 @@ export default function GoogleGranting(props) {
       if (authResult.code) {
         await storeToken(storedAuthSig, authResult.code);
       }
-    } catch(err) {
+    } catch (err) {
       if (err.error === 'popup_blocked_by_browser') {
         handleOpenSnackBar(`Pop up was blocked by browser, please enable popups to continue.`, 'error');
       } else {
@@ -225,35 +210,6 @@ export default function GoogleGranting(props) {
         console.log('Error logging in:', err)
       }
     }
-  };
-
-  const setUserProfile = async (currentUserObject) => {
-    console.log('CURRENT USER OBEJCT', currentUserObject)
-    const userBasicProfile = await currentUserObject.getBasicProfile();
-
-    const userProfile = {
-      idOnService: userBasicProfile.getId(),
-      email: userBasicProfile.getEmail(),
-      displayName: userBasicProfile.getName(),
-      givenName: userBasicProfile.getGivenName(),
-      avatar: userBasicProfile.getImageUrl(),
-    };
-    setCurrentUser(userProfile);
-  }
-
-  const onPickerApiLoad = () => {
-    console.log("Google Picker Loaded");
-  };
-
-  const getAuthSig = async () => {
-    return await LitJsSdk.checkAndSignAuthMessage({
-      chain: "ethereum",
-    });
-  };
-
-  const getAllShares = async (authSig, idOnService) => {
-    const allSharesHolder = await asyncHelpers.getAllShares(authSig, idOnService);
-    setAllShares(allSharesHolder.data.reverse());
   };
 
   const storeToken = async (authSig, code) => {
@@ -270,32 +226,82 @@ export default function GoogleGranting(props) {
         // await signOut();
         return;
       }
-      const googleAuthInstance = await window.gapi.auth2.getAuthInstance();
-      const currentUserObject = await googleAuthInstance.currentUser.get();
-      const idOnService = await currentUserObject.getId();
-      const tokens = await currentUserObject.getAuthResponse(true);
+
+      let currentUserObject = await window.gapi.auth2.getAuthInstance().currentUser.get();
+      const idOnService = response.data.connectedServices[0].idOnService;
       if (!!response.data["connectedServices"]) {
         console.log(
           'response.data["connectedServices"]',
           response.data["connectedServices"]
         );
-        await setConnectedServiceId(response.data.connectedServices[0].id);
+        await setConnectedServiceId(idOnService);
 
         await setToken(response.data.connectedServices[0].accessToken);
-        console.log('AUTH RESPONSE SET', tokens)
-        // setToken(response.data.connectedServices[0].accessToken);
-        console.log(
-          "currentUserObject after getting auth response with tokens",
-          currentUserObject
-        );
-        await setUserProfile(currentUserObject)
-        await getAllShares(storedAuthSig, idOnService);
+
+        if (!currentUserObject.getBasicProfile()) {
+          setTimeout(async () => {
+            console.log('Reload current user object.')
+            currentUserObject = await window.gapi.auth2.getAuthInstance().currentUser.get();
+            await setUserProfile(currentUserObject, idOnService);
+            await getAllShares(storedAuthSig, idOnService);
+          }, 300)
+        } else {
+          console.log('Current user object present.')
+          await setUserProfile(currentUserObject, idOnService);
+          await getAllShares(storedAuthSig, idOnService);
+        }
       }
     } catch (err) {
       console.log(`Error storing access token:, ${err.errors}`, err);
       handleOpenSnackBar(`Error storing access token, please reload:, ${err}`, "error");
       // await signOut();
     }
+  };
+
+  const setUserProfile = async (currentUserObject, idOnService) => {
+    let userBasicProfile = await currentUserObject.getBasicProfile();
+
+    let userProfile = {
+      idOnService: idOnService,
+      email: userBasicProfile.getEmail(),
+      displayName: userBasicProfile.getName(),
+      givenName: userBasicProfile.getGivenName(),
+      avatar: userBasicProfile.getImageUrl(),
+    };
+
+    setCurrentUser(userProfile);
+  }
+
+  const onPickerApiLoad = () => {
+    console.log("Google Picker Loaded");
+  };
+
+  const getAuthSig = async () => {
+    return await LitJsSdk.checkAndSignAuthMessage({
+      chain: "ethereum",
+    });
+  };
+
+  const getAllShares = async (authSig, idOnService) => {
+    const allSharesHolder = await asyncHelpers.getAllShares(authSig, idOnService);
+
+    const humanizeAccPromiseArray = allSharesHolder.data.map(s => {
+      const shareAcConditions = JSON.parse(s.accessControlConditions);
+      return LitJsSdk.humanizeAccessControlConditions({
+        accessControlConditions: shareAcConditions,
+        myWalletAddress: storedAuthSig.address,
+      })
+    });
+
+    Promise.all(humanizeAccPromiseArray).then(humanizedAcc => {
+      let combinedAllShares = [];
+      for (let i = 0; i < allSharesHolder.data.length; i++) {
+        let singleShare = allSharesHolder.data[i];
+        singleShare['humanizedAccessControlConditions'] = humanizedAcc[i];
+        combinedAllShares.push(singleShare);
+      }
+      setAllShares(combinedAllShares.reverse());
+    })
   };
 
   const signOut = async () => {
@@ -326,14 +332,12 @@ export default function GoogleGranting(props) {
   };
 
   const handleSubmit = async () => {
-    console.log('CURRENT USER IN HANDLE SUBMIT', currentUser)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({
       chain: "ethereum",
     });
-    // const id = file.embedUrl.match(/[-\w]{25,}(?!.*[-\w]{25,})/)[0]
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
     };
     const requestData = {
       driveId: file.id,
@@ -347,7 +351,7 @@ export default function GoogleGranting(props) {
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
-      const { data } = response;
+      const {data} = response;
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
@@ -374,14 +378,13 @@ export default function GoogleGranting(props) {
       );
       await navigator.clipboard.writeText(FRONT_END_HOST + "/google/l/" + uuid);
       await getAllShares(storedAuthSig, currentUser.idOnService);
-    } catch(err) {
+    } catch (err) {
       console.log(`'Error sharing share', ${err}`)
       handleOpenSnackBar(`'Error sharing share', ${err}`, 'error');
     }
   };
 
   const handleDeleteShare = async (shareInfo) => {
-    console.log('USER DATA IN DELETE SHARE', currentUser)
     try {
       await asyncHelpers.deleteShare(shareInfo.id);
       await getAllShares(storedAuthSig, currentUser.idOnService);
@@ -399,16 +402,13 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      {(!storedAuthSig['sig'] || token === "") ? (
+      {((!storedAuthSig['sig'] || token === "") && !currentUser['idOnService']) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
-          <h3>Working...</h3>
+          <h3>Waiting for Google Account - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
         <section className={"service-grid-container"}>
-          <Button aria-label="delete" size="large" startIcon={<ArrowBackIcon/>} onClick={() => window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`}>
-            Back to all Apps
-          </Button>
           <div className={'service-grid-header'}>
             <ServiceHeader
               serviceName={"Google Drive App"}
@@ -455,7 +455,7 @@ export default function GoogleGranting(props) {
               className={"share-modal"}
               show={false}
               onClose={() => setOpenShareModal(false)}
-              sharingItems={[{ name: file.embedUrl }]}
+              sharingItems={[{name: file.embedUrl}]}
               onAccessControlConditionsSelected={async (restriction) => {
                 await addToAccessControlConditions(restriction);
                 setOpenShareModal(false);
@@ -463,10 +463,13 @@ export default function GoogleGranting(props) {
               }}
             />
           )}
+          <LitProtocolConnection
+            className={'lit-protocol-connection'}
+            connection={!!storedAuthSig['sig']}/>
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

@@ -6,7 +6,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Snackbar,
   Card,
   Button,
   Paper,
@@ -14,7 +13,10 @@ import {
   TableRow,
   TableCell,
   TableContainer,
-  Table, TableBody, IconButton, Tooltip, Alert
+  Table,
+  TableBody,
+  IconButton,
+  Tooltip, List, ListItem
 } from "@mui/material";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
@@ -66,7 +68,13 @@ export default function ZoomMeetings(props) {
                   <TableCell component="th" scope="row">
                     {share.name}
                   </TableCell>
-                  <TableCell align="left">{getAccessControlConditions(share.accessControlConditions)}</TableCell>
+                  <TableCell align="left">
+                    <List>
+                      {share.humanizedAccessControlConditions.map((acc, i) => (
+                        <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
+                      ))}
+                    </List>
+                  </TableCell>
                   <TableCell align="left">{DateTime.fromISO(share.start_time).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">

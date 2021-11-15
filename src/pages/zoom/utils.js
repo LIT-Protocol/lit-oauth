@@ -12,7 +12,6 @@ export const getSharingLink = (meeting) => {
 
 export const getResourceIdForMeeting = ({ meeting, share }) => {
   const path = getSharingLinkPath(meeting);
-  console.log('GET ID SHARE INFO', share)
   const resourceId = {
     baseUrl: HOST,
     path,
@@ -20,6 +19,8 @@ export const getResourceIdForMeeting = ({ meeting, share }) => {
     role: "",
     extraData: JSON.stringify({
       shareId: share.id,
+      assetIdOnService: share.assetIdOnService,
+      assetType: share.assetType,
     }),
   };
   return resourceId;
