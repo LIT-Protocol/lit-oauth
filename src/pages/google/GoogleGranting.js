@@ -11,6 +11,7 @@ import "./GoogleGranting.scss";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
+import BackToApps from "../sharedComponents/backToApps/BackToApps";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -402,6 +403,7 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
+      <BackToApps/>
       {((!storedAuthSig['sig'] || token === "") && !currentUser['idOnService']) ? (
         <div className={'service-loader'}>
           <CircularProgress/>

@@ -11,6 +11,7 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
+import BackToApps from "../sharedComponents/backToApps/BackToApps";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -255,6 +256,7 @@ export default function ZoomGranting() {
 
   return (
     <div>
+      <BackToApps/>
       {(!storedAuthSig['sig'] || !currentServiceInfo) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
