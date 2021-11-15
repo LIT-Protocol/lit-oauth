@@ -158,7 +158,7 @@ export default function GoogleProvisionAccessModal(props) {
               props.handleAddAccessControl();
             }}
           >
-            Add Access Control Conditions
+            Create Requirement
           </Button>
           <Button
             disabled={!props.accessControlConditions.length}

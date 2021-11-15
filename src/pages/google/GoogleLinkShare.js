@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
 import { Alert, Button, Card, CardActions, CardContent, CardHeader, Snackbar, TextField, } from "@mui/material";
@@ -13,7 +13,7 @@ function GoogleLinkShare() {
   const [conditionsFetched, setConditionsFetched] = useState(false);
   const [error, setError] = useState("");
   const [litNodeClient, setLitNodeClient] = useState({});
-  const [linkData, setLinkData] = useState([]);
+  const [linkData, setLinkData] = useState(null);
   const [email, setEmail] = useState("");
   const [uuid, setUuid] = useState("");
   const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -34,6 +34,7 @@ function GoogleLinkShare() {
   };
 
   useEffect(() => {
+    console.log('SHARE TEST', linkData)
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
@@ -43,14 +44,14 @@ function GoogleLinkShare() {
         .post(`${BASE_URL}/api/google/conditions`, body, {headers})
         .then(async (res) => {
           console.log("OUT THROUGH CONDITIONS", res.data);
-          setConditionsFetched(true);
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
           setLitNodeClient(litNodeClient);
-          console.log(res.data["requirements"]);
+          console.log('GOOGLE LINK DATA', res.data.share);
           console.log(typeof res.data["role"]);
-          setLinkData(res.data);
+          setLinkData(res.data.share);
+          setConditionsFetched(true);
         })
         .catch((err) => {
           setError("Invalid link");
@@ -166,23 +167,6 @@ function GoogleLinkShare() {
         })
         setOpenSnackbar(true);
       }
-      // axios
-      //   .post(`${BASE_URL}/api/google/shareLink`, body, { headers })
-      //   .then((data) => {
-      //     window.location = `https://docs.google.com/${getFileTypeUrl(
-      //       linkData.share.assetType
-      //     )}/d/${data.data.fileId}`;
-      //     console.log("DATA", data);
-      //     console.log(
-      //       "LINK",
-      //       `https://docs.google.com/${getFileTypeUrl(
-      //         linkData.share.assetType
-      //       )}/d/${data.data.fileId}`
-      //     );
-      //   })
-      //   .catch((err) => {
-      //     console.log('Error navigating to link.')
-      // });
     });
   };
 
@@ -190,56 +174,48 @@ function GoogleLinkShare() {
     return <div>{error}</div>;
   }
 
-  if (conditionsFetched === false) {
+  if (conditionsFetched === false || !linkData) {
     return <div>Getting data...</div>;
   } else {
     return (
-      <section>
-        <Card className={"request-link-card"}>
-          {/*<ServiceHeader/>*/}
-          <CardHeader
-            title={"Enter your Google Account email to access this file"}
-          />
-          {/*  Enter your Google Account email here*/}
-          {/*</CardHeader>*/}
-          <CardContent>
-            <TextField
-              fullWidth
-              autoFocus
-              onChange={(e) => setEmail(e.target.value)}
-            />
+      <section className={'access-service-card-container'}>
+        <Card className={'access-service-card'}>
+          <CardContent className={'access-service-card-header'}>
+          <span className={'access-service-card-header-left'}>
+            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+            <div className={'access-service-card-title'}>
+              <h2>Lit Apps</h2>
+              <p>The power of blockchain-defined access combine with your current tool suite.</p>
+            </div>
+          </span>
+            <span className={'access-service-card-header-right'}>
+            <p>Find more apps on the <strong>Lit Gateway</strong></p>
+          </span>
           </CardContent>
-          <CardActions className={"request-link-actions"}>
-            {/* <Button
-              variant={"outlined"}
-              label="Delete This Link"
-              className="top-margin-buffer"
-              type="button"
-              onClick={handleDelete}
-            >
-              Delete This Link
-            </Button> */}
-            <Button
-              disabled={!email.length}
-              variant={"outlined"}
-              label="Request Access"
-              className="top-margin-buffer"
-              type="button"
-              onClick={handleSubmit}
-            >
-              View File
-            </Button>
+          <CardContent className={'access-service-card-content'}>
+            {/*<div className={'access-service-card-content-left'}></div>*/}
+            {/*<div className={'access-service-card-content-right'}></div>*/}
+            <section className={'access-service-card-google-content'}>
+              <p>You have been invited to view a file on Google Drive.</p>
+              <p>Title: <strong>{linkData.name}</strong></p>
+              <p>Type: <strong>{linkData.assetType}</strong></p>
+              <p>Permission: <strong>{linkData.role}</strong></p>
+              <p>Enter your email to additionally receive a copy of the link.</p>
+                <TextField
+                  fullWidth
+                  autoFocus
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+            </section>
+          </CardContent>
+          <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+          <span className={'access-service-card-launch-button'} onClick={handleSubmit}>
+            Connect Wallet
+            <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+            </svg>
+          </span>
           </CardActions>
-          {/*<div className={"vertical-flex top-margin-buffer"}>*/}
-          {/*  <label>Enter your Google Account email here*/}
-          {/*    <input*/}
-          {/*      type="text"*/}
-          {/*      name="email-input"*/}
-          {/*      id="email-input"*/}
-          {/*      onChange={(e) => setEmail(e.target.value)}*/}
-          {/*    />*/}
-          {/*  </label>*/}
-          {/*</div>*/}
         </Card>
         <Snackbar
           anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}

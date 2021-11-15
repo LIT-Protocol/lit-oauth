@@ -196,6 +196,13 @@ export default async function (fastify, opts) {
     };
   });
 
+  fastify.post('/api/zoom/getSingleShare', async (req, res) => {
+    const uuid = req.body.uuid;
+
+    return await fastify.objection.models.shares.query()
+      .where('id', '=', uuid);
+  })
+
   fastify.post('/api/zoom/getAllShares', async (req, res) => {
     const authSig = req.body.authSig;
     const connectedService =  await fastify.objection.models.connectedServices.query()

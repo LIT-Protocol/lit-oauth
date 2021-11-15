@@ -3,13 +3,14 @@ import { useParams } from "react-router-dom";
 
 import LitJsSdk from "lit-js-sdk";
 import { getResourceIdForMeeting } from "./utils";
-import { getShares, getMeetingUrl } from "./zoomAsyncHelpers";
+import { getShares, getMeetingUrl, getSingleShare } from "./zoomAsyncHelpers";
 import { useAppContext } from "../../context";
-import { Button, CircularProgress } from "@mui/material";
+import { Button, Card, CardActions, CardContent, CircularProgress } from "@mui/material";
 
 export default function ZoomAccess() {
   let { meetingId } = useParams();
   const { setGlobalError, tokenList, performWithAuthSig } = useAppContext();
+  const [meeting, setMeeting] = useState(null);
   const [litProtocolReady, setLitProtocolReady] = useState(false);
 
   document.addEventListener(
@@ -30,6 +31,20 @@ export default function ZoomAccess() {
     }
     console.log('MEETING ID', meetingId)
   }, [meetingId]);
+
+  useEffect(() => {
+    const getMeetingInfo = async() => {
+      const meetingId = window.location.pathname.split('/').pop();
+      const meetingData = await getSingleShare(meetingId);
+      console.log('MEETING', meetingData.data[0])
+      setMeeting(meetingData.data[0]);
+    }
+
+    if(!meeting) {
+      getMeetingInfo();
+    }
+
+  }, [meeting])
 
   const showNotAuthorizedMessage = async ({ shares }) => {
     const humanized = [];
@@ -143,7 +158,7 @@ export default function ZoomAccess() {
     });
   };
 
-  if (!litProtocolReady) {
+  if (!litProtocolReady && !meeting) {
     return (
       <>
         <h3>Connecting to Lit Protocol, please wait...</h3>
@@ -153,10 +168,35 @@ export default function ZoomAccess() {
   }
 
   return (
-    <>
-      <Button variant={'outlined'}
-              onClick={handleConnectAndJoin}
-      >Connect Wallet and Join Zoom Meeting</Button>
-    </>
+    <section className={'access-service-card-container'}>
+      <Card className={'access-service-card'}>
+        <CardContent className={'access-service-card-header'}>
+          <span className={'access-service-card-header-left'}>
+            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+            <div className={'access-service-card-title'}>
+              <h2>Lit Apps</h2>
+              <p>The power of blockchain-defined access combine with your current tool suite.</p>
+            </div>
+          </span>
+          <span className={'access-service-card-header-right'}>
+            <p>Find more apps on the <strong>Lit Gateway</strong></p>
+          </span>
+        </CardContent>
+        <CardContent className={'access-service-card-content'}>
+          {/*<div className={'access-service-card-content-left'}></div>*/}
+          {/*<div className={'access-service-card-content-right'}></div>*/}
+          <p>You have been invited to join the Zoom meeting <strong>{meeting.name}</strong></p>
+          {/*<p>The scheduled start time is <strong>{}</strong></p>*/}
+        </CardContent>
+        <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+          <span className={'access-service-card-launch-button'} onClick={handleConnectAndJoin}>
+            Connect Wallet
+            <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+            </svg>
+          </span>
+        </CardActions>
+      </Card>
+    </section>
   );
 }

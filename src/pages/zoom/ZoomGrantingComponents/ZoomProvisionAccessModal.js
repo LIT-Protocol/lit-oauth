@@ -140,7 +140,7 @@ export default function ZoomProvisionAccessModal(props) {
                       disabled={!props.selectedMeeting}
                       onClick={() => {
                         props.handleAddAccessControl()
-                      }}>Add Access Control Conditions</Button>
+                      }}>Create Requirement</Button>
               <Button disabled={!props.accessControlConditions.length}
                       style={{marginLeft: '0.5rem'}}
                       variant={'outlined'}

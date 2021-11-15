@@ -56,6 +56,12 @@ export const createMeetingShare = async ({
   return data;
 };
 
+export const getSingleShare = async (uuid) => {
+  return await axios.post(`${API_HOST}/api/zoom/getSingleShare`, {
+    uuid,
+  });
+}
+
 export const getAllShares = async (authSig) => {
   return await axios.post(`${API_HOST}/api/zoom/getAllShares`, {
     authSig,
