@@ -1,7 +1,17 @@
 import React, { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
-import { Alert, Button, Card, CardActions, CardContent, CardHeader, Snackbar, TextField, } from "@mui/material";
+import {
+  Alert,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Snackbar,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import "./GoogleLinkShare.scss";
 
 const GOOGLE_CLIENT_KEY =
@@ -170,6 +180,28 @@ function GoogleLinkShare() {
     });
   };
 
+  const getButtonClasses = () => {
+    if (!validateEmail(email)) {
+      return 'disabled-access-service-card-launch-button';
+    } else {
+      return 'access-service-card-launch-button';
+    }
+  }
+
+  const getSubmitTooltip = () => {
+    if (!validateEmail(email)) {
+      return 'Please enter a valid email to continue.';
+    } else {
+      return 'Click to redeem access.';
+    }
+  }
+
+  // TODO: move to validate file
+  const validateEmail = (email) => {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+  }
+
   if (error !== "") {
     return <div>{error}</div>;
   }
@@ -198,10 +230,11 @@ function GoogleLinkShare() {
             <section className={'access-service-card-google-content'}>
               <p>You have been invited to view a file on Google Drive.</p>
               <p>Title: <strong>{linkData.name}</strong></p>
-              <p>Type: <strong>{linkData.assetType}</strong></p>
+              <p>Type: <strong>{getFileTypeUrl(linkData.assetType)}</strong></p>
               <p>Permission: <strong>{linkData.role}</strong></p>
-              <p>Enter your email to additionally receive a copy of the link.</p>
+              <p>Enter your email to redeem access.</p>
                 <TextField
+                  helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
                   fullWidth
                   autoFocus
                   onChange={(e) => setEmail(e.target.value)}
@@ -209,12 +242,17 @@ function GoogleLinkShare() {
             </section>
           </CardContent>
           <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
-          <span className={'access-service-card-launch-button'} onClick={handleSubmit}>
-            Connect Wallet
-            <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
-            </svg>
-          </span>
+            <Tooltip title={getSubmitTooltip()}>
+              <span className={getButtonClasses()} onClick={async () => {
+                if (!email.length) return;
+                await handleSubmit()
+              }}>
+                Connect Wallet
+                <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+                </svg>
+              </span>
+            </Tooltip>
           </CardActions>
         </Card>
         <Snackbar

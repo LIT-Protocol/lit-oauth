@@ -256,3 +256,16 @@ h4 {
 .access-service-card-launch-button:hover {
   opacity: 0.9;
 }
+
+.disabled-access-service-card-launch-button {
+  height: 100%;
+  min-width: 25rem;
+  background-color: #5e36b7;
+  display: flex;
+  font-size: 1.5rem;
+  justify-content: space-evenly;
+  align-items: center;
+  color: #fff;
+  transition-duration: 0.25s;
+  filter: grayscale(1);
+}
