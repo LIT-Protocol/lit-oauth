@@ -333,7 +333,6 @@ export default async function (fastify, opts) {
     return mostRecentShare;
   });
 
-
   // // TODO: remove this
   fastify.post('/api/zoom/deleteUser', async (request, reply) => {
     const {address, idOnService} = request.body

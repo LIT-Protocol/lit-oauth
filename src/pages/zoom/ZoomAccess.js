@@ -34,9 +34,7 @@ export default function ZoomAccess() {
 
   useEffect(() => {
     const getMeetingInfo = async() => {
-      const meetingId = window.location.pathname.split('/').pop();
       const meetingData = await getSingleShare(meetingId);
-      console.log('MEETING', meetingData.data[0])
       setMeeting(meetingData.data[0]);
     }
 
