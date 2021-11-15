@@ -5,21 +5,17 @@ import { useAppContext } from "../../context";
 import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import React, { useEffect, useState } from "react";
-import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo, logout } from "./zoomAsyncHelpers";
+import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
-import address from "address";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
-const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
 export default function ZoomGranting() {
   const {performWithAuthSig} = useAppContext();
-
-  const [userSignedIn, setUserSignedIn] = useState(false);
 
   const [currentUser, setCurrentUser] = useState({})
   const [allShares, setAllShares] = useState([]);
@@ -27,7 +23,6 @@ export default function ZoomGranting() {
   const [storedAuthSig, setStoredAuthSig] = useState({});
   const [humanizedAccessControlArray, setHumanizedAccessControlArray] = useState([]);
   const [accessControlConditions, setAccessControlConditions] = useState([]);
-  // const [token, setToken] = useState("");
   const [selectedMeeting, setSelectedMeeting] = useState(null);
   const [meetings, setMeetings] = useState([]);
 
@@ -187,11 +182,11 @@ export default function ZoomGranting() {
   const signOut = async () => {
     console.log('currentServiceInfo', currentServiceInfo)
     // logout(currentServiceInfo.email).then((res) => {
-      setAccessControlConditions([]);
-      setCurrentUser({});
-      setCurrentServiceInfo(null);
-      // TODO: figure out how to sign out of zoom
-      window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
+    setAccessControlConditions([]);
+    setCurrentUser({});
+    setCurrentServiceInfo(null);
+    // TODO: figure out how to sign out of zoom
+    window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
     // });
   };
 
@@ -217,7 +212,7 @@ export default function ZoomGranting() {
       console.log('SELECTED MEETING', share)
 
       const resourceId = getResourceIdForMeeting({
-        meeting: { id: share.id },
+        meeting: {id: share.id},
         share,
       });
 
@@ -322,14 +317,15 @@ export default function ZoomGranting() {
           <LitProtocolConnection
             className={'lit-protocol-connection'}
             connection={!!storedAuthSig['sig']}/>
-          {/*<button onClick={async () => {*/}
-          {/*  const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {*/}
-          {/*    address: storedAuthSig.address,*/}
-          {/*    idOnService: currentServiceInfo.idOnService*/}
-          {/*  });*/}
+          <button style={{ position: 'absolute', top: '0', left: '0'}}
+            onClick={async () => {
+            const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {
+              address: storedAuthSig.address,
+              idOnService: currentServiceInfo.idOnService
+            });
 
-          {/*  console.log('DELETED', resp);*/}
-          {/*}}>DELETE USER</button>*/}
+            console.log('DELETED', resp);
+          }}>DELETE USER</button>
         </section>
       )}
       <Snackbar

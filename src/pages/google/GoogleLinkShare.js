@@ -61,7 +61,7 @@ function GoogleLinkShare() {
 
   const provisionAccess = async () => {
     const accessControlConditions = JSON.parse(
-      linkData.share.accessControlConditions
+      linkData.accessControlConditions
     );
 
     const chain = accessControlConditions[0].chain;
@@ -69,7 +69,7 @@ function GoogleLinkShare() {
       baseUrl: BASE_URL,
       path: "/google/l/" + uuid,
       orgId: "",
-      role: linkData.share["role"].toString(),
+      role: linkData["role"].toString(),
       extraData: "",
     };
 
@@ -144,7 +144,7 @@ function GoogleLinkShare() {
 
   const handleSubmit = async () => {
     provisionAccess().then(async (jwt) => {
-      const role = linkData.share["role"];
+      const role = linkData["role"];
       const body = {email, role, uuid, jwt};
       const headers = {"Content-Type": "application/json"};
       try {
@@ -153,11 +153,11 @@ function GoogleLinkShare() {
         console.log(
           "LINK",
           `https://docs.google.com/${getFileTypeUrl(
-            linkData.share.assetType
+            linkData.assetType
           )}/d/${shareLinkResponse.data.fileId}`
         );
         window.location = `https://docs.google.com/${getFileTypeUrl(
-          linkData.share.assetType
+          linkData.assetType
         )}/d/${shareLinkResponse.data.fileId}`;
       } catch (err) {
         console.log('An error occurred while accessing link:', err)

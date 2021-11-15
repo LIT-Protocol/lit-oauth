@@ -125,8 +125,6 @@ export default function ZoomAccess() {
         return;
       }
 
-      console.log('SHARE SHARE SHARE', share)
-
       // submit jwt to backend to get zoom url
       const data = await getMeetingUrl({
         assetType: share.assetType,

@@ -335,23 +335,23 @@ export default async function (fastify, opts) {
 
 
   // // TODO: remove this
-  // fastify.post('/api/zoom/deleteUser', async (request, reply) => {
-  //   const {address, idOnService} = request.body
-  //   const shareResponse = (
-  //     await fastify.objection.models.shares
-  //       .query()
-  //       .delete()
-  //       .where("user_id", "=", address)
-  //   )
-  //
-  //   const response = (
-  //     await fastify.objection.models.connectedServices
-  //       .query()
-  //       .delete()
-  //       .where("user_id", "=", address)
-  //       .where("id_on_service", "=", idOnService)
-  //   )
-  //
-  //   return response;
-  // })
+  fastify.post('/api/zoom/deleteUser', async (request, reply) => {
+    const {address, idOnService} = request.body
+    const shareResponse = (
+      await fastify.objection.models.shares
+        .query()
+        .delete()
+        .where("user_id", "=", address)
+    )
+
+    const response = (
+      await fastify.objection.models.connectedServices
+        .query()
+        .delete()
+        .where("user_id", "=", address)
+        .where("id_on_service", "=", idOnService)
+    )
+
+    return response;
+  })
 }

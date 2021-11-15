@@ -359,8 +359,6 @@ export default async function (fastify, opts) {
       auth: oauth_client,
     });
 
-    console.log('SHARE SHARE SHARE ASHWHIFE', share)
-
     try {
       await drive.permissions.create({
         resource: permission,
