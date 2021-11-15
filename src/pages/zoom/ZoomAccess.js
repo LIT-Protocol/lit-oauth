@@ -5,13 +5,15 @@ import LitJsSdk from "lit-js-sdk";
 import { getResourceIdForMeeting } from "./utils";
 import { getShares, getMeetingUrl, getSingleShare } from "./zoomAsyncHelpers";
 import { useAppContext } from "../../context";
-import { Button, Card, CardActions, CardContent, CircularProgress } from "@mui/material";
+import { Alert, Button, Card, CardActions, CardContent, CircularProgress, Snackbar } from "@mui/material";
 
 export default function ZoomAccess() {
   let { meetingId } = useParams();
   const { setGlobalError, tokenList, performWithAuthSig } = useAppContext();
   const [meeting, setMeeting] = useState(null);
   const [litProtocolReady, setLitProtocolReady] = useState(false);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarInfo, setSnackbarInfo] = useState({});
 
   document.addEventListener(
     "lit-ready",
@@ -44,6 +46,22 @@ export default function ZoomAccess() {
 
   }, [meeting])
 
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSnackbar(false);
+  };
+
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackbarInfo({
+      message: message,
+      severity: severity,
+    });
+    setOpenSnackbar(true);
+  };
+
+
   const showNotAuthorizedMessage = async ({ shares }) => {
     const humanized = [];
     for (let i = 0; i < shares.length; i++) {
@@ -64,7 +82,6 @@ export default function ZoomAccess() {
   };
 
   const handleConnectAndJoin = async () => {
-    console.log('PERFORM AUTH SIG', performWithAuthSig)
     await performWithAuthSig(async (authSig) => {
       console.log("authSig when granting access", authSig);
       const shares = (
@@ -88,13 +105,6 @@ export default function ZoomAccess() {
           meeting: { id: share.id },
           share,
         });
-
-        console.log('NODE CLIENT ARGS', {
-          accessControlConditions: share.accessControlConditions,
-          chain: share.accessControlConditions[0].chain,
-          authSig,
-          resourceId,
-        })
 
         try {
           jwt = await window.litNodeClient.getSignedToken({
@@ -193,6 +203,14 @@ export default function ZoomAccess() {
           </span>
         </CardActions>
       </Card>
+      <Snackbar
+        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+        open={openSnackbar}
+        autoHideDuration={4000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+      </Snackbar>
     </section>
   );
 }
