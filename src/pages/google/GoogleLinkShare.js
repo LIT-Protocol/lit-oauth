@@ -29,18 +29,19 @@ function GoogleLinkShare() {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
 
-  // gapi.load("client:auth2", function () {
-  //   gapi.auth2.init({
-  //     client_id: GOOGLE_CLIENT_KEY,
-  //     scope: "https://www.googleapis.com/auth/drive.file",
-  //   });
-  // });
-
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
     setOpenSnackbar(false);
+  };
+
+  const handleOpenSnackBar = (message, severity) => {
+    setSnackbarInfo({
+      message: message,
+      severity: severity,
+    });
+    setOpenSnackbar(true);
   };
 
   useEffect(() => {
@@ -65,6 +66,7 @@ function GoogleLinkShare() {
         })
         .catch((err) => {
           setError("Invalid link");
+          handleOpenSnackBar(`Link is invalid.`, 'error');
         });
     }
   }, []);
@@ -84,13 +86,6 @@ function GoogleLinkShare() {
     };
 
     const authSig = await LitJsSdk.checkAndSignAuthMessage({chain});
-
-    console.log("BEFORE FINAL SAVE", {
-      accessControlConditions: accessControlConditions,
-      chain,
-      authSig: authSig,
-      resourceId: resourceId,
-    });
 
     const jwt = await litNodeClient.getSignedToken({
       accessControlConditions: accessControlConditions,
