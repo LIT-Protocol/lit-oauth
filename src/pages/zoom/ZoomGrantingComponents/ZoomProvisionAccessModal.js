@@ -57,80 +57,86 @@ export default function ZoomProvisionAccessModal(props) {
         {/*  </section>*/}
         {/*</DialogContent>*/}
         <DialogContent>
-          {!props.selectedMeeting || !props.selectedMeeting['join_url'] ? (
-            <TableContainer component={Paper}>
-              <Table sx={{minWidth: 650}}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell align="left">Meeting Title</TableCell>
-                    <TableCell align="left">Meeting Time</TableCell>
-                    <TableCell align="left">Date Created</TableCell>
-                    <TableCell align="left">Select Meeting</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {props.meetings.length > 0 && props.meetings.map((meeting, i) => (
-                    <TableRow
-                      key={i}
-                      sx={{'&:last-child td, &:last-child th': {border: 0}}}
-                    >
-                      <TableCell component="th" scope="row">
-                        {meeting.topic}
-                      </TableCell>
-                      <TableCell align="left">{DateTime.fromISO(meeting.start_time).toLocaleString(DATETIME_MED)}</TableCell>
-                      <TableCell align="left">{DateTime.fromISO(meeting.created_at).toLocaleString(DATETIME_MED)}</TableCell>
-                      <TableCell align="center">
-                        <Tooltip title={'Select this meeting'}>
-                          <IconButton size={'small'} onClick={() => {
-                            console.log('MEETING', meeting)
-                            props.setSelectedMeeting(() => meeting)
-                          }}>
-                            <ArrowForwardIcon/>
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
+          {props.meetings.length ? (
+            <>
+            {!props.selectedMeeting || !props.selectedMeeting['join_url'] ? (
+              <TableContainer component={Paper}>
+                <Table sx={{minWidth: 650}}>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell align="left">Meeting Title</TableCell>
+                      <TableCell align="left">Meeting Time</TableCell>
+                      <TableCell align="left">Date Created</TableCell>
+                      <TableCell align="left">Select Meeting</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+                  </TableHead>
+                  <TableBody>
+                    {props.meetings.length > 0 && props.meetings.map((meeting, i) => (
+                      <TableRow
+                        key={i}
+                        sx={{'&:last-child td, &:last-child th': {border: 0}}}
+                      >
+                        <TableCell component="th" scope="row">
+                          {meeting.topic}
+                        </TableCell>
+                        <TableCell align="left">{DateTime.fromISO(meeting.start_time).toLocaleString(DATETIME_MED)}</TableCell>
+                        <TableCell align="left">{DateTime.fromISO(meeting.created_at).toLocaleString(DATETIME_MED)}</TableCell>
+                        <TableCell align="center">
+                          <Tooltip title={'Select this meeting'}>
+                            <IconButton size={'small'} onClick={() => {
+                              console.log('MEETING', meeting)
+                              props.setSelectedMeeting(() => meeting)
+                            }}>
+                              <ArrowForwardIcon/>
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <section className={'provision-access-current-controls'}>
+                <span>
+                  <Tooltip title={'Back to select meeting'}>
+                    <IconButton size={'small'} onClick={() => {
+                      props.setAccessControlConditions(() => [])
+                      props.setSelectedMeeting(() => null)
+                    }}>
+                      <ArrowBackIcon/>
+                    </IconButton>
+                  </Tooltip>
+                  <p>Meeting Name: <strong>{ props.selectedMeeting.topic }</strong></p>
+                  <p>Meeting Time: <strong>{DateTime.fromISO(props.selectedMeeting.start_time).toLocaleString(DATETIME_MED)}</strong></p>
+                  <p>Date Created: <strong>{DateTime.fromISO(props.selectedMeeting.created_at).toLocaleString(DATETIME_MED)}</strong></p>
+                </span>
+                <h4>Current Access Control Conditions</h4>
+                {props.humanizedAccessControlArray.length > 0 &&
+                <List dense={true}>
+                  {props.humanizedAccessControlArray.map((accessControl, i) =>
+                    <ListItem className={'provision-access-control-item'}
+                              key={i}
+                              secondaryAction={
+                                <IconButton onClick={() => props.removeIthAccessControlCondition(i)}>
+                                  <DeleteIcon />
+                                </IconButton>
+                              }>
+                      <ListItemText
+                        primary={accessControl}
+                      />
+                    </ListItem>
+                  )}
+                </List>
+                }
+                {!props.humanizedAccessControlArray.length &&
+                <span>No current access control conditions</span>
+                }
+              </section>
+            )}
+            </>
           ) : (
-            <section className={'provision-access-current-controls'}>
-              <span>
-                <Tooltip title={'Back to select meeting'}>
-                  <IconButton size={'small'} onClick={() => {
-                    props.setAccessControlConditions(() => [])
-                    props.setSelectedMeeting(() => null)
-                  }}>
-                    <ArrowBackIcon/>
-                  </IconButton>
-                </Tooltip>
-                <p>Meeting Name: <strong>{ props.selectedMeeting.topic }</strong></p>
-                <p>Meeting Time: <strong>{DateTime.fromISO(props.selectedMeeting.start_time).toLocaleString(DATETIME_MED)}</strong></p>
-                <p>Date Created: <strong>{DateTime.fromISO(props.selectedMeeting.created_at).toLocaleString(DATETIME_MED)}</strong></p>
-              </span>
-              <h4>Current Access Control Conditions</h4>
-              {props.humanizedAccessControlArray.length > 0 &&
-              <List dense={true}>
-                {props.humanizedAccessControlArray.map((accessControl, i) =>
-                  <ListItem className={'provision-access-control-item'}
-                            key={i}
-                            secondaryAction={
-                              <IconButton onClick={() => props.removeIthAccessControlCondition(i)}>
-                                <DeleteIcon />
-                              </IconButton>
-                            }>
-                    <ListItemText
-                      primary={accessControl}
-                    />
-                  </ListItem>
-                )}
-              </List>
-              }
-              {!props.humanizedAccessControlArray.length &&
-              <span>No current access control conditions</span>
-              }
-            </section>
+            <p>There are no meetings currently scheduled.  You can make one <a href="https://zoom.us/meeting/schedule">here</a>.</p>
           )}
         </DialogContent>
         <DialogActions>
