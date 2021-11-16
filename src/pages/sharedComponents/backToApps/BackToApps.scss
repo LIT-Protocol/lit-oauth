@@ -1,0 +1,30 @@
+.back-to-apps-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  transition-duration: 0.25s;
+  color: #000;
+  text-decoration: none;
+}
+
+.back-to-apps-container:hover {
+  opacity: 0.8;
+  filter: grayscale(0.2);
+  cursor: pointer;
+}
+
+.back-to-apps-logo {
+  margin-left: 1rem;
+  width: 3rem;
+  height: 4rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+h2 {
+  font-size: 1.5rem;
+  padding-bottom: 0;
+}

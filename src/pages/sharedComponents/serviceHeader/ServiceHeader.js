@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { Avatar, Button, Card, Menu, MenuItem } from "@mui/material";
 import './ServiceHeader.scss';
@@ -33,7 +33,7 @@ export default function ServiceHeader(props) {
     <Card className={'header-card'}>
       <span className={'header-left'}>
         <div className={'login-service-image'}
-             style={{backgroundImage: `url(${props.serviceImageUrl}`}}></div>
+             style={{backgroundImage: `url(${props.serviceImageUrl}`}}/>
         <h2 className={'left-margin-buffer'}>{serviceName}</h2>
       </span>
       <span className={'header-right'}>
@@ -41,8 +41,8 @@ export default function ServiceHeader(props) {
           Logged in with {oauthServiceProvider}
         </p>
         <Button variant="contained"
-          onClick={handleUserMenuClick}
-          className={'header-user-menu'}
+                onClick={handleUserMenuClick}
+                className={'header-user-menu'}
         >
           <Avatar className={'right-buffer'} src={currentUser.avatar}/>
           <div className={'user-info right-buffer'}>
@@ -53,7 +53,7 @@ export default function ServiceHeader(props) {
               {currentUser.email}
             </span>
           </div>
-          <KeyboardArrowDownIcon />
+          <KeyboardArrowDownIcon/>
         </Button>
         <Menu
           className={'header-user-menu-options'}

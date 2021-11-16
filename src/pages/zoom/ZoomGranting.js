@@ -11,6 +11,7 @@ import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
+import BackToApps from "../sharedComponents/backToApps/BackToApps";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -33,6 +34,7 @@ export default function ZoomGranting() {
   const [snackbarInfo, setSnackbarInfo] = useState({});
 
   useEffect(() => {
+    console.log('PROCESS', process.env)
     if (!!performWithAuthSig) {
       loadAuth();
     }
@@ -255,6 +257,7 @@ export default function ZoomGranting() {
 
   return (
     <div>
+      <BackToApps/>
       {(!storedAuthSig['sig'] || !currentServiceInfo) ? (
         <div className={'service-loader'}>
           <CircularProgress/>
@@ -317,15 +320,18 @@ export default function ZoomGranting() {
           <LitProtocolConnection
             className={'lit-protocol-connection'}
             connection={!!storedAuthSig['sig']}/>
-          <button style={{ position: 'absolute', top: '0', left: '0'}}
-            onClick={async () => {
-            const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {
-              address: storedAuthSig.address,
-              idOnService: currentServiceInfo.idOnService
-            });
+          {process.env.NODE_ENV === 'development' && (
+            <button style={{position: 'absolute', top: '0', left: '0'}}
+                    onClick={async () => {
+                      const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {
+                        address: storedAuthSig.address,
+                        idOnService: currentServiceInfo.idOnService
+                      });
 
-            console.log('DELETED', resp);
-          }}>DELETE USER</button>
+                      console.log('DELETED', resp);
+                    }}>DELETE USER
+            </button>
+          )}
         </section>
       )}
       <Snackbar
