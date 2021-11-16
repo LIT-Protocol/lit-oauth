@@ -34,6 +34,7 @@ export default function ZoomGranting() {
   const [snackbarInfo, setSnackbarInfo] = useState({});
 
   useEffect(() => {
+    console.log('PROCESS', process.env)
     if (!!performWithAuthSig) {
       loadAuth();
     }
@@ -319,15 +320,18 @@ export default function ZoomGranting() {
           <LitProtocolConnection
             className={'lit-protocol-connection'}
             connection={!!storedAuthSig['sig']}/>
-          <button style={{ position: 'absolute', top: '0', left: '0'}}
-            onClick={async () => {
-            const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {
-              address: storedAuthSig.address,
-              idOnService: currentServiceInfo.idOnService
-            });
+          {process.env.NODE_ENV === 'development' && (
+            <button style={{position: 'absolute', top: '0', left: '0'}}
+                    onClick={async () => {
+                      const resp = await axios.post(`${API_HOST}/api/zoom/deleteUser`, {
+                        address: storedAuthSig.address,
+                        idOnService: currentServiceInfo.idOnService
+                      });
 
-            console.log('DELETED', resp);
-          }}>DELETE USER</button>
+                      console.log('DELETED', resp);
+                    }}>DELETE USER
+            </button>
+          )}
         </section>
       )}
       <Snackbar
