@@ -313,7 +313,7 @@ export default function GoogleGranting(props) {
     const auth2 = await window.gapi.auth2.getAuthInstance();
     await auth2.signOut().then(async () => {
       auth2.disconnect();
-      window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
+      window.location = `https://dev.litgateway.com/apps`;
     });
   };
 

@@ -188,7 +188,7 @@ export default function ZoomGranting() {
     setCurrentUser({});
     setCurrentServiceInfo(null);
     // TODO: figure out how to sign out of zoom
-    window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`;
+    window.location = `https://dev.litgateway.com/apps`;
     // });
   };
 
