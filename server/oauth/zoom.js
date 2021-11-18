@@ -12,11 +12,11 @@ import axios from "axios";
 
 export default async function (fastify, opts) {
   fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
-    const {authSig} = request.body;
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
 
     const q = {
@@ -35,32 +35,35 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/serviceLogout", async (request, reply) => {
-    const user = request.body.user
-    console.log('DELETE REQUEST', request.body.user)
+    const user = request.body.user;
+    console.log("DELETE REQUEST", request.body.user);
 
     // fastify.delete(`http://zoom.us/oauth/users/${user}/token`)
-    await axios.delete(`https://zoom.us/oauth/users/${user}/token`).then(res => {
-      console.log('RESULT OF DELETE USER', res)
-      return res;
-    }).catch(err => {
-      console.log('DELETE ERR', err)
-    });
-  })
+    await axios
+      .delete(`https://zoom.us/oauth/users/${user}/token`)
+      .then((res) => {
+        console.log("RESULT OF DELETE USER", res);
+        return res;
+      })
+      .catch((err) => {
+        console.log("DELETE ERR", err);
+      });
+  });
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
-    const {state} = request.query;
-    const {authSig} = JSON.parse(state);
+    const { state } = request.query;
+    const { authSig } = JSON.parse(state);
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
-    const data = await getAccessToken({code: request.query.code});
+    const data = await getAccessToken({ code: request.query.code });
     const accessToken = data.access_token;
 
-    const user = await getUser({accessToken});
+    const user = await getUser({ accessToken });
     console.log("user", user);
 
     // check for existing access token
@@ -90,18 +93,21 @@ export default async function (fastify, opts) {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         scope: data.scope,
-        extraData: JSON.stringify({token: data, user}),
+        extraData: JSON.stringify({ token: data, user }),
       });
     }
 
-    reply.redirect(`${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/zoom`);
+    reply.redirect(
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/zoom`
+    );
   });
 
   fastify.post("/api/zoom/getServiceInfo", async (request, reply) => {
     const authSig = request.body.authSig;
-    let connectedService = fastify.objection.models.connectedServices.query()
-      .where('user_id', '=', authSig.address)
-      .where('service_name', '=', 'zoom');
+    let connectedService = fastify.objection.models.connectedServices
+      .query()
+      .where("user_id", "=", authSig.address)
+      .where("service_name", "=", "zoom");
 
     // if (connectedService.length) {
     //   const refreshTokenArgs = {
@@ -124,11 +130,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
-    const {authSig} = request.body;
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
@@ -143,11 +149,11 @@ export default async function (fastify, opts) {
         const shares = await fastify.objection.models.shares
           .query()
           .where("connected_service_id", "=", service.id);
-        return {...service, shares};
+        return { ...service, shares };
       })
     );
 
-    console.log('GET MEETING AND WEBINARS ZOOM.JS')
+    console.log("GET MEETING AND WEBINARS ZOOM.JS");
 
     const meetingsAndWebinars = (
       await Promise.all(
@@ -158,7 +164,7 @@ export default async function (fastify, opts) {
             connectedServiceId: s.id,
             fastify,
             shares: s.shares,
-          })
+          });
         })
       )
     )
@@ -196,23 +202,24 @@ export default async function (fastify, opts) {
     };
   });
 
-  fastify.post('/api/zoom/getSingleShare', async (req, res) => {
+  fastify.post("/api/zoom/getSingleShare", async (req, res) => {
     const uuid = req.body.uuid;
 
-    return await fastify.objection.models.shares.query()
-      .where('id', '=', uuid);
-  })
+    return await fastify.objection.models.shares.query().where("id", "=", uuid);
+  });
 
-  fastify.post('/api/zoom/getAllShares', async (req, res) => {
+  fastify.post("/api/zoom/getAllShares", async (req, res) => {
     const authSig = req.body.authSig;
-    const connectedService =  await fastify.objection.models.connectedServices.query()
-      .where('service_name', '=', 'zoom')
-      .where('user_id', '=', authSig.address);
+    const connectedService = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "zoom")
+      .where("user_id", "=", authSig.address);
 
-    return await fastify.objection.models.shares.query()
-      .where('connected_service_id', '=', connectedService[0].id)
-      .where('user_id', '=', authSig.address);
-  })
+    return await fastify.objection.models.shares
+      .query()
+      .where("connected_service_id", "=", connectedService[0].id)
+      .where("user_id", "=", authSig.address);
+  });
 
   fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
     const { jwt, assetType, assetIdOnService, shareId } = request.body;
@@ -231,22 +238,22 @@ export default async function (fastify, opts) {
     const extraData = JSON.stringify({
       shareId: shareId,
       assetIdOnService: assetIdOnService,
-      assetType: assetType
+      assetType: assetType,
     });
 
     console.log("payload is", payload);
     console.log("correct extra data is ", extraData);
     console.log("shared link path is", sharedLinkPath);
 
-    console.log('CHECK CONDITIONS FOR SUCCESS', {
+    console.log("CHECK CONDITIONS FOR SUCCESS", {
       verified: verified,
       baseUrl: `${payload.baseUrl} || ${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`,
       path: `${payload.path} || ${sharedLinkPath}`,
       orgId: `${payload.orgId}`,
       role: `${payload.role}`,
       extraData1: JSON.parse(payload.extraData),
-      extraData2: JSON.parse(extraData)
-    })
+      extraData2: JSON.parse(extraData),
+    });
 
     if (
       !verified ||
@@ -257,7 +264,6 @@ export default async function (fastify, opts) {
       payload.role !== "" ||
       payload.extraData !== extraData
     ) {
-
       // Reject this request!
       return { success: false, errorCode: "not_authorized" };
     }
@@ -291,11 +297,13 @@ export default async function (fastify, opts) {
     };
   });
 
-  fastify.post('/api/zoom/deleteShare', async(req, res) => {
+  fastify.post("/api/zoom/deleteShare", async (req, res) => {
     const shareUuid = req.body.uuid;
-    return await fastify.objection.models.shares.query().delete()
-      .where('id', '=', shareUuid);
-  })
+    return await fastify.objection.models.shares
+      .query()
+      .delete()
+      .where("id", "=", shareUuid);
+  });
 
   fastify.post("/api/zoom/shareMeeting", async (request, reply) => {
     const { authSig, meeting, accessControlConditions } = request.body;
@@ -324,33 +332,34 @@ export default async function (fastify, opts) {
       asset_type: meeting.type,
     });
 
-    const mostRecentShare = await fastify.objection.models.shares.query()
-      .where('asset_id_on_service', '=', meeting.id)
-      .where('connectedServiceId', '=', meeting.connectedServiceId)
-      .where('userId', '=', userId)
-      .where('name', '=', meeting.topic)
+    const mostRecentShare = await fastify.objection.models.shares
+      .query()
+      .where("asset_id_on_service", "=", meeting.id)
+      .where("connectedServiceId", "=", meeting.connectedServiceId)
+      .where("userId", "=", userId)
+      .where("name", "=", meeting.topic);
 
     return mostRecentShare;
   });
 
   // // TODO: remove this
-  fastify.post('/api/zoom/deleteUser', async (request, reply) => {
-    const {address, idOnService} = request.body
-    const shareResponse = (
-      await fastify.objection.models.shares
-        .query()
-        .delete()
-        .where("user_id", "=", address)
-    )
+  fastify.post("/api/zoom/deleteUser", async (request, reply) => {
+    // neuter this in prod
+    if (process.env.NODE_ENV !== "development") {
+      return { error: "This endpoint is disabled in production" };
+    }
+    const { address, idOnService } = request.body;
+    const shareResponse = await fastify.objection.models.shares
+      .query()
+      .delete()
+      .where("user_id", "=", address);
 
-    const response = (
-      await fastify.objection.models.connectedServices
-        .query()
-        .delete()
-        .where("user_id", "=", address)
-        .where("id_on_service", "=", idOnService)
-    )
+    const response = await fastify.objection.models.connectedServices
+      .query()
+      .delete()
+      .where("user_id", "=", address)
+      .where("id_on_service", "=", idOnService);
 
     return response;
-  })
+  });
 }
