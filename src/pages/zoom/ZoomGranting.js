@@ -5,11 +5,7 @@ import { useAppContext } from "../../context";
 import { Alert, CircularProgress, Snackbar } from "@mui/material";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader";
 import React, { useEffect, useState } from "react";
-import {
-  createMeetingShare,
-  getMeetingsAndWebinars,
-  getServiceInfo,
-} from "./zoomAsyncHelpers";
+import { createMeetingShare, getMeetingsAndWebinars, getServiceInfo, } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
@@ -20,7 +16,7 @@ import BackToApps from "../sharedComponents/backToApps/BackToApps";
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export default function ZoomGranting() {
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [currentUser, setCurrentUser] = useState({});
   const [allShares, setAllShares] = useState([]);
@@ -145,7 +141,7 @@ export default function ZoomGranting() {
 
   const loadMeetings = async (authSig) => {
     console.log("start of meetings and webinars");
-    const resp = await getMeetingsAndWebinars({ authSig });
+    const resp = await getMeetingsAndWebinars({authSig});
 
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
@@ -221,7 +217,7 @@ export default function ZoomGranting() {
       console.log("SELECTED MEETING", share);
 
       const resourceId = getResourceIdForMeeting({
-        meeting: { id: share.id },
+        meeting: {id: share.id},
         share,
       });
 
@@ -266,10 +262,10 @@ export default function ZoomGranting() {
 
   return (
     <div>
-      <BackToApps />
+      <BackToApps/>
       {!storedAuthSig["sig"] || !currentServiceInfo ? (
         <div className={"service-loader"}>
-          <CircularProgress />
+          <CircularProgress/>
           <h3>Waiting for Zoom - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
@@ -333,28 +329,28 @@ export default function ZoomGranting() {
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
           />
-          {process.env.NODE_ENV === "development" && (
-            <button
-              style={{ position: "absolute", top: "0", left: "0" }}
-              onClick={async () => {
-                const resp = await axios.post(
-                  `${API_HOST}/api/zoom/deleteUser`,
-                  {
-                    address: storedAuthSig.address,
-                    idOnService: currentServiceInfo.idOnService,
-                  }
-                );
+          {/*{process.env.NODE_ENV === "development" && (*/}
+          <button
+            style={{position: "absolute", top: "0", left: "0"}}
+            onClick={async () => {
+              const resp = await axios.post(
+                `${API_HOST}/api/zoom/deleteUser`,
+                {
+                  address: storedAuthSig.address,
+                  idOnService: currentServiceInfo.idOnService,
+                }
+              );
 
-                console.log("DELETED", resp);
-              }}
-            >
-              DELETE USER
-            </button>
-          )}
+              console.log("DELETED", resp);
+            }}
+          >
+            DELETE USER
+          </button>
+          {/*)}*/}
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}
