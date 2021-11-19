@@ -2,21 +2,23 @@ import React, { useState } from "react";
 
 import "./ZoomMeetings.css";
 import {
+  Button,
+  Card,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Card,
-  Button,
+  IconButton,
+  List,
+  ListItem,
   Paper,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableContainer,
   Table,
   TableBody,
-  IconButton,
-  Tooltip, List, ListItem
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip
 } from "@mui/material";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
@@ -35,10 +37,6 @@ export default function ZoomMeetings(props) {
   const handleConfirmDelete = () => {
     props.handleDeleteLinkAction(deleteShareInfo);
     setOpenDeleteWarningModal(false);
-  }
-
-  const getAccessControlConditions = (accessControl) => {
-    return JSON.parse(accessControl)[0].chain;
   }
 
   return (
