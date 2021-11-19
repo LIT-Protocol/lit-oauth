@@ -340,9 +340,9 @@ export default async function (fastify, opts) {
   // // TODO: remove this
   fastify.post("/api/zoom/deleteUser", async (request, reply) => {
     // neuter this in prod
-    // if (process.env.NODE_ENV !== "development" || window.location.href !== 'https://oauth-app-dev.litgateway.com/zoom') {
-    //   return {error: "This endpoint is disabled in production"};
-    // }
+    if (process.env.NODE_ENV !== "development") {
+      return {error: "This endpoint is disabled in production"};
+    }
     const {address, idOnService} = request.body;
     const shareResponse = await fastify.objection.models.shares
       .query()
