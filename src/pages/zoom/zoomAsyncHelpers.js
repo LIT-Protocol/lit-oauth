@@ -7,8 +7,6 @@ export const getMeetingsAndWebinars = async ({authSig}) => {
     authSig,
   });
 
-  console.log('RESP', resp.data)
-
   return resp.data;
 };
 

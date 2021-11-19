@@ -73,7 +73,7 @@ export default function ZoomMeetings(props) {
                       ))}
                     </List>
                   </TableCell>
-                  <TableCell align="left">{DateTime.fromISO(share.start_time).toLocaleString(DATETIME_MED)}</TableCell>
+                  <TableCell align="left">{DateTime.fromISO(share.startTime).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
                   <TableCell align="left">
                     <span className={'links-actions'}>

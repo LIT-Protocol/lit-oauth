@@ -146,6 +146,17 @@ export default function ZoomGranting() {
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
     setMeetings(resp.meetingsAndWebinars);
+
+    if (allShares.length) {
+      const updatedListWithStartTime = allShares.map(a => {
+        const shareHolder = a;
+        const matchingMeeting = resp.meetingsAndWebinars.filter(m => m.id == a.assetIdOnService);
+        shareHolder['startTime'] = matchingMeeting[0]['start_time'];
+        return shareHolder;
+      });
+      await setAllShares(updatedListWithStartTime);
+
+    }
   };
 
   const getAllShares = async (authSig) => {
@@ -159,14 +170,21 @@ export default function ZoomGranting() {
       });
     });
 
-    Promise.all(humanizeAccPromiseArray).then((humanizedAcc) => {
+    Promise.all(humanizeAccPromiseArray).then(async (humanizedAcc) => {
       let combinedAllShares = [];
       for (let i = 0; i < allSharesHolder.data.length; i++) {
         let singleShare = allSharesHolder.data[i];
         singleShare["humanizedAccessControlConditions"] = humanizedAcc[i];
         combinedAllShares.push(singleShare);
       }
-      setAllShares(allSharesHolder.data.reverse());
+      await setAllShares(allSharesHolder.data.reverse());
+
+      if (allSharesHolder.data.length) {
+        // TODO: remove set timeout and save start time in db
+        setTimeout(async () => {
+          await loadMeetings(authSig);
+        }, 500)
+      }
     });
   };
 
@@ -329,25 +347,25 @@ export default function ZoomGranting() {
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
           />
-          {(process.env.NODE_ENV === "development" || window.location.href === 'https://oauth-app-dev.litgateway.com/zoom') && (
-            <button
-              style={{position: "absolute", top: "0", left: "0"}}
-              onClick={async () => {
-                console.log(window.location)
-                const resp = await axios.post(
-                  `${API_HOST}/api/zoom/deleteUser`,
-                  {
-                    address: storedAuthSig.address,
-                    idOnService: currentServiceInfo.idOnService,
-                  }
-                );
+          {/*{(process.env.NODE_ENV === "development" || window.location.href === 'https://oauth-app-dev.litgateway.com/zoom') && (*/}
+          {/*  <button*/}
+          {/*    style={{position: "absolute", top: "0", left: "0"}}*/}
+          {/*    onClick={async () => {*/}
+          {/*      console.log(window.location)*/}
+          {/*      const resp = await axios.post(*/}
+          {/*        `${API_HOST}/api/zoom/deleteUser`,*/}
+          {/*        {*/}
+          {/*          address: storedAuthSig.address,*/}
+          {/*          idOnService: currentServiceInfo.idOnService,*/}
+          {/*        }*/}
+          {/*      );*/}
 
-                console.log("DELETED", resp);
-              }}
-            >
-              DELETE USER
-            </button>
-          )}
+          {/*      console.log("DELETED", resp);*/}
+          {/*    }}*/}
+          {/*  >*/}
+          {/*    DELETE USER*/}
+          {/*  </button>*/}
+          {/*)}*/}
         </section>
       )}
       <Snackbar
