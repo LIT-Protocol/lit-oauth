@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, createContext } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 
 export const AppContext = createContext({
@@ -6,7 +6,7 @@ export const AppContext = createContext({
 });
 
 export const AppContextProvider = (props) => {
-  const { children } = props;
+  const {children} = props;
 
   const [authSig, setAuthSig] = useState(null);
   const [tokenList, setTokenList] = useState(null);
@@ -14,18 +14,21 @@ export const AppContextProvider = (props) => {
 
   const performWithAuthSig = async (
     action,
-    { chain } = { chain: "ethereum" }
+    {chain} = {chain: "ethereum"}
   ) => {
     //TODO add chain selection???
 
     let currentAuthSig = authSig;
     if (!currentAuthSig) {
       try {
-        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({chain});
         setAuthSig(currentAuthSig);
         console.log('app.js CURRENT AUTH SIG', currentAuthSig)
       } catch (e) {
-        console.log(e);
+        if (e.code === 4001) {
+          window.location = 'https://dev.litgateway.com/apps';
+          return
+        }
         if (e?.errorCode === "no_wallet") {
           setGlobalError({
             title: "You need a wallet to use the Lit Protocol",
@@ -60,7 +63,7 @@ export const AppContextProvider = (props) => {
         try {
           const tokens = await LitJsSdk.getTokenList();
           setTokenList(tokens);
-        } catch(err) {
+        } catch (err) {
           console.log('Error fetching token list:', err)
         }
       };

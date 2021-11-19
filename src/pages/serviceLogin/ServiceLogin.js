@@ -27,7 +27,10 @@ export default function ServiceLogin() {
       });
     } catch (err) {
       console.log("LIT AUTH FAILURE", err);
-      handleOpenSnackBar('Lit authentication failed.', 'error');
+      handleOpenSnackBar('Lit authentication failed, redirecting to Gateway.', 'error');
+      setTimeout(() => {
+        window.location = 'https://dev.litgateway.com/apps';
+      }, 3000)
     }
   };
 

@@ -26,7 +26,7 @@ const googleRoleMap = {
 
 export default function GoogleGranting(props) {
   const parsedEnv = dotenv.config();
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
   const [file, setFile] = useState(null);
   const [allShares, setAllShares] = useState([]);
@@ -103,7 +103,6 @@ export default function GoogleGranting(props) {
   };
 
   const loadAuth = async () => {
-    console.log("Updated at 4:21pm - 2021.11.10");
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
 
@@ -119,7 +118,7 @@ export default function GoogleGranting(props) {
             scope: "https://www.googleapis.com/auth/drive.file",
           })
           .then(async (googleObject) => {
-            window.gapi.load("picker", { callback: onPickerApiLoad });
+            window.gapi.load("picker", {callback: onPickerApiLoad});
             const userIsSignedIn = googleObject.isSignedIn.get();
             if (!userIsSignedIn) {
               // if no google user exists, push toward authenticate
@@ -364,7 +363,7 @@ export default function GoogleGranting(props) {
     });
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
     };
     const requestData = {
       driveId: file.id,
@@ -378,7 +377,7 @@ export default function GoogleGranting(props) {
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
-      const { data } = response;
+      const {data} = response;
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
@@ -431,11 +430,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps />
+      <BackToApps/>
       {(!storedAuthSig["sig"] || token === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress />
+          <CircularProgress/>
           <h3>Waiting for Google Account - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
@@ -488,7 +487,7 @@ export default function GoogleGranting(props) {
               className={"share-modal"}
               show={false}
               onClose={() => setOpenShareModal(false)}
-              sharingItems={[{ name: file.embedUrl }]}
+              sharingItems={[{name: file.embedUrl}]}
               onAccessControlConditionsSelected={async (restriction) => {
                 await addToAccessControlConditions(restriction);
                 setOpenShareModal(false);
@@ -503,7 +502,7 @@ export default function GoogleGranting(props) {
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}
