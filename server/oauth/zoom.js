@@ -2,16 +2,21 @@ import { authUser } from "../auth.js";
 import { keysToCamel } from "../utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../../src/pages/zoom/utils.js";
-import { createMeetingInvite, getAccessToken, getMeetingsAndWebinars, getUser, } from "./zoomHelpers.js";
+import {
+  createMeetingInvite,
+  getAccessToken,
+  getMeetingsAndWebinars,
+  getUser,
+} from "./zoomHelpers.js";
 import axios from "axios";
 
 export default async function (fastify, opts) {
   fastify.post("/api/oauth/zoom/serviceLogin", async (request, reply) => {
-    const {authSig} = request.body;
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
 
     const q = {
@@ -46,19 +51,19 @@ export default async function (fastify, opts) {
   });
 
   fastify.get("/api/oauth/zoom/callback", async (request, reply) => {
-    const {state} = request.query;
-    const {authSig} = JSON.parse(state);
+    const { state } = request.query;
+    const { authSig } = JSON.parse(state);
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
-    const data = await getAccessToken({code: request.query.code});
+    const data = await getAccessToken({ code: request.query.code });
     const accessToken = data.access_token;
 
-    const user = await getUser({accessToken});
+    const user = await getUser({ accessToken });
     console.log("user", user);
 
     // check for existing access token
@@ -88,7 +93,7 @@ export default async function (fastify, opts) {
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
         scope: data.scope,
-        extraData: JSON.stringify({token: data, user}),
+        extraData: JSON.stringify({ token: data, user }),
       });
     }
 
@@ -125,11 +130,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/meetingsAndWebinars", async (request, reply) => {
-    const {authSig} = request.body;
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
@@ -144,7 +149,7 @@ export default async function (fastify, opts) {
         const shares = await fastify.objection.models.shares
           .query()
           .where("connected_service_id", "=", service.id);
-        return {...service, shares};
+        return { ...service, shares };
       })
     );
 
@@ -173,11 +178,11 @@ export default async function (fastify, opts) {
 
   // get shares for a given meeting
   fastify.post("/api/zoom/shares", async (request, reply) => {
-    const {authSig, meetingId} = request.body;
+    const { authSig, meetingId } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
@@ -217,10 +222,10 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/getMeetingUrl", async (request, reply) => {
-    const {jwt, assetType, assetIdOnService, shareId} = request.body;
+    const { jwt, assetType, assetIdOnService, shareId } = request.body;
 
     // verify the jwt
-    const {verified, header, payload} = LitJsSdk.verifyJwt({jwt});
+    const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
     const userId = payload.sub;
 
     // The "verified" variable is a boolean that indicates whether or not the signature verified properly.
@@ -228,7 +233,7 @@ export default async function (fastify, opts) {
     // This means you need to look at "payload.baseUrl" which should match the hostname of the server, and you must also look at "payload.path" which should match the path being accessed, and you must also look at payload.orgId, payload.role, and payload.extraData which will probably be empty
     // If these do not match what you're expecting, you should reject the request!!
 
-    const sharedLinkPath = getSharingLinkPath({id: shareId});
+    const sharedLinkPath = getSharingLinkPath({ id: shareId });
 
     const extraData = JSON.stringify({
       shareId: shareId,
@@ -253,14 +258,14 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
+        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
       payload.path !== sharedLinkPath ||
       payload.orgId !== "" ||
       payload.role !== "" ||
       payload.extraData !== extraData
     ) {
       // Reject this request!
-      return {success: false, errorCode: "not_authorized"};
+      return { success: false, errorCode: "not_authorized" };
     }
 
     // get the meeting and oauth creds
@@ -277,7 +282,7 @@ export default async function (fastify, opts) {
     )[0];
 
     // grant access on zoom api
-    const {joinUrl} = await createMeetingInvite({
+    const { joinUrl } = await createMeetingInvite({
       accessToken: service.accessToken,
       refreshToken: service.refreshToken,
       connectedServiceId: service.id,
@@ -301,11 +306,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/zoom/shareMeeting", async (request, reply) => {
-    const {authSig, meeting, accessControlConditions} = request.body;
+    const { authSig, meeting, accessControlConditions } = request.body;
 
     if (!authUser(authSig)) {
       reply.code(400);
-      return {error: "Invalid signature"};
+      return { error: "Invalid signature" };
     }
     const userId = authSig.address;
 
@@ -341,9 +346,9 @@ export default async function (fastify, opts) {
   fastify.post("/api/zoom/deleteUser", async (request, reply) => {
     // neuter this in prod
     if (process.env.NODE_ENV !== "development") {
-      return {error: "This endpoint is disabled in production"};
+      return { error: "This endpoint is disabled in production" };
     }
-    const {address, idOnService} = request.body;
+    const { address, idOnService } = request.body;
     const shareResponse = await fastify.objection.models.shares
       .query()
       .delete()
@@ -356,5 +361,46 @@ export default async function (fastify, opts) {
       .where("id_on_service", "=", idOnService);
 
     return response;
+  });
+
+  // zoom will call this endpoint
+  fastify.post("/api/zoom/deauth", async (request, reply) => {
+    /* incoming data: 
+    {
+      "event": "app_deauthorized",
+      "payload": {
+        "account_id": "EabCDEFghiLHMA",
+        "user_id": "z9jkdsfsdfjhdkfjQ",
+        "signature": "827edc3452044f0bc86bdd5684afb7d1e6becfa1a767f24df1b287853cf73000",
+        "deauthorization_time": "2019-06-17T13:52:28.632Z",
+        "client_id": "ADZ9k9bTWmGUoUbECUKU_a"
+      }
+    }
+    */
+    const { event, payload } = request.body;
+    if (event !== "app_deauthorized") {
+      return { error: "invalid event" };
+    }
+    const { user_id } = payload;
+
+    const connectedServices = await fastify.objection.models.connectedServices
+      .query()
+      .where("id_on_service", "=", user_id);
+
+    await Promise.all(
+      connectedServices.map((cs) => {
+        return fastify.objection.models.shares
+          .query()
+          .delete()
+          .where("connected_service_id", "=", cs.id);
+      })
+    );
+
+    await fastify.objection.models.connectedServices
+      .query()
+      .delete()
+      .where("id_on_service", "=", user_id);
+
+    return { success: true };
   });
 }
