@@ -5,6 +5,7 @@ import fastifyObjectionJS from "fastify-objectionjs";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
+import shopifyEndpoints from "./oauth/shopify.js";
 import knexConfig from "./knexfile.js";
 
 import { authUser } from "./auth.js";
@@ -47,15 +48,15 @@ fastify.setErrorHandler((error, request, reply) => {
   if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
     Bugsnag.notify(error);
   }
-  reply.send({ error });
+  reply.send({error});
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const { authSig } = request.body;
+  const {authSig} = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return { error: "Invalid signature" };
+    return {error: "Invalid signature"};
   }
   const userId = authSig.address;
 
@@ -73,6 +74,7 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
+fastify.register(shopifyEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
