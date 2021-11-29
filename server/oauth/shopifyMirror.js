@@ -6,7 +6,7 @@ export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveConditionMirror', async (request, reply) => {
 
     await axios
-      .delete(`https://localhost:4000/api/shopify/saveCondition`)
+      .post(`https://localhost:4000/api/shopify/saveCondition`)
       .then((res) => {
         console.log('shopify mirror');
         return res;
@@ -14,8 +14,6 @@ export default async function (fastify, opts) {
       .catch((err) => {
         console.log("DELETE ERR", err);
       });
-
-    return 'success connecting to lit shopify';
   })
 
   fastify.post('/api/shopify/getCustomerMirror', async (request, reply) => {
