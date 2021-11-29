@@ -6,7 +6,7 @@ export default async function (fastify, opts) {
 
     console.log('shopify test')
 
-    return 'success connecting to lit shopify';
+    return 'success connecting to lit shopify locally';
   })
 
   fastify.post('/api/shopify/getCustomer', async (request, reply) => {
