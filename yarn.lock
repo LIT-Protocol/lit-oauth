@@ -1345,10 +1345,28 @@
   dependencies:
     "@bugsnag/core" "^7.11.0"
 
+"@bugsnag/browser@^7.14.1":
+  version "7.14.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/browser/-/browser-7.14.1.tgz#ba92aae1fb40aeba0983d2af950f70cc82729882"
+  integrity sha512-xenvisYx6xFNuh7GGR/SCLcRs2H6AXn58Ha/u/Yhk+typ1oE5EFAy15+2vdGMDmZp0GsAEgrOTsEZ30uSKdC1w==
+  dependencies:
+    "@bugsnag/core" "^7.14.0"
+
 "@bugsnag/core@^7.11.0":
   version "7.11.0"
   resolved "https://registry.npmjs.org/@bugsnag/core/-/core-7.11.0.tgz"
   integrity sha512-xCaaONqQEAewifrvHC8v+yqN+Is4WNUcmK+sdeLcSb+ghLQ52y3BQ9nEDYzQxGuJRpv1zW3edCVIB4RN5eunSQ==
+  dependencies:
+    "@bugsnag/cuid" "^3.0.0"
+    "@bugsnag/safe-json-stringify" "^6.0.0"
+    error-stack-parser "^2.0.3"
+    iserror "0.0.2"
+    stack-generator "^2.0.3"
+
+"@bugsnag/core@^7.14.0":
+  version "7.14.0"
+  resolved "https://registry.yarnpkg.com/@bugsnag/core/-/core-7.14.0.tgz#a946d106f94d4ec5725a1208e84f542e2b56bc4d"
+  integrity sha512-DKN7hNEA6zEOgnucihgNEiMmx4GVaFHD9dJUYQFiouAIL19R/TLgG6B+pGC+QAqHVYsCUt5XDnG8jD+J+3fKOA==
   dependencies:
     "@bugsnag/cuid" "^3.0.0"
     "@bugsnag/safe-json-stringify" "^6.0.0"
@@ -1369,12 +1387,32 @@
     "@bugsnag/browser" "^7.11.0"
     "@bugsnag/node" "^7.11.0"
 
+"@bugsnag/js@^7.9.2":
+  version "7.14.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/js/-/js-7.14.1.tgz#b9368751da0883e90e2fa486e5947251cf8766b6"
+  integrity sha512-ygykhixXByzolFpOsUGr72ENgiL1t4TkvKvka2rhoSHOr5kul9TierjvmwBKNpkPdUpDNkgqw3y349jYzzjk+w==
+  dependencies:
+    "@bugsnag/browser" "^7.14.1"
+    "@bugsnag/node" "^7.14.1"
+
 "@bugsnag/node@^7.11.0":
   version "7.11.0"
   resolved "https://registry.npmjs.org/@bugsnag/node/-/node-7.11.0.tgz"
   integrity sha512-hwIG7LTE2lwaIjAes1JxYbjSoih9Eu07MSf+QJoMILY6tJoHMgxJ6v0/8AfldJeEAb753qBtlQLO8Rtr2LKHBA==
   dependencies:
     "@bugsnag/core" "^7.11.0"
+    byline "^5.0.0"
+    error-stack-parser "^2.0.2"
+    iserror "^0.0.2"
+    pump "^3.0.0"
+    stack-generator "^2.0.3"
+
+"@bugsnag/node@^7.14.1":
+  version "7.14.1"
+  resolved "https://registry.yarnpkg.com/@bugsnag/node/-/node-7.14.1.tgz#609cbb6b6dddce8d3458dcc0a0caa56c727a9fb5"
+  integrity sha512-QhdFez60rTlEueg5rA0W6x8UrTcEnssv4XVPgfooGe2fYh6O89RFjI7zVVdw8QXUyqdf7w4WzyAsCir3XEhCqQ==
+  dependencies:
+    "@bugsnag/core" "^7.14.0"
     byline "^5.0.0"
     error-stack-parser "^2.0.2"
     iserror "^0.0.2"
@@ -7213,6 +7251,11 @@ fast-text-encoding@^1.0.0:
   resolved "https://registry.npmjs.org/fast-text-encoding/-/fast-text-encoding-1.0.3.tgz"
   integrity sha512-dtm4QZH9nZtcDt8qJiOH9fcQd1NAgi+K1O2DbE6GG1PPCK/BWfOH3idCTRQ4ImXRUOyopDEgDEnVEE7Y/2Wrig==
 
+fastify-plugin@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-3.0.0.tgz#cf1b8c8098e3b5a7c8c30e6aeb06903370c054ca"
+  integrity sha512-ZdCvKEEd92DNLps5n0v231Bha8bkz1DjnPP/aEz37rz/q42Z5JVLmgnqR4DYuNn3NXAO3IDCPyRvgvxtJ4Ym4w==
+
 fastq@^1.6.0:
   version "1.10.1"
   resolved "https://registry.npmjs.org/fastq/-/fastq-1.10.1.tgz"
@@ -9677,6 +9720,14 @@ lit-access-control-conditions-modal@^1.1.21:
     react-virtualized "^9.22.3"
     react-windowed-select "^3.1.2"
     sass "^1.42.0"
+
+lit-fastify-bugsnag@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/lit-fastify-bugsnag/-/lit-fastify-bugsnag-0.3.1.tgz#452067899d070e89e866e1a5570372476cf3df2d"
+  integrity sha512-ETa0msVSGGPFyRZsTSbmmKgDvRArggldosTCOC0zFvmRSmRnNpwsI+CsfMURE4QsdzlqYcKlpJq2uzfYo7UAvw==
+  dependencies:
+    "@bugsnag/js" "^7.9.2"
+    fastify-plugin "^3.0.0"
 
 lit-js-sdk@^1.1.80:
   version "1.1.80"
