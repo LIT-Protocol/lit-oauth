@@ -3,7 +3,6 @@
 
 export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveCondition', async (request, reply) => {
-
     console.log('shopify test')
 
     return 'success connecting to lit shopify locally';

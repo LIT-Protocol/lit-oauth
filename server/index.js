@@ -6,14 +6,12 @@ import fastifyBugsnag from "lit-fastify-bugsnag";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
-import shopifyMirrorEndpoints from "./oauth/shopifyMirror.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import knexConfig from "./knexfile.js";
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
-import Bugsnag from "@bugsnag/js";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
 
@@ -60,11 +58,11 @@ fastify.register(fastifyBugsnag, {
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const { authSig } = request.body;
+  const {authSig} = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return { error: "Invalid signature" };
+    return {error: "Invalid signature"};
   }
   const userId = authSig.address;
 
@@ -82,7 +80,6 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
-fastify.register(shopifyMirrorEndpoints);
 fastify.register(shopifyEndpoints);
 
 // http to https redirect
