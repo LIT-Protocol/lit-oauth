@@ -12,7 +12,6 @@ import knexConfig from "./knexfile.js";
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
-import Bugsnag from "@bugsnag/js";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
 
