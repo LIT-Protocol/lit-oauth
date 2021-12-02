@@ -14,6 +14,7 @@ export default class Shares extends BaseModel {
       'name',
       'user_id',
       'asset_type',
+      'extra_data'
     ];
   }
 }
