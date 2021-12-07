@@ -75,11 +75,4 @@ export default async function (fastify, opts) {
 
     return true;
   })
-
-  fastify.post('/api/shopify/deleteStore', async (request, reply) => {
-
-    console.log('shopify delete store')
-
-    return 'success connecting to delete store';
-  })
 }
