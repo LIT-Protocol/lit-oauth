@@ -14,7 +14,7 @@ import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
-import ShopifyShares from "./models/ShopifyShares";
+import ShopifyShares from "./models/ShopifyShares.js";
 
 dotenv.config({
   path: "../.env",
