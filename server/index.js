@@ -14,6 +14,7 @@ import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
+import ShopifyShares from "./models/ShopifyShares";
 
 dotenv.config({
   path: "../.env",
@@ -35,7 +36,7 @@ fastify.register(fastifyCors, {
 
 fastify.register(fastifyObjectionJS, {
   knexConfig: knexConfig[process.env.NODE_ENV || "development"],
-  models: [ConnectedServices, Shares],
+  models: [ConnectedServices, Shares, ShopifyShares],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");
@@ -58,11 +59,11 @@ fastify.register(fastifyBugsnag, {
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const { authSig } = request.body;
+  const {authSig} = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return { error: "Invalid signature" };
+    return {error: "Invalid signature"};
   }
   const userId = authSig.address;
 
