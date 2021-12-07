@@ -58,11 +58,11 @@ fastify.register(fastifyBugsnag, {
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const {authSig} = request.body;
+  const { authSig } = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return {error: "Invalid signature"};
+    return { error: "Invalid signature" };
   }
   const userId = authSig.address;
 
