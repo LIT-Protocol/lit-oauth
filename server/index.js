@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyCors from "fastify-cors";
 import fastifyStatic from "fastify-static";
 import fastifyObjectionJS from "fastify-objectionjs";
+import fastifyBugsnag from "lit-fastify-bugsnag";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
@@ -11,7 +12,6 @@ import knexConfig from "./knexfile.js";
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
 import dotenv from "dotenv";
-import Bugsnag from "@bugsnag/js";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
 import ShopifyShares from "./models/ShopifyShares.js";
@@ -22,10 +22,10 @@ dotenv.config({
 
 const __dirname = path.resolve();
 
-Bugsnag.start({
-  apiKey: "0596bd3230222ad050c4533cfa5c0393",
-  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
-});
+// Bugsnag.start({
+//   apiKey: "0596bd3230222ad050c4533cfa5c0393",
+//   releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
+// });
 
 const fastify = Fastify();
 
@@ -44,12 +44,18 @@ fastify.register(fastifyStatic, {
   root: BuildPath,
 });
 
-fastify.setErrorHandler((error, request, reply) => {
-  console.log("Fastify error: ", error);
-  if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
-    Bugsnag.notify(error);
-  }
-  reply.send({error});
+// fastify.setErrorHandler((error, request, reply) => {
+//   console.log("Fastify error: ", error);
+//   if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
+//     Bugsnag.notify(error);
+//   }
+//   reply.send({error});
+// });
+
+fastify.register(fastifyBugsnag, {
+  apiKey: "0596bd3230222ad050c4533cfa5c0393",
+  enableReporting: process.env.NODE_ENV === "production",
+  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
@@ -99,4 +105,3 @@ fastify.listen(process.env.PORT || 4000, "0.0.0.0", (err) => {
   if (err) throw err;
   console.log(`server listening on ${fastify.server.address().port}`);
 });
-
