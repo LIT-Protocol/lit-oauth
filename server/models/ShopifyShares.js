@@ -14,6 +14,7 @@ export default class ShopifyShares extends BaseModel {
       'name',
       'user_id',
       'asset_type',
+      'role',
       'extra_data'
     ];
   }
