@@ -7,16 +7,15 @@ export default async function (fastify, opts) {
     const newSavedDiscount = await fastify.objection.models.shopifyShares
       .query()
       .insert({
-        asset_id_on_service: request.body.driveId,
-        access_control_conditions: JSON.stringify(
-          request.body.accessControlCondition
-        ),
-        connected_service_id: request.body.connectedServiceId,
-        role: request.body.role,
-        user_id: request.body.authSig.address,
-        name: request.body.name,
-        asset_type: request.body.assetType,
-        extra_data: request.body.extraData,
+        store_id: request.body.store_id,
+        asset_id_on_service: request.body.asset_id_on_service,
+        access_control_conditions: request.body.access_control_conditions,
+        humanized_access_control_conditions: request.body.humanized_access_control_conditions,
+        user_id: request.body.user_id,
+        title: request.body.title,
+        summary: request.body.summary,
+        asset_type: request.body.asset_type,
+        extra_data: request.body.extra_data
       });
 
     return {
@@ -45,12 +44,10 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
 
-    // const {storeId} = request.body;
-
     const discounts = await fastify.objection.models.shopifyShares
       .query()
       .where('asset_type', '=', 'discount')
-    // .where('store_id', '=', storeId)
+      .where('store_id', '=', request.body.store_id)
     // .where('user_id', request.body.authSig.address)
 
     return discounts;
