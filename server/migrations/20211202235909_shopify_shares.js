@@ -5,7 +5,7 @@ export const up = (knex) => {
       .unique()
       .primary()
       .defaultTo(knex.raw("gen_random_uuid()"));
-    table.uuid("store_id'").notNullable();
+    table.uuid("store_id").notNullable();
     table.text("access_control_conditions");
     table.text("humanized_access_control_conditions");
     table.text("asset_id_on_service");
