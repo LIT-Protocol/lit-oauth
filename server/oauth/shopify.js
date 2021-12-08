@@ -50,11 +50,12 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
 
-    // const {storeId} = request.body.storeId;
+    const {storeId} = request.body;
 
     const discounts = await fastify.objection.models.shopify_shares
       .query()
       .where('asset_type', '=', 'discount')
+      .where('store_id', '=', storeId)
     // .where('user_id', request.body.authSig.address)
 
     return discounts;
@@ -73,6 +74,6 @@ export default async function (fastify, opts) {
     const requestData = request
     console.log('request connected')
 
-    return requestData;
+    return true;
   })
 }
