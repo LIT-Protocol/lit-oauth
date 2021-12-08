@@ -12,6 +12,7 @@ export const up = (knex) => {
     table.text("title");
     table.text("summary");
     table.text("asset_type");
+    table.text("user_id");
     table.text("extra_data");
     table.timestamps();
   });
