@@ -50,7 +50,7 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
 
-    const {storeName} = request.body.extraData
+    const {storeId} = request.body.storeId;
 
     const discounts = await fastify.objection.models.shopify_shares
       .query()
