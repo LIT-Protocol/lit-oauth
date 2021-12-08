@@ -4,13 +4,14 @@
 export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveDiscount', async (request, reply) => {
     console.log('shopify test')
+    const requestData = request
 
     // const insertToLinksQuery = await fastify.objection.models.shopify_shares
     //   .query()
     //   .insert({
     //     asset_id_on_service: request.body.driveId,
     //     access_control_conditions: JSON.stringify(
-    //       request.body.accessControlConditions
+    //       request.body.accessControlCondition
     //     ),
     //     connected_service_id: request.body.connectedServiceId,
     //     role: request.body.role,
@@ -23,9 +24,8 @@ export default async function (fastify, opts) {
     // let uuid = await insertToLinksQuery.id;
 
     return {
-      message: 'success',
-      dataFormat: request.body
-      // authorizedControlConditions: request.body.accessControlConditions,
+      requestData
+      // newSavedDiscount: insertToLinksQuery,
       // uuid,
     };
   })
@@ -61,18 +61,18 @@ export default async function (fastify, opts) {
   })
 
   fastify.post('/api/shopify/deleteAllDiscounts', async (request, reply) => {
-    await fastify.objection.models.shopify_shares
+    const deleteAllDiscountsResult = await fastify.objection.models.shopify_shares
       .query()
       .delete()
       .where('asset_type', '=', 'discount');
 
-    return true;
+    return deleteAllDiscountsResult;
   })
 
   fastify.post('/api/shopify/testCondition', async (request, reply) => {
-
+    const requestData = request
     console.log('request connected')
 
-    return true;
+    return requestData;
   })
 }
