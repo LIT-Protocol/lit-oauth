@@ -24,7 +24,7 @@ export default async function (fastify, opts) {
 
     return {
       message: 'success',
-      dataFormat: request
+      dataFormat: request.body
       // authorizedControlConditions: request.body.accessControlConditions,
       // uuid,
     };
