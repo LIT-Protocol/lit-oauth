@@ -8,13 +8,13 @@ export default class ShopifyShares extends BaseModel {
   static get columns() {
     return [
       'id',
-      'connected_service_id',
+      'store_id',
       'access_control_conditions',
+      'humanized_access_control_conditions',
       'asset_id_on_service',
-      'name',
-      'user_id',
+      'title',
+      'summary',
       'asset_type',
-      'role',
       'extra_data'
     ];
   }
