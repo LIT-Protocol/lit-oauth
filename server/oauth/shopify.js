@@ -3,41 +3,36 @@
 
 export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveDiscount', async (request, reply) => {
-    console.log('shopify test')
-    const requestData = request
 
-    // const insertToLinksQuery = await fastify.objection.models.shopify_shares
-    //   .query()
-    //   .insert({
-    //     asset_id_on_service: request.body.driveId,
-    //     access_control_conditions: JSON.stringify(
-    //       request.body.accessControlCondition
-    //     ),
-    //     connected_service_id: request.body.connectedServiceId,
-    //     role: request.body.role,
-    //     user_id: request.body.authSig.address,
-    //     name: request.body.name,
-    //     asset_type: request.body.assetType,
-    //     extra_data: request.body.extraData,
-    //   });
-    //
-    // let uuid = await insertToLinksQuery.id;
+    const newSavedDiscount = await fastify.objection.models.shopifyShares
+      .query()
+      .insert({
+        asset_id_on_service: request.body.driveId,
+        access_control_conditions: JSON.stringify(
+          request.body.accessControlCondition
+        ),
+        connected_service_id: request.body.connectedServiceId,
+        role: request.body.role,
+        user_id: request.body.authSig.address,
+        name: request.body.name,
+        asset_type: request.body.assetType,
+        extra_data: request.body.extraData,
+      });
 
     return {
-      requestData
-      // newSavedDiscount: insertToLinksQuery,
-      // uuid,
+      newSavedDiscount: newSavedDiscount,
     };
   })
 
   fastify.post('/api/shopify/deleteDiscount', async (request, reply) => {
 
-    const {address, idOnService} = request.body;
-    const shareResponse = await fastify.objection.models.shopify_shares
+    const {storeId, assetIdOnService} = request.body;
+
+    const shareResponse = await fastify.objection.models.shopifyShares
       .query()
       .delete()
-      .where("user_id", "=", address)
-      .where('asset_id_on_service', '=', idOnService)
+      .where('asset_id_on_service', '=', assetIdOnService)
+      .where('store_id', '=', storeId)
 
     // const response = await fastify.objection.models.connectedServices
     //   .query()
@@ -50,19 +45,19 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
 
-    const {storeId} = request.body;
+    // const {storeId} = request.body;
 
-    const discounts = await fastify.objection.models.shopify_shares
+    const discounts = await fastify.objection.models.shopifyShares
       .query()
       .where('asset_type', '=', 'discount')
-      .where('store_id', '=', storeId)
+    // .where('store_id', '=', storeId)
     // .where('user_id', request.body.authSig.address)
 
     return discounts;
   })
 
   fastify.post('/api/shopify/deleteAllDiscounts', async (request, reply) => {
-    const deleteAllDiscountsResult = await fastify.objection.models.shopify_shares
+    const deleteAllDiscountsResult = await fastify.objection.models.shopifyShares
       .query()
       .delete()
       .where('asset_type', '=', 'discount');
