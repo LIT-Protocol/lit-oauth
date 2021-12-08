@@ -4,6 +4,7 @@
 export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveDiscount', async (request, reply) => {
 
+
     const newSavedDiscount = await fastify.objection.models.shopifyShares
       .query()
       .insert({
