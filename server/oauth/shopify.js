@@ -26,21 +26,15 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/deleteDiscount', async (request, reply) => {
 
-    const {storeId, assetIdOnService} = request.body;
+    const {store_id, asset_id_on_service} = request.body;
 
     const shareResponse = await fastify.objection.models.shopifyShares
       .query()
       .delete()
-      .where('asset_id_on_service', '=', assetIdOnService)
-      .where('store_id', '=', storeId)
+      .where('asset_id_on_service', '=', asset_id_on_service)
+      .where('store_id', '=', store_id);
 
-    // const response = await fastify.objection.models.connectedServices
-    //   .query()
-    //   .delete()
-    //   .where("user_id", "=", address)
-    //   .where("id_on_service", "=", idOnService);
-
-    return reply;
+    return shareResponse;
   });
 
   fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
