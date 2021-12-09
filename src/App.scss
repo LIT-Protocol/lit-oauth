@@ -170,6 +170,7 @@ h4 {
   height: 34rem;
   top: calc(45% - 17rem);
   left: calc(50% - 30rem);
+  filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, .25));
 }
 
 .access-service-card {
@@ -204,6 +205,7 @@ h4 {
 .access-service-card-title {
   max-width: 16rem;
   text-align: left;
+  color: #2C0C72;
 
   h2 {
     font-size: 1.5rem;
@@ -218,8 +220,21 @@ h4 {
   }
 }
 
-.access-service-card-header-right p{
+.access-service-card-header-right a {
+  text-decoration: none;
+}
+
+.access-service-card-header-right p {
   margin-top: 0;
+  color: #2C0C72;
+  display: flex;
+  align-items: center;
+
+  .lit-gateway-title {
+    margin-left: 0.3rem;
+    margin-right: 0.3rem;
+  }
+
 }
 
 .access-service-card-content {

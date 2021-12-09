@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
-import {
-  Alert,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Snackbar,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Alert, Card, CardActions, CardContent, Snackbar, TextField, Tooltip, } from "@mui/material";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import "./GoogleLinkShare.scss";
 
 const GOOGLE_CLIENT_KEY =
@@ -209,14 +200,15 @@ function GoogleLinkShare() {
         <Card className={'access-service-card'}>
           <CardContent className={'access-service-card-header'}>
           <span className={'access-service-card-header-left'}>
-            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+            <div style={{backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
             <div className={'access-service-card-title'}>
               <h2>Lit Apps</h2>
               <p>The power of blockchain-defined access combine with your current tool suite.</p>
             </div>
           </span>
             <span className={'access-service-card-header-right'}>
-            <p>Find more apps on the <strong>Lit Gateway</strong></p>
+              <a href={'https://litgateway.com/'} target={'_blank'}><p>Find more apps on the<strong
+                className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
           </span>
           </CardContent>
           <CardContent className={'access-service-card-content'}>
@@ -228,12 +220,12 @@ function GoogleLinkShare() {
               <p>Type: <strong>{getFileTypeUrl(linkData.assetType)}</strong></p>
               <p>Permission: <strong>{linkData.role}</strong></p>
               <p>Enter your email to redeem access.</p>
-                <TextField
-                  helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
-                  fullWidth
-                  autoFocus
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+              <TextField
+                helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
+                style={{width: '75%'}}
+                autoFocus
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </section>
           </CardContent>
           <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>

@@ -1,6 +1,3 @@
-// import LitJsSdk from "lit-js-sdk";
-// import axios from "axios";
-
 export default async function (fastify, opts) {
   fastify.post('/api/shopify/saveDiscount', async (request, reply) => {
 
@@ -54,12 +51,5 @@ export default async function (fastify, opts) {
       .where('asset_type', '=', 'discount');
 
     return deleteAllDiscountsResult;
-  })
-
-  fastify.post('/api/shopify/testCondition', async (request, reply) => {
-    const requestData = request
-    console.log('request connected')
-
-    return true;
   })
 }
