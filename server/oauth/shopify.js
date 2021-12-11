@@ -52,4 +52,16 @@ export default async function (fastify, opts) {
 
     return deleteAllDiscountsResult;
   })
+
+  fastify.post('/api/shopify/findDiscount', async (request, reply) => {
+    const discounts = await fastify.objection.models.shopifyShares
+      .query()
+      .where('store_id', '=', request.body.store_id)
+
+    return {
+      discounts: discounts,
+      message: 'hit the search at least'
+    }
+
+  })
 }
