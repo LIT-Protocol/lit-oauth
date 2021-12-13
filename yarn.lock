@@ -3119,7 +3119,7 @@
     "@types/react-dom" "*"
     "@types/react-transition-group" "*"
 
-"@types/react-transition-group@*":
+"@types/react-transition-group@*", "@types/react-transition-group@^4.4.0":
   version "4.4.4"
   resolved "https://registry.yarnpkg.com/@types/react-transition-group/-/react-transition-group-4.4.4.tgz#acd4cceaa2be6b757db61ed7b432e103242d163e"
   integrity sha512-7gAPz7anVK5xzbeQW9wFBDg7G++aPLAFY0QaSMOou9rJZpbuI58WAuJrgu+qR92l61grlnCUe7AFX8KGahAgug==
@@ -4186,12 +4186,12 @@ axe-core@^4.0.2:
   resolved "https://registry.npmjs.org/axe-core/-/axe-core-4.1.2.tgz"
   integrity sha512-V+Nq70NxKhYt89ArVcaNL9FDryB3vQOd+BFXZIfO3RP6rwtj+2yqqqdHEkacutglPaZLkJeuXKCjCJDMGPtPqg==
 
-axios@^0.21.4:
-  version "0.21.4"
-  resolved "https://registry.npmjs.org/axios/-/axios-0.21.4.tgz"
-  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+axios@^0.24.0:
+  version "0.24.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.24.0.tgz#804e6fa1e4b9c5288501dd9dff56a7a0940d20d6"
+  integrity sha512-Q6cWsys88HoPgAaFAVUb0WpPk0O8iTeisR9IMqy9G8AbO4NlpVknrnQS03zzF9PGAWgO3cgletO3VjV/P7VztA==
   dependencies:
-    follow-redirects "^1.14.0"
+    follow-redirects "^1.14.4"
 
 axobject-query@^2.2.0:
   version "2.2.0"
@@ -5457,15 +5457,15 @@ core-js@^2.4.0, core-js@^2.6.5:
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
   integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
 
-core-js@^3.19.0:
-  version "3.19.0"
-  resolved "https://registry.npmjs.org/core-js/-/core-js-3.19.0.tgz"
-  integrity sha512-L1TpFRWXZ76vH1yLM+z6KssLZrP8Z6GxxW4auoCj+XiViOzNPJCAuTIkn03BGdFe6Z5clX5t64wRIRypsZQrUg==
-
 core-js@^3.19.1:
   version "3.19.1"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.19.1.tgz#f6f173cae23e73a7d88fa23b6e9da329276c6641"
   integrity sha512-Tnc7E9iKd/b/ff7GFbhwPVzJzPztGrChB8X8GLqoYGdEOG8IpLnK1xPyo3ZoO3HsK6TodJS58VGPOxA+hLHQMg==
+
+core-js@^3.19.3:
+  version "3.19.3"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.19.3.tgz#6df8142a996337503019ff3235a7022d7cdf4559"
+  integrity sha512-LeLBMgEGSsG7giquSzvgBrTS7V5UL6ks3eQlUSbN8dJStlLFiRzUm5iqsRyzUB8carhfKjkJ2vzKqE6z1Vga9g==
 
 core-js@^3.6.5:
   version "3.9.0"
@@ -7434,10 +7434,10 @@ follow-redirects@^1.0.0:
   resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.13.2.tgz"
   integrity sha512-6mPTgLxYm3r6Bkkg0vNM0HTjfGrOEtsfbhagQvbxDEsEkpNhw582upBaoRZylzen6krEmxXJgt9Ju6HiI4O7BA==
 
-follow-redirects@^1.14.0:
-  version "1.14.4"
-  resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.14.4.tgz"
-  integrity sha512-zwGkiSXC1MUJG/qmeIFH2HBJx9u0V46QGUe3YR1fXG8bXQxq7fLj0RjLZQ5nubr9qNJUZrH+xUcwXEoXNpfS+g==
+follow-redirects@^1.14.4:
+  version "1.14.5"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.14.5.tgz#f09a5848981d3c772b5392309778523f8d85c381"
+  integrity sha512-wtphSXy7d4/OR+MvIFbCVBDzZ5520qV8XfPklSN5QtxuMUJZ+b0Wnst1e1lCDocfzuCkHqj8k0FpZqO+UIaKNA==
 
 for-in@^1.0.2:
   version "1.0.2"
@@ -9704,10 +9704,10 @@ lines-and-columns@^1.1.6:
   resolved "https://registry.npmjs.org/lines-and-columns/-/lines-and-columns-1.1.6.tgz"
   integrity sha1-HADHQ7QzzQpOgHWPe2SldEDZ/wA=
 
-lit-access-control-conditions-modal@^1.1.21:
-  version "1.1.21"
-  resolved "https://registry.yarnpkg.com/lit-access-control-conditions-modal/-/lit-access-control-conditions-modal-1.1.21.tgz#991f9f3a88ccc54a3a057973c45c13921a9018d6"
-  integrity sha512-/EgLrAE4fooxHPsrY6ggqSUObX+Yli9WtIZLZ+qDVMu49DACKEzZXDOcI7ZiKsTa0K/cgs4bYAVdiCvCFWObqg==
+lit-access-control-conditions-modal@^1.1.23:
+  version "1.1.23"
+  resolved "https://registry.yarnpkg.com/lit-access-control-conditions-modal/-/lit-access-control-conditions-modal-1.1.23.tgz#1cf2029ac0b8ac6ce4cb1e080556bf2464f7c170"
+  integrity sha512-NsNb8eOu7hY26b3faw0ZvNl/HYPlx6EbDkWPWY3ZGp2Kryqm5MxC51rU+3m6RhYtNG/FakSn13y9mq63yKiBjQ==
   dependencies:
     "@babel/polyfill" "^7.12.1"
     "@consta/uikit" "^3.0.0"
@@ -9715,8 +9715,8 @@ lit-access-control-conditions-modal@^1.1.21:
     core-js "^3.19.1"
     ethers "^5.4.7"
     node-sass "^6.0.1"
-    react-select "^4.3.1"
-    react-select-virtualized "^3.5.0"
+    react-select "^5.2.1"
+    react-select-virtualized "^4.2.0"
     react-virtualized "^9.22.3"
     react-windowed-select "^3.1.2"
     sass "^1.42.0"
@@ -9729,11 +9729,12 @@ lit-fastify-bugsnag@^0.3.1:
     "@bugsnag/js" "^7.9.2"
     fastify-plugin "^3.0.0"
 
-lit-js-sdk@^1.1.80:
-  version "1.1.80"
-  resolved "https://registry.npmjs.org/lit-js-sdk/-/lit-js-sdk-1.1.80.tgz"
-  integrity sha512-wKYIEYSvZ8ZZ6h2064CEZnkWPVbybWqnYJnAzj2ygoqCa9KiqFtj3Ty94cTMjeN4+bJac1lTJ/1n68VFNIvnxg==
+lit-js-sdk@^1.1.84:
+  version "1.1.84"
+  resolved "https://registry.yarnpkg.com/lit-js-sdk/-/lit-js-sdk-1.1.84.tgz#1d8cfd019201c29c8a97d6e7be3f2c201fa2d7a4"
+  integrity sha512-bi6zk+/TCKdLKOH9qpTV/PK95UVrd2LOkiRkeAJQvsiSRlsWdLaxY2H2sPNbI+thm4h8bbWoCz20AX6zsSB22A==
   dependencies:
+    "@ethersproject/abi" "^5.5.0"
     "@ethersproject/contracts" "^5.2.0"
     "@ethersproject/hash" "^5.4.0"
     "@ethersproject/providers" "^5.2.0"
@@ -12393,9 +12394,9 @@ react-router@5.2.1:
     tiny-invariant "^1.0.2"
     tiny-warning "^1.0.0"
 
-react-scripts@4.0.3:
+react-scripts@^4.0.3:
   version "4.0.3"
-  resolved "https://registry.npmjs.org/react-scripts/-/react-scripts-4.0.3.tgz"
+  resolved "https://registry.yarnpkg.com/react-scripts/-/react-scripts-4.0.3.tgz#b1cafed7c3fa603e7628ba0f187787964cb5d345"
   integrity sha512-S5eO4vjUzUisvkIPB7jVsKtuH2HhWcASREYWHAQ1FP5HyCv3xgn+wpILAEWkmy+A+tTNbSZClhxjT3qz6g4L1A==
   dependencies:
     "@babel/core" "7.12.3"
@@ -12459,15 +12460,15 @@ react-scripts@4.0.3:
   optionalDependencies:
     fsevents "^2.1.3"
 
-react-select-virtualized@^3.5.0:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/react-select-virtualized/-/react-select-virtualized-3.5.0.tgz#59169ce157d32123b7b818d22f4ab6ec0b971407"
-  integrity sha512-HoyQjXSY1t0QTQvAloCJRjl7x42Lmv8Ds5qrQGf78RE6o5V+e/x8O+LUwAUkrK9aYafa3OwOg0r5djdlq5OBug==
+react-select-virtualized@^4.2.0:
+  version "4.2.0"
+  resolved "https://registry.yarnpkg.com/react-select-virtualized/-/react-select-virtualized-4.2.0.tgz#2be3600e8f98ba16123224bbfa62947108cef87a"
+  integrity sha512-4tf66mVTSxKtj/ngOX6f4WZB7xhPNC9JPVzAYqyeSSOMugoOEXq8dDIOg3Vg50S2UqSo6DzxQVmZC0NF1iwZuw==
   dependencies:
     lodash.debounce "4.0.8"
-    regenerator-runtime "^0.13.7"
+    regenerator-runtime "^0.13.9"
 
-react-select@^4.3.0, react-select@^4.3.1:
+react-select@^4.3.0:
   version "4.3.1"
   resolved "https://registry.yarnpkg.com/react-select/-/react-select-4.3.1.tgz#389fc07c9bc7cf7d3c377b7a05ea18cd7399cb81"
   integrity sha512-HBBd0dYwkF5aZk1zP81Wx5UsLIIT2lSvAY2JiJo199LjoLHoivjn9//KsmvQMEFGNhe58xyuOITjfxKCcGc62Q==
@@ -12478,6 +12479,19 @@ react-select@^4.3.0, react-select@^4.3.1:
     memoize-one "^5.0.0"
     prop-types "^15.6.0"
     react-input-autosize "^3.0.0"
+    react-transition-group "^4.3.0"
+
+react-select@^5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/react-select/-/react-select-5.2.1.tgz#416c25c6b79b94687702374e019c4f2ed9d159d6"
+  integrity sha512-OOyNzfKrhOcw/BlembyGWgdlJ2ObZRaqmQppPFut1RptJO423j+Y+JIsmxkvsZ4D/3CpOmwIlCvWbbAWEdh12A==
+  dependencies:
+    "@babel/runtime" "^7.12.0"
+    "@emotion/cache" "^11.4.0"
+    "@emotion/react" "^11.1.1"
+    "@types/react-transition-group" "^4.4.0"
+    memoize-one "^5.0.0"
+    prop-types "^15.6.0"
     react-transition-group "^4.3.0"
 
 react-sortable-tree@^2.7.1:
@@ -12711,6 +12725,11 @@ regenerator-runtime@^0.13.4, regenerator-runtime@^0.13.7:
   version "0.13.7"
   resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.13.7.tgz"
   integrity sha512-a54FxoJDIr27pgf7IgeQGxmqUNYrcV338lf/6gH456HZ/PhX+5BcwHXG9ajESmwe6WRO0tAzRUrRmNONWgkrew==
+
+regenerator-runtime@^0.13.9:
+  version "0.13.9"
+  resolved "https://registry.yarnpkg.com/regenerator-runtime/-/regenerator-runtime-0.13.9.tgz#8925742a98ffd90814988d7566ad30ca3b263b52"
+  integrity sha512-p3VT+cOEgxFsRRA9X4lkI1E+k2/CtnKtU4gcxyaCUreilL/vqI6CdZ3wxVUx3UOUg+gnUOQQcRI7BmSI656MYA==
 
 regenerator-transform@^0.14.2:
   version "0.14.5"

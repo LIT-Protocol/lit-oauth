@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from "react";
 import LitJsSdk from "lit-js-sdk";
 import axios from "axios";
-import {
-  Alert,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Snackbar,
-  TextField,
-  Tooltip,
-} from "@mui/material";
+import { Alert, Card, CardActions, CardContent, Snackbar, TextField, Tooltip, } from "@mui/material";
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import "./GoogleLinkShare.scss";
 
 const GOOGLE_CLIENT_KEY =
@@ -205,60 +196,64 @@ function GoogleLinkShare() {
     return <div>Getting data...</div>;
   } else {
     return (
-      <section className={'access-service-card-container'}>
-        <Card className={'access-service-card'}>
-          <CardContent className={'access-service-card-header'}>
-          <span className={'access-service-card-header-left'}>
-            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
-            <div className={'access-service-card-title'}>
-              <h2>Lit Apps</h2>
-              <p>The power of blockchain-defined access combine with your current tool suite.</p>
-            </div>
-          </span>
-            <span className={'access-service-card-header-right'}>
-            <p>Find more apps on the <strong>Lit Gateway</strong></p>
-          </span>
-          </CardContent>
-          <CardContent className={'access-service-card-content'}>
-            {/*<div className={'access-service-card-content-left'}></div>*/}
-            {/*<div className={'access-service-card-content-right'}></div>*/}
-            <section className={'access-service-card-google-content'}>
-              <p>You have been invited to view a file on Google Drive.</p>
-              <p>Title: <strong>{linkData.name}</strong></p>
-              <p>Type: <strong>{getFileTypeUrl(linkData.assetType)}</strong></p>
-              <p>Permission: <strong>{linkData.role}</strong></p>
-              <p>Enter your email to redeem access.</p>
+      <div>
+        <div className={'access-service-background'}/>
+        <section className={'access-service-card-container'}>
+          <Card className={'access-service-card'}>
+            <CardContent className={'access-service-card-header'}>
+            <span className={'access-service-card-header-left'}>
+              <div style={{backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+              <div className={'access-service-card-title'}>
+                <h2>Lit Apps</h2>
+                <p>The power of blockchain-defined access combine with your current tool suite.</p>
+              </div>
+            </span>
+              <span className={'access-service-card-header-right'}>
+                <a href={'https://litgateway.com/'} target={'_blank'}><p>Find more apps on the<strong
+                  className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
+            </span>
+            </CardContent>
+            <CardContent className={'access-service-card-content'}>
+              {/*<div className={'access-service-card-content-left'}></div>*/}
+              {/*<div className={'access-service-card-content-right'}></div>*/}
+              <section className={'access-service-card-google-content'}>
+                <p>You have been invited to view a file on Google Drive.</p>
+                <p>Title: <strong>{linkData.name}</strong></p>
+                <p>Type: <strong>{getFileTypeUrl(linkData.assetType)}</strong></p>
+                <p>Permission: <strong>{linkData.role}</strong></p>
+                <p>Enter your email to redeem access.</p>
                 <TextField
                   helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
-                  fullWidth
+                  style={{width: '75%'}}
                   autoFocus
                   onChange={(e) => setEmail(e.target.value)}
                 />
-            </section>
-          </CardContent>
-          <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
-            <Tooltip title={getSubmitTooltip()}>
-              <span className={getButtonClasses()} onClick={async () => {
-                if (!email.length) return;
-                await handleSubmit()
-              }}>
-                Connect Wallet
-                <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
-                </svg>
-              </span>
-            </Tooltip>
-          </CardActions>
-        </Card>
-        <Snackbar
-          anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
-          open={openSnackbar}
-          autoHideDuration={4000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
-        </Snackbar>
-      </section>
+              </section>
+            </CardContent>
+            <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+              <Tooltip title={getSubmitTooltip()}>
+                <span className={getButtonClasses()} onClick={async () => {
+                  if (!email.length) return;
+                  await handleSubmit()
+                }}>
+                  Connect Wallet
+                  <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+                  </svg>
+                </span>
+              </Tooltip>
+            </CardActions>
+          </Card>
+          <Snackbar
+            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            open={openSnackbar}
+            autoHideDuration={4000}
+            onClose={handleCloseSnackbar}
+          >
+            <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+          </Snackbar>
+        </section>
+      </div>
     );
   }
 }

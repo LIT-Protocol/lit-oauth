@@ -1,19 +1,21 @@
 import BaseModel from "./BaseModel.js";
 
-export default class Shares extends BaseModel {
+export default class ShopifyShares extends BaseModel {
   static get tableName() {
-    return "shares";
+    return "shopify_shares";
   }
 
   static get columns() {
     return [
       'id',
-      'connected_service_id',
+      'store_id',
       'access_control_conditions',
+      'humanized_access_control_conditions',
       'asset_id_on_service',
-      'name',
-      'user_id',
+      'title',
+      'summary',
       'asset_type',
+      'user_id',
       'extra_data'
     ];
   }
