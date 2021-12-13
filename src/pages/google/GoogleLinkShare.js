@@ -231,7 +231,7 @@ function GoogleLinkShare() {
               </section>
             </CardContent>
             <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
-              <Tooltip title={getSubmitTooltip()}>
+              <Tooltip title={getSubmitTooltip()} placement="top">
                 <span className={getButtonClasses()} onClick={async () => {
                   if (!email.length) return;
                   await handleSubmit()
