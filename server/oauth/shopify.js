@@ -65,8 +65,7 @@ export default async function (fastify, opts) {
 
   })
 
-  fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
-    const body = request.body;
+  fastify.get('/api/shopify/testEndpoint', async (request, reply) => {
     return 'successful'
   })
 }
