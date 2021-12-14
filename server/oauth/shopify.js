@@ -44,7 +44,7 @@ export default async function (fastify, opts) {
     return discounts;
   })
 
-  fastify.get('/api/shopify/getEveryLastDiscount', async (request, reply) => {
+  fastify.post('/api/shopify/getEveryLastDiscount', async (request, reply) => {
 
     const discounts = await fastify.objection.models.shopifyShares
       .query()
