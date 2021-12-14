@@ -48,7 +48,7 @@ export default async function (fastify, opts) {
 
     const discounts = await fastify.objection.models.shopifyShares
       .query()
-      .where('store_id', '=', `gid://shopify/Shop/${request.body.store_id}`)
+      .where('store_id', '=', request.body.store_id)
     // .where('user_id', request.body.authSig.address)
 
     return discounts;
