@@ -44,11 +44,11 @@ export default async function (fastify, opts) {
     return discounts;
   })
 
-  fastify.post('/api/shopify/getEveryLastDiscount', async (request, reply) => {
+  fastify.post('/api/shopify/getStoreDiscounts', async (request, reply) => {
 
     const discounts = await fastify.objection.models.shopifyShares
       .query()
-    // .where('store_id', '=', request.body.store_id)
+      .where('store_id', '=', `gid://shopify/Shop/${request.body.store_id}`)
     // .where('user_id', request.body.authSig.address)
 
     return discounts;
