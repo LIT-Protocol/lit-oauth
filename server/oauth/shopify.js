@@ -44,6 +44,16 @@ export default async function (fastify, opts) {
     return discounts;
   })
 
+  fastify.post('/api/shopify/getEveryLastDiscount', async (request, reply) => {
+
+    const discounts = await fastify.objection.models.shopifyShares
+      .query()
+    // .where('store_id', '=', request.body.store_id)
+    // .where('user_id', request.body.authSig.address)
+
+    return discounts;
+  })
+
   fastify.post('/api/shopify/deleteAllDiscounts', async (request, reply) => {
     const deleteAllDiscountsResult = await fastify.objection.models.shopifyShares
       .query()
