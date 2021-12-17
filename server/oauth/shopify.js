@@ -34,7 +34,7 @@ export default async function (fastify, opts) {
     return shareResponse;
   });
 
-  fastify.post('/api/shopify/getAllDiscounts', async (request, reply) => {
+  fastify.get('/api/shopify/getAllDiscounts', async (request, reply) => {
 
     const discounts = await fastify.objection.models.shopifyShares
       .query()
@@ -54,7 +54,7 @@ export default async function (fastify, opts) {
     return discounts;
   })
 
-  fastify.post('/api/shopify/deleteAllDiscounts', async (request, reply) => {
+  fastify.delete('/api/shopify/deleteAllDiscounts', async (request, reply) => {
     const deleteAllDiscountsResult = await fastify.objection.models.shopifyShares
       .query()
       .delete()
