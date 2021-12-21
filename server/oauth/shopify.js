@@ -13,7 +13,9 @@ export default async function (fastify, opts) {
         title: request.body.title,
         summary: request.body.summary,
         asset_type: request.body.asset_type,
-        extra_data: request.body.extra_data
+        discount_details: request.body.discount_details,
+        extra_data: request.body.extra_data,
+        active: request.body.active,
       });
 
     return {
