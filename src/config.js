@@ -24,6 +24,16 @@ export const URL_MAP = {
     componentName: "ServiceLogin",
     exact: true,
   },
+  shopify: {
+    path: ["/shopify"],
+    componentName: "ShopifySplash",
+    exact: true,
+  },
+  shopifyRedeem: {
+    path: ["/shopify/l"],
+    componentName: "ShopifyRedeem",
+    exact: true,
+  },
 };
 
 export const HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;

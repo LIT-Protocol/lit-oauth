@@ -14,8 +14,10 @@
     "@bugsnag/js": "^7.11.0",
     "@googleapis/drive": "^0.3.1",
     "@googleapis/oauth2": "^0.2.0",
+    "@shopify/shopify-api": "^2.0.0",
     "atob": "^2.1.2",
     "axios": "^0.21.4",
+    "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
     "eth-sig-util": "^3.0.1",
     "fastify": "^3.21.3",
@@ -27,8 +29,11 @@
     "google-auth-library": "^7.10.1",
     "googleapis": "^87.0.0",
     "http2": "^3.3.7",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
     "objection": "^2.2.17",
-    "pg": "^8.7.1"
+    "pg": "^8.7.1",
+    "shopify-api-node": "^3.8.1",
+    "shopify-token": "^4.0.4"
   }
 }

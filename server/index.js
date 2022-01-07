@@ -8,6 +8,7 @@ import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import knexConfig from "./knexfile.js";
+import Bugsnag from "@bugsnag/js";
 
 import { authUser } from "./auth.js";
 import { keysToCamel } from "./utils.js";
@@ -15,6 +16,8 @@ import dotenv from "dotenv";
 import ConnectedServices from "./models/ConnectedServices.js";
 import Shares from "./models/Shares.js";
 import ShopifyShares from "./models/ShopifyShares.js";
+import ShopifyStores from "./models/ShopifyStores.js";
+import ShopifyDraftOrders from "./models/ShopifyDraftOrders.js";
 
 dotenv.config({
   path: "../.env",
@@ -22,10 +25,10 @@ dotenv.config({
 
 const __dirname = path.resolve();
 
-// Bugsnag.start({
-//   apiKey: "0596bd3230222ad050c4533cfa5c0393",
-//   releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
-// });
+Bugsnag.start({
+  apiKey: "0596bd3230222ad050c4533cfa5c0393",
+  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
+});
 
 const fastify = Fastify();
 
@@ -36,7 +39,7 @@ fastify.register(fastifyCors, {
 
 fastify.register(fastifyObjectionJS, {
   knexConfig: knexConfig[process.env.NODE_ENV || "development"],
-  models: [ConnectedServices, Shares, ShopifyShares],
+  models: [ConnectedServices, Shares, ShopifyShares, ShopifyStores, ShopifyDraftOrders],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");
@@ -44,13 +47,13 @@ fastify.register(fastifyStatic, {
   root: BuildPath,
 });
 
-// fastify.setErrorHandler((error, request, reply) => {
-//   console.log("Fastify error: ", error);
-//   if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
-//     Bugsnag.notify(error);
-//   }
-//   reply.send({error});
-// });
+fastify.setErrorHandler((error, request, reply) => {
+  console.log("Fastify error: ", error);
+  if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
+    Bugsnag.notify(error);
+  }
+  reply.send({error});
+});
 
 fastify.register(fastifyBugsnag, {
   apiKey: "0596bd3230222ad050c4533cfa5c0393",
