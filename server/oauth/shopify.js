@@ -9,17 +9,17 @@ dotenv.config({
 });
 
 const getApiSecret = (name) => {
-  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_SECRET;
+  // if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_SECRET;
   if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET;
 }
 
 const getApiKey = (name) => {
-  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_KEY;
+  // if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_KEY;
   if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY;
 }
 
 const getScopes = name => {
-  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SCOPES;
+  // if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SCOPES;
   if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
 }
 
