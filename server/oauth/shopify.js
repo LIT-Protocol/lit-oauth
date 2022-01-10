@@ -29,6 +29,8 @@ export default async function (fastify, opts) {
   fastify.get('/api/shopify/newLitPromotionInstallation', async (request, reply) => {
     const { shop } = request.query;
     const shortenedShopName = shortenShopName(shop);
+    console.log('ShortenedShopName', shortenedShopName)
+    console.log('getApiSecret', getApiSecret(shortenedShopName))
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
       // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
@@ -76,6 +78,7 @@ export default async function (fastify, opts) {
       .query()
       .where('shop_name', '=', shortenedShopName);
 
+    // TODO: reintroduce nonce
     // if (!nonceQuery.length || nonceQuery[0].nonce !== state) {
     //   return 'Nonce check failed'
     // }
