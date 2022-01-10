@@ -25,12 +25,14 @@ const getScopes = name => {
 
 export default async function (fastify, opts) {
   // NEW_SECTION: installation calls
+
   fastify.get('/api/shopify/newLitPromotionInstallation', async (request, reply) => {
     const { shop } = request.query;
     const shortenedShopName = shortenShopName(shop);
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
-      redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
+      // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
+      redirectUri: `https://lit-oauth-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
       apiKey: getApiKey(shortenedShopName)
     });
 
@@ -80,7 +82,8 @@ export default async function (fastify, opts) {
 
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
-      redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
+      // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
+      redirectUri: `https://lit-oauth-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
       apiKey: getApiKey(shortenedShopName)
     });
 
