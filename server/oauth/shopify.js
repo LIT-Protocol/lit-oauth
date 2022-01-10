@@ -2,17 +2,25 @@ import { shortenShopName, validateMerchantToken } from "./shopifyHelpers.js";
 import ShopifyToken from 'shopify-token';
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
+import dotenv from "dotenv";
 
-const getApiSecret = {
-  'lit-protocol': process.env.LIT_CUSTOM_SHOPIFY_API_SECRET,
+dotenv.config({
+  path: "../../env",
+});
+
+const getApiSecret = (name) => {
+  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_SECRET;
+  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET;
 }
 
-const getApiKey = {
-  'lit-protocol': process.env.LIT_CUSTOM_SHOPIFY_API_KEY,
+const getApiKey = (name) => {
+  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SHOPIFY_API_KEY;
+  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY;
 }
 
-const getScopes = {
-  'lit-protocol': process.env.LIT_CUSTOM_SCOPES,
+const getScopes = name => {
+  if (name === 'lit-protocol') return process.env.LIT_CUSTOM_SCOPES;
+  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
 }
 
 export default async function (fastify, opts) {
@@ -21,14 +29,14 @@ export default async function (fastify, opts) {
     const { shop } = request.query;
     const shortenedShopName = shortenShopName(shop);
     const shopifyToken = new ShopifyToken({
-      sharedSecret: getApiSecret[shortenedShopName],
+      sharedSecret: getApiSecret(shortenedShopName),
       redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-      apiKey: getApiKey[shortenedShopName]
+      apiKey: getApiKey(shortenedShopName)
     });
 
-    if (!shopifyToken.verifyHmac(request.query)) {
-      return 'Not Authorized';
-    }
+    // if (!shopifyToken.verifyHmac(request.query)) {
+    //   return 'Not Authorized';
+    // }
 
     const nonce = shopifyToken.generateNonce();
 
@@ -66,14 +74,14 @@ export default async function (fastify, opts) {
       .query()
       .where('shop_name', '=', shortenedShopName);
 
-    if (!nonceQuery.length || nonceQuery[0].nonce !== state) {
-      return 'Nonce check failed'
-    }
+    // if (!nonceQuery.length || nonceQuery[0].nonce !== state) {
+    //   return 'Nonce check failed'
+    // }
 
     const shopifyToken = new ShopifyToken({
-      sharedSecret: getApiSecret[shortenedShopName],
+      sharedSecret: getApiSecret(shortenedShopName),
       redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-      apiKey: getApiKey[shortenedShopName]
+      apiKey: getApiKey(shortenedShopName)
     });
 
     if (!shopifyToken.verifyHmac(request.query)) {
@@ -109,39 +117,41 @@ export default async function (fastify, opts) {
       })
   })
 
-  // NEW_SECTION: developer calls
+  // NEW_SECTION: required shopify endpoints
 
-  fastify.get('/api/shopify/deleteAllStores', async (request, reply) => {
-    // const query = await fastify.objection.models.shopifyStores.query().delete().where('shop_name', '=', 'lit-protocol');
-    const query = await fastify.objection.models.shopifyStores.query().delete()
-    console.log('shares', query)
-    return 'deleted it all'
+  fastify.get('/api/shopify/getCustomerData', async (request, reply) => {
+
+    return 'will return data'
   })
 
-  fastify.get('/api/shopify/deleteAllDraftOrders', async (request, reply) => {
-    // const query = await fastify.objection.models.shopifyStores.query().delete().where('shop_name', '=', 'lit-protocol');
-    const query = await fastify.objection.models.shopifyDraftOrders.query().delete()
-    console.log('shares', query)
-    return 'deleted all draft orders'
+  fastify.get('/api/shopify/deleteCustomerData', async (request, reply) => {
+
+    return 'will delete data'
+  })
+
+  fastify.get('/api/shopify/deleteShopData', async (request, reply) => {
+
+    return 'will delete shop data'
   })
 
   fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
-    try {
-      const result = await validateMerchantToken(request.headers.authorization);
-      return 'success';
-    } catch (err) {
-      console.log('THIS IS AN ERROR', err)
-      return false;
-    }
-    // const token = request.headers.authorization;
-    // const removeBearer = token.split(' ');
-    // const splitToken = removeBearer[1];
-    // jsonwebtoken.verify(splitToken, getApiSecret[shortenedShopName], ['H256'], (err, decoded) => {
-    //   console.log('error', err)
-    //   console.log('decoded', decoded)
-    // })
-    // const authorized = validateMerchantRequest(request.headers.authorization, getApiSecret[shortenedShopName]);
+    return 'test endpoint successful'
   })
+  //   try {
+  //     const result = await validateMerchantToken(request.headers.authorization);
+  //     return 'success';
+  //   } catch (err) {
+  //     console.log('THIS IS AN ERROR', err)
+  //     return false;
+  //   }
+  // const token = request.headers.authorization;
+  // const removeBearer = token.split(' ');
+  // const splitToken = removeBearer[1];
+  // jsonwebtoken.verify(splitToken, getApiSecret(shortenedShopName), ['H256'], (err, decoded) => {
+  //   console.log('error', err)
+  //   console.log('decoded', decoded)
+  // })
+  // const authorized = validateMerchantRequest(request.headers.authorization, getApiSecret[shortenedShopName]);
 
   // NEW_SECTION: merchant calls
 
@@ -220,7 +230,7 @@ export default async function (fastify, opts) {
     }
   })
 
-  // NEW_SECTION: Start of customer calls
+// NEW_SECTION: Start of customer calls
 
   fastify.post('/api/shopify/checkForPromotions', async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);

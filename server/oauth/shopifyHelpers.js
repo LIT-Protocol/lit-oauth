@@ -37,3 +37,8 @@ export const shortenShopName = (shopName) => {
   return splitName[0];
 }
 
+export const shortenShopNameNoHyphens = (shopName) => {
+  const splitName = shopName.split('.');
+  const evenSplittier = splitName[0].split('-')
+  return evenSplittier.join('');
+}
