@@ -34,7 +34,7 @@ export default async function (fastify, opts) {
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
       // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-      redirectUri: `https://lit-oauth-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
+      redirectUri: `https://oauth-app-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
       apiKey: getApiKey(shortenedShopName)
     });
 
@@ -86,7 +86,7 @@ export default async function (fastify, opts) {
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
       // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-      redirectUri: `https://lit-oauth-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
+      redirectUri: `https://oauth-app-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
       apiKey: getApiKey(shortenedShopName)
     });
 
