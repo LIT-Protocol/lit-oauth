@@ -3,6 +3,7 @@ import ShopifyToken from 'shopify-token';
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
+import axios from "axios";
 
 dotenv.config({
   path: "../../env",
@@ -73,6 +74,8 @@ export default async function (fastify, opts) {
   fastify.get('/api/shopify/installLitPromotionCallback', async (request, reply) => {
     const { shop, code, state } = request.query;
     const shortenedShopName = shortenShopName(shop);
+    console.log('SHOP PASSED', shop)
+    console.log('full query', request.query)
 
     const nonceQuery = await fastify.objection.models.shopifyStores
       .query()
@@ -96,14 +99,12 @@ export default async function (fastify, opts) {
 
     shopifyToken.getAccessToken(shop, code)
       .then(async (data) => {
-        console.log('ACCESS RES', data)
         const shopify = new Shopify({
           shopName: shortenedShopName,
           accessToken: data.access_token
         })
         const shopInfo = await shopify.shop.get();
 
-        console.log('SHOP INFO', shopInfo)
         const query = await fastify.objection.models.shopifyStores
           .query()
           .where('shop_name', '=', shortenedShopName)
@@ -116,7 +117,15 @@ export default async function (fastify, opts) {
           });
 
         // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/${getApiKey(shortenedShopName)}`);
-        reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/lit_protocol_promotional_custom`);
+        // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/lit_protocol_promotional_custom`);
+        // axios.get()
+        const shopRequestURL = `https://${shop}/admin/api/2020-04/shop.json`;
+        const shopRequestHeaders = { 'X-Shopify-Access-Token': data.access_token };
+        const shopResponse = await axios.get(shopRequestURL, {
+          headers: shopRequestHeaders
+        })
+        console.log('SHOP RESPONSE', shopResponse)
+        reply.redirect(`https://${shop}/admin/apps`)
       })
       .catch(err => {
         console.log(err)
