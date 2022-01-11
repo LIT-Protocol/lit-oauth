@@ -115,7 +115,7 @@ export default async function (fastify, opts) {
             shop_name: shortenedShopName
           });
 
-        reply.redirect(`https://${shortenedShopName}/admin/apps/${getApiKey(shortenedShopName)}`);
+        reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/${getApiKey(shortenedShopName)}`);
       })
       .catch(err => {
         console.log(err)
