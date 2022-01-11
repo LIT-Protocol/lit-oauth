@@ -124,13 +124,17 @@ export default async function (fastify, opts) {
         const shopResponse = await axios.get(shopRequestURL, {
           headers: shopRequestHeaders
         })
-        // reply.end(shopResponse)
-        reply.redirect(`https://${shop}/admin/apps`)
+        reply.status(200).end(shopResponse);
+        // reply.redirect(`https://${shop}/admin/apps`)
       })
       .catch(err => {
         console.log(err)
         return false;
       })
+  })
+
+  fastify.get('/api/shopify/getValidShops', async (request, reply) => {
+
   })
 
   // NEW_SECTION: required shopify endpoints
