@@ -124,9 +124,8 @@ export default async function (fastify, opts) {
         const shopResponse = await axios.get(shopRequestURL, {
           headers: shopRequestHeaders
         })
-        console.log('SHOP RESPONSE', shopResponse)
-        reply.end(shopResponse)
-        // reply.redirect(`https://${shop}/admin/apps`)
+        // reply.end(shopResponse)
+        reply.redirect(`https://${shop}/admin/apps`)
       })
       .catch(err => {
         console.log(err)
