@@ -125,7 +125,7 @@ export default async function (fastify, opts) {
           headers: shopRequestHeaders
         })
         // reply.redirect(`https://${shop}/admin/apps`)
-        reply.redirect(`https://${shop}/admin/apps/lit_protocol_promotional_custom`)
+        reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/`)
       })
       .catch(err => {
         console.log(err)
