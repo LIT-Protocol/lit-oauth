@@ -119,7 +119,7 @@ export default async function (fastify, opts) {
         // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/${getApiKey(shortenedShopName)}`);
         // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/lit_protocol_promotional_custom`);
         // axios.get()
-        const shopRequestURL = `https://${shop}/admin/api/2020-04/shop.json`;
+        const shopRequestURL = `https://${shop}/admin/api/2021-10/shop.json`;
         const shopRequestHeaders = { 'X-Shopify-Access-Token': data.access_token };
         const shopResponse = await axios.get(shopRequestURL, {
           headers: shopRequestHeaders
