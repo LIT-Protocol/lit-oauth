@@ -115,7 +115,11 @@ export default async function (fastify, opts) {
             shop_name: shortenedShopName
           });
 
-        return true;
+        return {
+          access_token: data.access_token,
+          shop_id: shopInfo.id,
+          shop_name: shortenedShopName
+        };
       })
       .catch(err => {
         console.log(err)
