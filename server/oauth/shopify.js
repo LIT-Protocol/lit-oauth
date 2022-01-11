@@ -115,11 +115,7 @@ export default async function (fastify, opts) {
             shop_name: shortenedShopName
           });
 
-        return {
-          access_token: data.access_token,
-          shop_id: shopInfo.id,
-          shop_name: shortenedShopName
-        };
+        reply.redirect(`https://${shortenedShopName}/admin/apps/${getApiKey(shortenedShopName)}`);
       })
       .catch(err => {
         console.log(err)
