@@ -141,7 +141,10 @@ export default async function (fastify, opts) {
     console.log('QUERY', query)
 
     if (query.length) {
-      return query;
+      const listOfNames = query.map(q => {
+        return q.shopName;
+      })
+      return listOfNames;
     } else {
       return null;
     }
