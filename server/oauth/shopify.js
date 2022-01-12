@@ -124,7 +124,7 @@ export default async function (fastify, opts) {
         const shopResponse = await axios.get(shopRequestURL, {
           headers: shopRequestHeaders
         })
-        console.log('SHOP RESPONSE', shopResponse)
+
         reply.redirect(`https://${shop}/admin/apps`)
         // reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/?shop=${shop}&host=${host}`)
       })
@@ -138,13 +138,12 @@ export default async function (fastify, opts) {
     const query = await fastify.objection.models.shopifyStores
       .query();
 
-    console.log('QUERY', query)
-
     if (query.length) {
-      const listOfNames = query.map(q => {
-        return q.shopName;
+      let nameObject = {};
+      query.forEach(q => {
+        return nameObject[q.shopName] = q.scopes;
       })
-      return listOfNames;
+      return nameObject;
     } else {
       return null;
     }
