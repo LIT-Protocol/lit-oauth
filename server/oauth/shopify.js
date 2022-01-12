@@ -30,8 +30,7 @@ export default async function (fastify, opts) {
   fastify.get('/api/shopify/newLitPromotionInstallation', async (request, reply) => {
     const { shop } = request.query;
     const shortenedShopName = shortenShopName(shop);
-    console.log('ShortenedShopName', shortenedShopName)
-    console.log('getApiSecret', getApiSecret(shortenedShopName))
+    console.log('---- new Lit Promotion Installation START')
     const shopifyToken = new ShopifyToken({
       sharedSecret: getApiSecret(shortenedShopName),
       // redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
@@ -66,7 +65,7 @@ export default async function (fastify, opts) {
 
     const url = shopifyToken.generateAuthUrl(shop, getScopes[shortenedShopName], nonce);
 
-    console.log('URL', url)
+    console.log('---- new Lit Promotion Installation END')
 
     reply.redirect(url);
   })
@@ -74,8 +73,7 @@ export default async function (fastify, opts) {
   fastify.get('/api/shopify/installLitPromotionCallback', async (request, reply) => {
     const { shop, code, state, host } = request.query;
     const shortenedShopName = shortenShopName(shop);
-    console.log('SHOP PASSED', shop)
-    console.log('full query', request.query)
+    console.log('---- install Lit Promotion Callback START', request.query)
 
     const nonceQuery = await fastify.objection.models.shopifyStores
       .query()
@@ -116,15 +114,13 @@ export default async function (fastify, opts) {
             shop_name: shortenedShopName
           });
 
-        // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/${getApiKey(shortenedShopName)}`);
-        // reply.redirect(`https://${shortenedShopName}.myshopify.com/admin/apps/lit_protocol_promotional_custom`);
-        // axios.get()
         const shopRequestURL = `https://${shop}/admin/api/2021-10/shop.json`;
         const shopRequestHeaders = { 'X-Shopify-Access-Token': data.access_token };
         const shopResponse = await axios.get(shopRequestURL, {
           headers: shopRequestHeaders
         })
 
+        console.log('---- install Lit Promotion Callback END')
         reply.redirect(`https://${shop}/admin/apps`)
         // reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/?shop=${shop}&host=${host}`)
       })
