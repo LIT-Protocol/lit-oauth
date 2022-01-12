@@ -130,7 +130,7 @@ export default async function (fastify, opts) {
       })
   })
 
-  fastify.get('/api/shopify/getListOfShops', async (request, reply) => {
+  fastify.post('/api/shopify/getListOfShops', async (request, reply) => {
     const query = await fastify.objection.models.shopifyStores
       .query();
 
