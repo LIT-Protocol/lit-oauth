@@ -72,7 +72,7 @@ export default async function (fastify, opts) {
   })
 
   fastify.get('/api/shopify/installLitPromotionCallback', async (request, reply) => {
-    const { shop, code, state } = request.query;
+    const { shop, code, state, host } = request.query;
     const shortenedShopName = shortenShopName(shop);
     console.log('SHOP PASSED', shop)
     console.log('full query', request.query)
@@ -126,7 +126,7 @@ export default async function (fastify, opts) {
         })
         console.log('SHOP RESPONSE', shopResponse)
         // reply.redirect(`https://${shop}/admin/apps`)
-        reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/?shop=${shop}`)
+        reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/?shop=${shop}&host=${host}`)
       })
       .catch(err => {
         console.log(err)
