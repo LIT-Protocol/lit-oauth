@@ -133,13 +133,12 @@ export default async function (fastify, opts) {
   fastify.get('/api/shopify/getListOfShops', async (request, reply) => {
     const query = await fastify.objection.models.shopifyStores
       .query();
-    
-    console.log('LIST OF SHOPS QUERY', query)
 
     if (query.length) {
       let nameObject = {};
       query.forEach(q => {
-        return nameObject[q.shopName] = q.scopes;
+        console.log('INDI Q', q)
+        return nameObject[q.shopName] = process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
       })
       return nameObject;
     } else {
