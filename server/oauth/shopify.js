@@ -141,9 +141,9 @@ export default async function (fastify, opts) {
     console.log('QUERY', query)
 
     if (query.length) {
-      return 'querytime'
+      return query;
     } else {
-      return false;
+      return null;
     }
 
   })
