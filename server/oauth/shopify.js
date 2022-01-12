@@ -134,11 +134,18 @@ export default async function (fastify, opts) {
       })
   })
 
-  fastify.get('/api/shopify/getValidShops', async (request, reply) => {
+  fastify.get('/api/shopify/getListOfShops', async (request, reply) => {
     const query = await fastify.objection.models.shopifyStores
       .query();
 
-    return query;
+    console.log('QUERY', query)
+
+    if (query.length) {
+      return 'querytime'
+    } else {
+      return false;
+    }
+
   })
 
   // NEW_SECTION: required shopify endpoints
