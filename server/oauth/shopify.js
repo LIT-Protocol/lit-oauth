@@ -135,7 +135,10 @@ export default async function (fastify, opts) {
   })
 
   fastify.get('/api/shopify/getValidShops', async (request, reply) => {
+    const query = await fastify.objection.models.shopifyStores
+      .query();
 
+    return query;
   })
 
   // NEW_SECTION: required shopify endpoints
