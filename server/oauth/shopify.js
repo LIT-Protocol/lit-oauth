@@ -136,20 +136,18 @@ export default async function (fastify, opts) {
 
     let shopInfo = null;
 
-    console.log('BODY', request.body)
+    const shortenedShopName = shortenShopName(request.body.shop);
 
     if (query.length) {
       // console.log('q', query)
       shopInfo = query.filter(q => {
         console.log('1', q.shopName, '- 2', request.body.shop)
-        return q.shopName === request.body.shop
+        return q.shopName === shortenedShopName
       })
     }
 
-    console.log('SHOPINFO', shopInfo)
-
     if (!!shopInfo) {
-      return shopInfo;
+      return shopInfo.shopName
     } else {
       return null;
     }
