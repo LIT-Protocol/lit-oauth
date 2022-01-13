@@ -134,13 +134,20 @@ export default async function (fastify, opts) {
     const query = await fastify.objection.models.shopifyStores
       .query();
 
+    let shopInfo = null;
+
     if (query.length) {
-      let nameObject = {};
-      query.forEach(q => {
-        console.log('INDI Q', q)
-        return nameObject[q.shopName] = process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
+      // console.log('q', query)
+      shopInfo = query.filter(q => {
+        console.log('1', q.shopName, '- 2', request.body.shop)
+        return q.shopName === request.body.shop
       })
-      return nameObject;
+    }
+
+    console.log('SHOPINFO', shopInfo)
+
+    if (!!shopInfo) {
+      return shopInfo;
     } else {
       return null;
     }
