@@ -134,7 +134,7 @@ export default async function (fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post('/api/shopify/saveAccessToken', async (request, reply) => {
-    const { shop, accessToken, email } = request.query;
+    const { shop, accessToken, email } = request.body;
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
 
@@ -159,9 +159,18 @@ export default async function (fastify, opts) {
     return true;
   })
 
-  fastify.post('/api/shopify/storeCallback', async (request, reply) => {
-    console.log('STORE CALLBACK BODY', request.body)
-    return true;
+  fastify.post('/api/shopify/checkForAccessToken', async (request, reply) => {
+    console.log('Access token', request.body)
+    // const { shop } = request.body;
+    // const shortenedShopName = shortenShopName(shop);
+    // const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
+    // console.log('CHECK FOR ACCESS TOKEN', queryForExistingShop)
+    // if (queryForExistingShop.length) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
+    return 'ACCESS YO!'
   })
 
   fastify.post('/api/shopify/deleteCallback', async (request, reply) => {
@@ -210,7 +219,9 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/saveDraftOrder', async (request, reply) => {
     try {
+      console.log('TOKEN', request.headers.authorization)
       const result = await validateMerchantToken(request.headers.authorization);
+      console.log('SAVE RESULT', result)
       if (!result) {
         return 'Unauthorized';
       }
@@ -251,6 +262,7 @@ export default async function (fastify, opts) {
   fastify.post('/api/shopify/getAllUserDraftOrders', async (request, reply) => {
     try {
       const result = await validateMerchantToken(request.headers.authorization);
+
       if (!result) {
         return 'Unauthorized';
       }
@@ -261,6 +273,7 @@ export default async function (fastify, opts) {
 
       return draftOrders;
     } catch (err) {
+      console.log('Error time', err)
       return 'Unauthorized';
     }
   })
@@ -268,6 +281,7 @@ export default async function (fastify, opts) {
   fastify.post('/api/shopify/deleteDraftOrder', async (request, reply) => {
     try {
       const result = await validateMerchantToken(request.headers.authorization);
+      
       if (!result) {
         return 'Unauthorized';
       }
