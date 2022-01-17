@@ -271,7 +271,7 @@ export default async function (fastify, opts) {
 
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
-        .where('shop_name', '=', request.body.shortenedShopName);
+        .where('shop_name', '=', shortenedShopName);
 
       return draftOrders;
     } catch (err) {
