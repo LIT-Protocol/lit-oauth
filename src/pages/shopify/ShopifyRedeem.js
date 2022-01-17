@@ -100,6 +100,11 @@ const ShopifyRedeem = () => {
       role: "customer",
       extraData: "",
     };
+    console.log('--> In Provision Access')
+    console.log('--> accessControlConditions', accessControlConditions)
+    console.log('--> chain', chain)
+    console.log('--> authSig', authSig)
+    console.log('--> resourceId', resourceId)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
     const jwt = await window.litNodeClient.getSignedToken({
       accessControlConditions: Array.from(accessControlConditions),
