@@ -199,22 +199,6 @@ export default async function (fastify, opts) {
     return 'test endpoint successful'
   })
 
-  //   try {
-  //     const result = await validateMerchantToken(request.headers.authorization);
-  //     return 'success';
-  //   } catch (err) {
-  //     console.log('THIS IS AN ERROR', err)
-  //     return false;
-  //   }
-  // const token = request.headers.authorization;
-  // const removeBearer = token.split(' ');
-  // const splitToken = removeBearer[1];
-  // jsonwebtoken.verify(splitToken, getApiSecret(shortenedShopName), ['H256'], (err, decoded) => {
-  //   console.log('error', err)
-  //   console.log('decoded', decoded)
-  // })
-  // const authorized = validateMerchantRequest(request.headers.authorization, getApiSecret[shortenedShopName]);
-
   // NEW_SECTION: merchant calls
 
   fastify.post('/api/shopify/saveDraftOrder', async (request, reply) => {
@@ -264,10 +248,9 @@ export default async function (fastify, opts) {
       console.log('BEFORE GET ALL DRAFT ORDERS', request.body)
       const result = await validateMerchantToken(request.headers.authorization);
       console.log('AFTER CHECK TOKEN', result)
-      // const shortenedShopName = shortenShopName(request.body.shopName)
-      // if (!result) {
-      //   return 'Unauthorized';
-      // }
+      if (!result) {
+        return 'Unauthorized';
+      }
 
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
