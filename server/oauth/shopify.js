@@ -261,11 +261,12 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllUserDraftOrders', async (request, reply) => {
     try {
+      console.log('BEFORE GET ALL DRAFT ORDERS')
       const result = await validateMerchantToken(request.headers.authorization);
-
-      if (!result) {
-        return 'Unauthorized';
-      }
+      console.log('AFTER CHECK TOKEN', result)
+      // if (!result) {
+      //   return 'Unauthorized';
+      // }
 
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
@@ -281,7 +282,7 @@ export default async function (fastify, opts) {
   fastify.post('/api/shopify/deleteDraftOrder', async (request, reply) => {
     try {
       const result = await validateMerchantToken(request.headers.authorization);
-      
+
       if (!result) {
         return 'Unauthorized';
       }
