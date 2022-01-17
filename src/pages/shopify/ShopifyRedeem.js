@@ -80,7 +80,9 @@ const ShopifyRedeem = () => {
       const resp = await getAccessControl(draftOrderId);
       console.log('REPOSFNASKFLNSA', resp)
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
+      console.log('-->  Before provision access')
       const jwt = await provisionAccess(resp.data.parsedAcc);
+      console.log('-->  After Provision access')
       return jwt;
     } catch (err) {
       // ADD_ERROR_HANDLING
