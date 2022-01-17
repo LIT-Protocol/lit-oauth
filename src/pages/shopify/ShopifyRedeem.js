@@ -107,7 +107,7 @@ const ShopifyRedeem = () => {
     console.log('--> resourceId', resourceId)
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
     const jwt = await window.litNodeClient.getSignedToken({
-      accessControlConditions: Array.from(accessControlConditions),
+      accessControlConditions: accessControlConditions,
       chain: chain,
       authSig: authSig,
       resourceId: resourceId
