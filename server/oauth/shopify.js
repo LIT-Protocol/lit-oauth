@@ -261,16 +261,17 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/getAllUserDraftOrders', async (request, reply) => {
     try {
-      console.log('BEFORE GET ALL DRAFT ORDERS')
+      console.log('BEFORE GET ALL DRAFT ORDERS', request.body)
       const result = await validateMerchantToken(request.headers.authorization);
       console.log('AFTER CHECK TOKEN', result)
+      const shortenedShopName = shortenShopName(request.body.shopName)
       // if (!result) {
       //   return 'Unauthorized';
       // }
 
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
-        .where('shop_id', '=', request.body.shop_id);
+        .where('shop_name', '=', request.body.shortenedShopName);
 
       return draftOrders;
     } catch (err) {
