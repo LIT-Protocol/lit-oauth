@@ -121,9 +121,9 @@ const ShopifyRedeem = () => {
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
         setProduct(resp.data.product);
-        console.log('product data', resp.data.product)
-        // console.log('draft order info', resp.data.draftOrderDetails)
-        // setDraftOrderDetails(resp.data.draftOrderDetails);
+        console.log('product data', resp.data.product);
+        console.log('draft order info', resp.data.draftOrderDetails);
+        setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);
         setLoading(false);
         setRedeemUrl(resp.data.redeemUrl);
@@ -182,17 +182,16 @@ const ShopifyRedeem = () => {
                     <p>{humanizedAccessControlConditions}</p>
                   </div>
                 )}
-                {storedAuthSig && accessVerified && !loading && (
-                  <div>
-                    <p>You qualify!</p>
-                    {/*/!*OLD mark*!/*/}
-                    {/*{!!product && !!draftOrderDetails(*/}
-                    {/*  <div className={'product-information-container'}>*/}
-                    {/*    <p className={'product-title'}>{product.title}</p>*/}
-                    {/*    /!*<p className={'product-discount'}>%{draftOrderDetails.value} off</p>*!/*/}
-                    {/*    <img className={"product-image"} src={product.images[0].src}/>*/}
-                    {/*  </div>*/}
-                    {/*)}*/}
+                {storedAuthSig && accessVerified && !loading &&
+                !!product && !!draftOrderDetails && (
+                  <div className={'product-information-container'}>
+                    <div className={'product-information-left'}>
+                      <img className={"product-image"} src={product.images[0].src}/>
+                    </div>
+                    <div className={'product-information-right'}>
+                      <p>You qualify!</p>
+                      <p className={'product-title'}>%{draftOrderDetails.value} off of {product.title}</p>
+                    </div>
                   </div>
                 )}
               </div>

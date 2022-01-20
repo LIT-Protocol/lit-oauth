@@ -61,11 +61,17 @@
   justify-content: center;
   align-items: center;
 
-  .product-title {
-
+  .product-information-left {
+    .product-image {
+      height: 10rem;
+    }
   }
 
-  .product-image {
-    height: 10rem;
+  .product-information-right {
+    .product-title {
+
+    }
   }
+
+
 }
