@@ -149,46 +149,12 @@ const ShopifyRedeem = () => {
 
   return (
     <div className={"full-container"}>
-      {/*<Card className={"shopify-redeem-container"}>*/}
-      {/*  <span className={'logo-container'}>*/}
-      {/*    <img className={"shopify-logo"} src={'/shopifyLogo.svg'}/>*/}
-      {/*    <h1 className={"logo-plus"}>+</h1>*/}
-      {/*    <img className={"lit-logo"} src={'/appslogo.svg'}/>*/}
-      {/*  </span>*/}
-      {/*  {((!storedAuthSig || !accessVerified && loading)) && (*/}
-      {/*    <div>*/}
-      {/*      <CircularProgress className={"spinner"}/>*/}
-      {/*      <p>Signing in.</p>*/}
-      {/*    </div>*/}
-      {/*  )}*/}
-      {/*  {(storedAuthSig && !accessVerified && !loading) && (*/}
-      {/*    <div>*/}
-      {/*      <p>Sorry, you do not qualify for this promotion.</p>*/}
-      {/*      <p>The conditions for access were not met.</p>*/}
-      {/*      <p>{humanizedAccessControlConditions}</p>*/}
-      {/*    </div>*/}
-      {/*  )}*/}
-      {/*  {storedAuthSig && accessVerified && !loading && (*/}
-      {/*    <div>*/}
-      {/*      {!!product && product.images[0].src && (*/}
-      {/*        <img className={"product-image"} src={product.images[0].src}/>*/}
-      {/*      )}*/}
-      {/*      <p>You qualify!</p>*/}
-      {/*      <Button onClick={() => redeemPromotion()}>Click to redeem</Button>*/}
-      {/*    </div>*/}
-      {/*  )}*/}
-      {/*</Card>*/}
       <div>
         <div className={'access-service-background'}/>
         <section className={'access-service-card-container'}>
           <Card className={'access-service-card'}>
             <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-                {/*<span className={'logo-container'}>*/}
-              {/*  <img className={"shopify-logo"} src={'/shopifyLogo.svg'}/>*/}
-              {/*  <h1 className={"logo-plus"}>+</h1>*/}
-              {/*  <img className={"lit-logo"} src={'/appslogo.svg'}/>*/}
-              {/*</span>*/}
               <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
               <div className={'access-service-card-title'}>
                 <h2>Lit Apps</h2>
@@ -196,16 +162,11 @@ const ShopifyRedeem = () => {
               </div>
             </span>
               <span className={'access-service-card-header-right'}>
-                <a href={'https://litgateway.com/'} target={'_blank'}><p>Find more apps on the<strong
+                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Find more apps on the<strong
                   className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
             </span>
             </CardContent>
             <CardContent className={'access-service-card-content'}>
-
-              {/*OLD mark*/}
-              {!!product && product.images[0].src && (
-                <img className={"product-image"} src={product.images[0].src}/>
-              )}
               <div className={"center-content"}>
                 {((!storedAuthSig || !accessVerified && loading)) && (
                   <div>
@@ -223,6 +184,14 @@ const ShopifyRedeem = () => {
                 {storedAuthSig && accessVerified && !loading && (
                   <div>
                     <p>You qualify!</p>
+                    {/*OLD mark*/}
+                    {!!product && (
+                      <div className={'product-information-container'}>
+                        <p className={'product-title'}>{product.title}</p>
+                        <p className={'product-discount'}>%{draftOrderDetails.value} off</p>
+                        <img className={"product-image"} src={product.images[0].src}/>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
