@@ -186,7 +186,7 @@ const ShopifyRedeem = () => {
                   <div>
                     <p>You qualify!</p>
                     {/*OLD mark*/}
-                    {!!product && (
+                    {!!product && !!draftOrderDetails(
                       <div className={'product-information-container'}>
                         <p className={'product-title'}>{product.title}</p>
                         {/*<p className={'product-discount'}>%{draftOrderDetails.value} off</p>*/}
