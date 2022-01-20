@@ -123,6 +123,7 @@ const ShopifyRedeem = () => {
         setProduct(resp.data.product);
         console.log('product data', resp.data.product)
         console.log('draft order info', resp.data.draftOrderDetails)
+        setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);
         setLoading(false);
         setRedeemUrl(resp.data.redeemUrl);
@@ -188,7 +189,7 @@ const ShopifyRedeem = () => {
                     {!!product && (
                       <div className={'product-information-container'}>
                         <p className={'product-title'}>{product.title}</p>
-                        <p className={'product-discount'}>%{draftOrderDetails.value} off</p>
+                        {/*<p className={'product-discount'}>%{draftOrderDetails.value} off</p>*/}
                         <img className={"product-image"} src={product.images[0].src}/>
                       </div>
                     )}
