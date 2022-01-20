@@ -122,8 +122,8 @@ const ShopifyRedeem = () => {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
         setProduct(resp.data.product);
         console.log('product data', resp.data.product)
-        console.log('draft order info', resp.data.draftOrderDetails)
-        setDraftOrderDetails(resp.data.draftOrderDetails);
+        // console.log('draft order info', resp.data.draftOrderDetails)
+        // setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);
         setLoading(false);
         setRedeemUrl(resp.data.redeemUrl);
@@ -185,14 +185,14 @@ const ShopifyRedeem = () => {
                 {storedAuthSig && accessVerified && !loading && (
                   <div>
                     <p>You qualify!</p>
-                    {/*OLD mark*/}
-                    {!!product && !!draftOrderDetails(
-                      <div className={'product-information-container'}>
-                        <p className={'product-title'}>{product.title}</p>
-                        {/*<p className={'product-discount'}>%{draftOrderDetails.value} off</p>*/}
-                        <img className={"product-image"} src={product.images[0].src}/>
-                      </div>
-                    )}
+                    {/*/!*OLD mark*!/*/}
+                    {/*{!!product && !!draftOrderDetails(*/}
+                    {/*  <div className={'product-information-container'}>*/}
+                    {/*    <p className={'product-title'}>{product.title}</p>*/}
+                    {/*    /!*<p className={'product-discount'}>%{draftOrderDetails.value} off</p>*!/*/}
+                    {/*    <img className={"product-image"} src={product.images[0].src}/>*/}
+                    {/*  </div>*/}
+                    {/*)}*/}
                   </div>
                 )}
               </div>
