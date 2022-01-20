@@ -81,9 +81,12 @@ const ShopifyRedeem = () => {
       console.log('REPOSFNASKFLNSA', resp)
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
       console.log('-->  Before provision access')
-      const jwt = await provisionAccess(resp.data.parsedAcc);
-      console.log('-->  After Provision access')
-      return jwt;
+      // const jwt = await provisionAccess(resp.data.parsedAcc);
+      return provisionAccess(resp.data.parsedAcc).then(jwt => {
+        console.log('-->  After Provision access', jwt)
+        return jwt;
+      });
+      // return jwt;
     } catch (err) {
       // ADD_ERROR_HANDLING
       setLoading(false);
@@ -92,6 +95,7 @@ const ShopifyRedeem = () => {
   }
 
   const provisionAccess = async (accessControlConditions) => {
+    console.log('--> Start of provision access', accessControlConditions)
     const chain = accessControlConditions[0].chain;
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
@@ -101,12 +105,7 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
-    console.log('--> In Provision Access')
-    console.log('--> accessControlConditions', accessControlConditions)
-    console.log('--> chain', chain)
-    console.log('--> authSig', authSig)
-    console.log('--> storedAuthSig', storedAuthSig)
-    console.log('--> resourceId', resourceId)
+    console.log('--> Right before Jwt')
     const jwt = await window.litNodeClient.getSignedToken({
       accessControlConditions: accessControlConditions,
       chain: chain,

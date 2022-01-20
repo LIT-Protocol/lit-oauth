@@ -2,10 +2,11 @@ import axios from "axios";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const checkForPromotions = async (shopName) => {
+export const checkForPromotions = async (shopName, productGid) => {
   return await axios
     .post(API_HOST + "/api/shopify/checkForPromotions", {
-      shopName
+      shopName,
+      productGid
     });
 }
 

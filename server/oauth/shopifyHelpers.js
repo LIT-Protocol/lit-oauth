@@ -37,3 +37,8 @@ export const shortenShopName = (shopName) => {
   const splitName = shopName.split('.');
   return splitName[0];
 }
+
+export const shortenProductId = (productId) => {
+  const splitId = productId.split('/');
+  return splitId[splitId.length - 1];
+}

@@ -1,4 +1,4 @@
-import { shortenShopName, validateMerchantToken } from "./shopifyHelpers.js";
+import { shortenProductId, shortenShopName, validateMerchantToken } from "./shopifyHelpers.js";
 import ShopifyToken from 'shopify-token';
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
@@ -290,16 +290,18 @@ export default async function (fastify, opts) {
       .query()
       .where('shop_name', '=', shortenedShopName);
 
-    console.log('shop', shop)
-
-    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+    const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where('shop_id', '=', shop[0].shopId);
 
-    if (draftOrder[0]) {
-      return draftOrder[0].id;
+    if (draftOrders.length) {
+      const filteredDraftOrders = draftOrders.filter(d => {
+        const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
+        return request.body.productGid === parsedDraftOrderDetails.sku;
+      })
+      return filteredDraftOrders[0].id;
     } else {
-      return null;
+      return [];
     }
   })
 
@@ -340,8 +342,7 @@ export default async function (fastify, opts) {
       `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/shopify/l/" + uuid
     ) {
-      reply.end("JWT verification failed.");
-      return;
+      return "JWT verification failed."
     }
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()

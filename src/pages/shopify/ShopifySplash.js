@@ -20,19 +20,20 @@ export default function ShopifySplash() {
       const queryString = window.location.search;
       const queryParams = new URLSearchParams(queryString);
       const shop = queryParams.get('shop');
+      const productId = queryParams.get('productId');
       window.history.replaceState(null, null, window.location.pathname);
       if (!shop) {
         setPromotionStatus('notFound');
       } else {
         setShopName(shop);
-        checkForShopPromotions(shop);
+        checkForShopPromotions(shop, productId);
       }
     }
   }, [shopName])
 
-  const checkForShopPromotions = async (shop) => {
+  const checkForShopPromotions = async (shop, productId) => {
     try {
-      const res = await checkForPromotions(shop);
+      const res = await checkForPromotions(shop, productId);
       console.log('RES', res)
       if (!res.data) {
         setPromotionStatus('notFound');
