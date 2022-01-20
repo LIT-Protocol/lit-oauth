@@ -29,7 +29,7 @@ const ShopifyRedeem = () => {
   const [product, setProduct] = useState(null);
 
   const [draftOrderId, setDraftOrderId] = useState(null);
-  const [draftOrder, setDraftOrder] = useState(null);
+  const [draftOrderDetails, setDraftOrderDetails] = useState(null);
   const [storedAuthSig, setStoredAuthSig] = useState(null);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
@@ -119,10 +119,10 @@ const ShopifyRedeem = () => {
   const redeemPromotion = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       try {
-        console.log('JWT', jwt)
         const resp = await redeemDraftOrder(draftOrderId, jwt);
-        console.log('DO resp', resp)
         setProduct(resp.data.product);
+        console.log('product data', resp.data.product)
+        console.log('draft order info', resp.data.draftOrderDetails)
         setAccessVerified(true);
         setLoading(false);
         setRedeemUrl(resp.data.redeemUrl);
@@ -203,9 +203,9 @@ const ShopifyRedeem = () => {
             <CardContent className={'access-service-card-content'}>
 
               {/*OLD mark*/}
-              {/*{!!product && product.images[0].src && (*/}
-              {/*  <img className={"product-image"} src={product.images[0].src}/>*/}
-              {/*)}*/}
+              {!!product && product.images[0].src && (
+                <img className={"product-image"} src={product.images[0].src}/>
+              )}
               <div className={"center-content"}>
                 {((!storedAuthSig || !accessVerified && loading)) && (
                   <div>

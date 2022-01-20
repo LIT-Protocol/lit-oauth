@@ -390,7 +390,7 @@ export default async function (fastify, opts) {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest)
       console.log('Draft order res', draftOrderRes)
       if (draftOrderRes) {
-        return { redeemUrl: draftOrderRes.invoice_url, product };
+        return { redeemUrl: draftOrderRes.invoice_url, draftOrderDetails, product };
       }
     } catch (err) {
       console.log('err.name', err.name)
