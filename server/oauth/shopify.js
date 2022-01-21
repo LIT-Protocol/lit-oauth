@@ -192,7 +192,17 @@ export default async function (fastify, opts) {
   })
 
   fastify.get('/api/shopify/deleteShopData', async (request, reply) => {
+    const { shop } = request.body;
+    const shortenedShopName = shortenShopName(shop);
+    // const result = await validateMerchantToken(request.headers.authorization);
+    //
+    // if (!result) {
+    //   return 'Unauthorized';
+    // }
 
+    const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
+
+    console.log('Query for existing shops delete', queryForExistingShop)
     return 'will delete shop data'
   })
 
