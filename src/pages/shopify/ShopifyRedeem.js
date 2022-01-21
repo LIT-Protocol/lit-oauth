@@ -120,8 +120,8 @@ const ShopifyRedeem = () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
+        console.log('product data', resp.data);
         setProduct(resp.data.product);
-        console.log('product data', resp.data.product);
         console.log('draft order info', resp.data.draftOrderDetails);
         setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);

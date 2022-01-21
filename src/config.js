@@ -34,6 +34,11 @@ export const URL_MAP = {
     componentName: "ShopifyRedeem",
     exact: true,
   },
+  shopifyDocs: {
+    path: ["/shopify/docs"],
+    componentName: "ShopifyDocs",
+    exact: true,
+  },
 };
 
 export const HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;

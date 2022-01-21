@@ -8,6 +8,7 @@ import GoogleLinkShare from "./pages/google/GoogleLinkShare";
 import ServiceLogin from "./pages/serviceLogin/ServiceLogin";
 import ShopifySplash from "./pages/shopify/ShopifySplash";
 import ShopifyRedeem from "./pages/shopify/ShopifyRedeem";
+import ShopifyDocs from "./pages/shopify/ShopifyDocs";
 
 const ROUTING_COMPONENTS = {
   GoogleGranting: GoogleGranting,
@@ -16,7 +17,8 @@ const ROUTING_COMPONENTS = {
   ZoomAccess: ZoomAccess,
   ServiceLogin: ServiceLogin,
   ShopifySplash: ShopifySplash,
-  ShopifyRedeem: ShopifyRedeem
+  ShopifyRedeem: ShopifyRedeem,
+  ShopifyDocs: ShopifyDocs
 };
 
 const Routes = () => {

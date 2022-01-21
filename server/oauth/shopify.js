@@ -138,6 +138,7 @@ export default async function (fastify, opts) {
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
 
+    console.log('----> SAVE ACCESS TOKEN', request.body)
     if (!queryForExistingShop.length) {
       await fastify.objection.models.shopifyStores
         .query()
