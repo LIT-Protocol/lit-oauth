@@ -25,112 +25,6 @@ const getScopes = name => {
 }
 
 export default async function (fastify, opts) {
-  // NEW_SECTION: installation calls
-
-  // fastify.get('/api/shopify/newLitPromotionInstallation', async (request, reply) => {
-  //   const { shop } = request.query;
-  //   const shortenedShopName = shortenShopName(shop);
-  //   console.log('---- new Lit Promotion Installation START')
-  //   const shopifyToken = new ShopifyToken({
-  //     sharedSecret: getApiSecret(shortenedShopName),
-  //     redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-  //     // redirectUri: `https://oauth-app-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
-  //     apiKey: getApiKey(shortenedShopName)
-  //   });
-  //
-  //   // if (!shopifyToken.verifyHmac(request.query)) {
-  //   //   return 'Not Authorized';
-  //   // }
-  //
-  //   const nonce = shopifyToken.generateNonce();
-  //
-  //   const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
-  //
-  //   if (!queryForExistingShop.length) {
-  //     await fastify.objection.models.shopifyStores
-  //       .query()
-  //       .insert({
-  //         shop_name: shortenedShopName,
-  //         nonce: nonce
-  //       });
-  //   } else {
-  //     await fastify.objection.models.shopifyStores
-  //       .query()
-  //       .where('shop_name', '=', shortenedShopName)
-  //       .patch({
-  //         nonce: nonce
-  //       });
-  //   }
-  //
-  //
-  //   const url = shopifyToken.generateAuthUrl(shop, getScopes[shortenedShopName], nonce);
-  //
-  //   console.log('---- new Lit Promotion Installation END')
-  //   console.log('URL', url)
-  //
-  //   reply.redirect(url);
-  // })
-  //
-  // fastify.get('/api/shopify/installLitPromotionCallback', async (request, reply) => {
-  //   const { shop, code, state, host } = request.query;
-  //   const shortenedShopName = shortenShopName(shop);
-  //   console.log('---- install Lit Promotion Callback START', request.query)
-  //
-  //   const nonceQuery = await fastify.objection.models.shopifyStores
-  //     .query()
-  //     .where('shop_name', '=', shortenedShopName);
-  //
-  //   // TODO: reintroduce nonce
-  //   // if (!nonceQuery.length || nonceQuery[0].nonce !== state) {
-  //   //   return 'Nonce check failed'
-  //   // }
-  //
-  //   const shopifyToken = new ShopifyToken({
-  //     sharedSecret: getApiSecret(shortenedShopName),
-  //     redirectUri: `https://lit-shop.loca.lt/api/shopify/installLitPromotionCallback`,
-  //     // redirectUri: `https://oauth-app-dev.litgateway.com/api/shopify/installLitPromotionCallback`,
-  //     apiKey: getApiKey(shortenedShopName)
-  //   });
-  //
-  //   if (!shopifyToken.verifyHmac(request.query)) {
-  //     return 'Not Authorized';
-  //   }
-  //
-  //   shopifyToken.getAccessToken(shop, code)
-  //     .then(async (data) => {
-  //       const shopify = new Shopify({
-  //         shopName: shortenedShopName,
-  //         accessToken: data.access_token
-  //       })
-  //       const shopInfo = await shopify.shop.get();
-  //
-  //       const query = await fastify.objection.models.shopifyStores
-  //         .query()
-  //         .where('shop_name', '=', shortenedShopName)
-  //         .patch({
-  //           nonce: '',
-  //           access_token: data.access_token,
-  //           email: shopInfo.email,
-  //           shop_id: shopInfo.id,
-  //           shop_name: shortenedShopName
-  //         });
-  //
-  //       const shopRequestURL = `https://${shop}/admin/api/2021-10/shop.json`;
-  //       const shopRequestHeaders = { 'X-Shopify-Access-Token': data.access_token };
-  //       const shopResponse = await axios.get(shopRequestURL, {
-  //         headers: shopRequestHeaders
-  //       })
-  //
-  //       console.log('---- install Lit Promotion Callback END')
-  //       reply.redirect(`https://${shop}/admin/apps`)
-  //       // reply.redirect(`https://lit-protocol-shop-promotional.herokuapp.com/?shop=${shop}&host=${host}`)
-  //     })
-  //     .catch(err => {
-  //       console.log(err)
-  //       return false;
-  //     })
-  // })
-
   // NEW_SECTION: save auth
 
   fastify.post('/api/shopify/saveAccessToken', async (request, reply) => {
@@ -139,6 +33,7 @@ export default async function (fastify, opts) {
     const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
 
     console.log('----> SAVE ACCESS TOKEN', request.body)
+    let typeOfAuth = 'newCustomer';
     if (!queryForExistingShop.length) {
       await fastify.objection.models.shopifyStores
         .query()
@@ -148,6 +43,7 @@ export default async function (fastify, opts) {
           email: email
         });
     } else {
+      typeOfAuth = 'existingCustomer';
       await fastify.objection.models.shopifyStores
         .query()
         .where('shop_name', '=', shortenedShopName)
@@ -157,7 +53,7 @@ export default async function (fastify, opts) {
         });
     }
 
-    return true;
+    return typeOfAuth;
   })
 
   fastify.post('/api/shopify/checkForAccessToken', async (request, reply) => {
