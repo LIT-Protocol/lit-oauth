@@ -275,13 +275,18 @@ export default async function (fastify, opts) {
 
     console.log('--> Draft order details', draftOrderDetails)
 
-    let sku = draftOrderDetails.sku;
-    sku = sku.split('/').pop();
-    console.log('SKU', sku)
+    // let sku = draftOrderDetails.sku;
+    // sku = sku.split('/').pop();
+    // console.log('SKU', sku)
+
+    let id = draftOrderDetails.id;
+    id = id.split('/').pop();
+    console.log('SKU', id)
 
     let product;
     try {
-      product = await shopify.product.get(sku)
+      // product = await shopify.product.get(sku)
+      product = await shopify.product.get(id)
       console.log('product res', product)
     } catch (err) {
       console.log('error getting product:', err)

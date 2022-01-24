@@ -40,7 +40,8 @@ export default function ShopifySplash() {
       } else {
         setPromotionStatus('found');
         // setTimeout(() => {
-        window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
+        console.log('${res.data}', res.data)
+        // window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
         // }, 500);
       }
     } catch (err) {
