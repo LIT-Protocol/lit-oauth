@@ -78,9 +78,9 @@ const ShopifyRedeem = () => {
   const checkForPromotionAccessControl = async () => {
     try {
       const resp = await getAccessControl(draftOrderId);
-      console.log('REPOSFNASKFLNSA', resp)
+      console.log('Start of check for promotional', resp)
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      console.log('-->  Before provision access')
+      console.log('-->  Before provision access', resp.data.parsedAcc)
       // const jwt = await provisionAccess(resp.data.parsedAcc);
       return provisionAccess(resp.data.parsedAcc).then(jwt => {
         console.log('-->  After Provision access', jwt)
@@ -105,7 +105,10 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
     // const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
-    console.log('--> Right before Jwt', storedAuthSig, resourceId)
+    console.log('--> Stored Auth Sig', storedAuthSig)
+    console.log('--> Resource Id', resourceId)
+    console.log('--> chain', chain)
+    console.log('--> Acc', accessControlConditions)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
         accessControlConditions: accessControlConditions,
