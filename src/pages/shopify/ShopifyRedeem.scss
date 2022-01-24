@@ -73,8 +73,8 @@
   }
 
   .product-information-center {
-    width: 25%;
-    padding: 0 5%;
+    width: 30%;
+    padding: 0 3%;
     font-size: 14px;
 
     .product-detail {
@@ -83,14 +83,21 @@
       justify-content: start;
 
     }
-    
+
     .product-attribute-label {
+      min-with: 5.5rem;
       margin-right: 2rem;
+      font-weight: bold;
+    }
+
+    .product-discount {
+      font-weight: bold;
     }
 
     .product-condition {
       display: flex;
       //flex-direction: column;
+      font-weight: bold;
       text-align: start;
       overflow-wrap: break-word;
 
@@ -101,7 +108,7 @@
   }
 
   .product-information-right {
-    width: 34%;
+    width: 33%;
     text-align: left;
 
     .product-title {

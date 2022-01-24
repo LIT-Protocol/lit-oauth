@@ -164,8 +164,8 @@ const ShopifyRedeem = () => {
               <h1>Token Access Verification</h1>
             </span>
               <span className={'access-service-card-header-right'}>
-                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Find more apps on the<strong
-                  className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
+                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<strong
+                  className={'lit-gateway-title'}>Lit Protocol</strong><OpenInNewIcon/></p></a>
             </span>
             </CardContent>
             <CardContent className={'access-service-card-content'}>
@@ -191,24 +191,23 @@ const ShopifyRedeem = () => {
                     </div>
                     <div className={'product-information-center'}>
                       <span className={'product-detail'}>
-                        <p className={'product-attribute-label'}><strong>Discount:</strong></p>
-                        <p><strong>{draftOrderDetails.value}% off full price</strong></p>
+                        <p className={'product-attribute-label'}>Discount:</p>
+                        <p className={'product-discount'}>{draftOrderDetails.value}% off full price</p>
                       </span>
                       <span className={'product-conditions'}>
-                        <p className={'product-attribute-label'}><strong>Requirement:</strong></p>
-                        <p><strong>{humanizedAccessControlConditions}</strong></p>
+                        <p className={'product-attribute-label'}>Requirement:</p>
+                        <p className={'product-condition'}>{humanizedAccessControlConditions}</p>
                       </span>
                     </div>
                     <div className={'product-information-right'}>
                       <p>
-                        {product.vendor} is using wallet verification to provide token-access based discounts. In order
-                        to receive this discount, please connect your wallet
+                        {product.vendor} is using wallet verification to provide token-access based discounts.
                       </p>
-                      <p>Lit Apps will be able to see.</p>
-                      <ul>
-                        <li>Your public wallet address</li>
-                        <li>Your email address</li>
-                      </ul>
+                      {/*<p>Lit Apps will be able to see.</p>*/}
+                      {/*<ul>*/}
+                      {/*  <li>Your public wallet address</li>*/}
+                      {/*  <li>Your email address</li>*/}
+                      {/*</ul>*/}
                     </div>
                   </div>
                 )}
