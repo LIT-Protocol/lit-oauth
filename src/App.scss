@@ -210,6 +210,13 @@ h4 {
   width: 60%;
   display: flex;
   justify-content: flex-start;
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 500;
+    margin: 1rem 0 0 1rem;
+    color: #2C0C72;
+  }
 }
 
 .access-service-card-logo {
@@ -224,13 +231,6 @@ h4 {
   max-width: 16rem;
   text-align: left;
   color: #2C0C72;
-
-  h1 {
-    font-size: 2rem;
-    font-weight: 500;
-    margin: 1rem 0 0 1rem;
-    color: #2C0C72;
-  }
 
   h2 {
     font-size: 1.5rem;
