@@ -55,20 +55,11 @@ export default function ShopifySplash() {
         <Card className={'access-service-card'}>
           <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-                {/*<span className={'logo-container'}>*/}
-              {/*  <img className={"shopify-logo"} src={'/shopifyLogo.svg'}/>*/}
-              {/*  <h1 className={"logo-plus"}>+</h1>*/}
-              {/*  <img className={"lit-logo"} src={'/appslogo.svg'}/>*/}
-              {/*</span>*/}
-              <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
-              <div className={'access-service-card-title'}>
-                <h2>Lit Apps</h2>
-                <p>The power of blockchain-defined access combine with your current tool suite.</p>
-              </div>
+              <h1>Token Access Verification</h1>
             </span>
             <span className={'access-service-card-header-right'}>
-                <a href={'https://litgateway.com/'} target={'_blank'}><p>Find more apps on the<strong
-                  className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
+                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<strong
+                  className={'lit-gateway-title'}>Lit Protocol</strong><OpenInNewIcon/></p></a>
             </span>
           </CardContent>
           <CardContent className={'access-service-card-content'}>
