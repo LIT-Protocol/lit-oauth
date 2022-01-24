@@ -85,24 +85,24 @@
     }
 
     .product-attribute-label {
-      min-with: 5.5rem;
+      min-width: 5.5rem;
       margin-right: 2rem;
       font-weight: bold;
     }
 
     .product-discount {
+      text-align: start;
       font-weight: bold;
     }
 
-    .product-condition {
+    .product-conditions {
       display: flex;
       //flex-direction: column;
       font-weight: bold;
-      text-align: start;
-      overflow-wrap: break-word;
 
-      p {
-        text-align: left;
+      .product-condition {
+        text-align: start;
+        overflow-wrap: break-word;
       }
     }
   }
