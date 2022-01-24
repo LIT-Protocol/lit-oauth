@@ -148,6 +148,12 @@ const ShopifyRedeem = () => {
     }
   }
 
+  const makeSummary = () => {
+    if (draftOrderDetails.value === 0) {
+
+    }
+  }
+
   return (
     <div className={"full-container"}>
       <div>
@@ -186,8 +192,10 @@ const ShopifyRedeem = () => {
                     </div>
                     <div className={'product-information-center'}>
                       <span className={'product-detail'}>
-                        <p className={'product-attribute-label'}>Discount:</p>
-                        <p className={'product-discount'}>{draftOrderDetails.value}% off full price</p>
+                        <p
+                          className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? 'Exclusive Access' : 'Discount'}</p>
+                        {draftOrderDetails.value !== 0 && (
+                          <p className={'product-discount'}>{draftOrderDetails.value}% off full price</p>)}
                       </span>
                       <span className={'product-conditions'}>
                         <p className={'product-attribute-label'}>Requirement:</p>
@@ -198,11 +206,6 @@ const ShopifyRedeem = () => {
                       <p>
                         {product.vendor} is using wallet verification to provide token-access based discounts.
                       </p>
-                      {/*<p>Lit Apps will be able to see.</p>*/}
-                      {/*<ul>*/}
-                      {/*  <li>Your public wallet address</li>*/}
-                      {/*  <li>Your email address</li>*/}
-                      {/*</ul>*/}
                     </div>
                   </div>
                 )}
