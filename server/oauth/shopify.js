@@ -204,9 +204,12 @@ export default async function (fastify, opts) {
       .where('shop_id', '=', shop[0].shopId);
 
     if (draftOrders.length) {
-      const filteredDraftOrders = draftOrders.filter(d => {
+      const filteredDraftOrders = draftOrders.filter((d, i) => {
         const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
-        return request.body.productGid === parsedDraftOrderDetails.sku;
+        console.log('Iterate over found DOs.  No:', i)
+        console.log('Iterate over found DOs.  Req', request.body.productGid)
+        console.log('Iterate over found DOs.  asset:', d.asset_id_on_service)
+        return request.body.productGid === d.asset_id_on_service;
       })
       return filteredDraftOrders[0].id;
     } else {
@@ -275,9 +278,9 @@ export default async function (fastify, opts) {
 
     console.log('--> Draft order details', draftOrderDetails)
 
-    // let sku = draftOrderDetails.sku;
-    // sku = sku.split('/').pop();
-    // console.log('SKU', sku)
+    let sku = draftOrderDetails.sku;
+    sku = sku.split('/').pop();
+    console.log('SKU', sku)
 
     let id = draftOrderDetails.id;
     id = id.split('/').pop();
