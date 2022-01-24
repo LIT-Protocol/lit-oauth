@@ -273,6 +273,8 @@ export default async function (fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
+    console.log('--> Draft order details', draftOrderDetails)
+
     let sku = draftOrderDetails.sku;
     sku = sku.split('/').pop();
     console.log('SKU', sku)
