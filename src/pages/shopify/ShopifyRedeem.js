@@ -195,8 +195,8 @@ const ShopifyRedeem = () => {
                         <p><strong>{draftOrderDetails.value}% off full price</strong></p>
                       </span>
                       <span className={'product-conditions'}>
-                        <p>Requirements:</p>
-                        <p>{humanizedAccessControlConditions}</p>
+                        <p><strong>Requirements:</strong></p>
+                        <p><strong>{humanizedAccessControlConditions}</strong></p>
                       </span>
                     </div>
                     <div className={'product-information-right'}>
