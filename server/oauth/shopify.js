@@ -245,6 +245,10 @@ export default async function (fastify, opts) {
     console.log('REDEEM ORDER BODY', request.body)
     const { uuid, jwt } = request.body;
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
+    console.log('--> verified', verified)
+    console.log('--> baseUrl', payload.baseUrl, process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST)
+    console.log('--> compare baseUrl', payload.baseUrl === process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST)
+    console.log('--> payload path', payload.path === "/shopify/l/" + uuid)
     if (
       !verified ||
       payload.baseUrl !==

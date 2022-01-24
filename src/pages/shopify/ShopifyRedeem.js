@@ -193,7 +193,7 @@ const ShopifyRedeem = () => {
                     <div className={'product-information-center'}>
                       <span className={'product-detail'}>
                         <p
-                          className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? 'Exclusive Access' : 'Discount'}</p>
+                          className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? `Exclusive Access` : 'Discount'}</p>
                         {draftOrderDetails.value !== 0 && (
                           <p className={'product-discount'}>{draftOrderDetails.value}% off full price</p>)}
                       </span>
