@@ -79,7 +79,6 @@
 
     .product-detail {
       display: flex;
-      //justify-content: space-between;
       justify-content: start;
 
     }
@@ -87,6 +86,7 @@
     .product-attribute-label {
       min-width: 5.5rem;
       margin-right: 2rem;
+      text-align: start;
       font-weight: bold;
     }
 
@@ -97,12 +97,12 @@
 
     .product-conditions {
       display: flex;
-      //flex-direction: column;
       font-weight: bold;
 
       .product-condition {
         text-align: start;
         overflow-wrap: break-word;
+        word-break: break-word;
       }
     }
   }

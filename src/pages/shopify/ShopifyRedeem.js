@@ -156,11 +156,6 @@ const ShopifyRedeem = () => {
           <Card className={'access-service-card'}>
             <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-              {/*<div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>*/}
-              {/*<div className={'access-service-card-title'}>*/}
-              {/*  <h2>Lit Apps</h2>*/}
-              {/*  <p>The power of blockchain-defined access combine with your current tool suite.</p>*/}
-              {/*</div>*/}
               <h1>Token Access Verification</h1>
             </span>
               <span className={'access-service-card-header-right'}>
