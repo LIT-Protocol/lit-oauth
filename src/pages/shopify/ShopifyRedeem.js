@@ -106,14 +106,22 @@ const ShopifyRedeem = () => {
     };
     // const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
     console.log('--> Right before Jwt', storedAuthSig, resourceId)
-    const jwt = await window.litNodeClient.getSignedToken({
-      accessControlConditions: accessControlConditions,
-      chain: chain,
-      authSig: storedAuthSig,
-      resourceId: resourceId
-    });
+    try {
+      const jwt = await window.litNodeClient.getSignedToken({
+        accessControlConditions: accessControlConditions,
+        chain: chain,
+        authSig: storedAuthSig,
+        resourceId: resourceId
+      });
+      console.log('--> JWT', jwt)
 
-    return jwt;
+      return jwt;
+    } catch (err) {
+      console.log('Error getting JWT:', err)
+      return null;
+    }
+
+
   }
 
   const redeemPromotion = async () => {
