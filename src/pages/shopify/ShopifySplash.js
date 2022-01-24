@@ -58,8 +58,8 @@ export default function ShopifySplash() {
               <h1>Token Access Verification</h1>
             </span>
             <span className={'access-service-card-header-right'}>
-                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<strong
-                  className={'lit-gateway-title'}>Lit Protocol</strong><OpenInNewIcon/></p></a>
+                <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
+                  className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon/></p></a>
             </span>
           </CardContent>
           <CardContent className={'shopify-service-card-content'}>
