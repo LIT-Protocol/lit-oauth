@@ -62,7 +62,7 @@ export default function ShopifySplash() {
                   className={'lit-gateway-title'}>Lit Protocol</strong><OpenInNewIcon/></p></a>
             </span>
           </CardContent>
-          <CardContent className={'access-service-card-content'}>
+          <CardContent className={'shopify-service-card-content'}>
             <div className={"center-content"}>
               {promotionStatus !== 'notFound' && (
                 <CircularProgress className={"spinner"}/>

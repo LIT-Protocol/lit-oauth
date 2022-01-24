@@ -154,7 +154,7 @@ const ShopifyRedeem = () => {
         <div className={'access-service-background'}/>
         <section className={'access-service-card-container'}>
           <Card className={'access-service-card'}>
-            <CardContent className={'access-service-card-header'}>
+            <CardContent className={'shopify-service-card-header'}>
             <span className={'access-service-card-header-left'}>
               <h1>Token Access Verification</h1>
             </span>
@@ -163,7 +163,7 @@ const ShopifyRedeem = () => {
                   className={'lit-gateway-title'}>Lit Protocol</strong><OpenInNewIcon/></p></a>
             </span>
             </CardContent>
-            <CardContent className={'access-service-card-content'}>
+            <CardContent className={'shopify-service-card-content'}>
               <div className={"center-content"}>
                 {((!storedAuthSig || !accessVerified && loading)) && (
                   <div>
