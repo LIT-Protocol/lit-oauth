@@ -104,12 +104,12 @@ const ShopifyRedeem = () => {
       role: "customer",
       extraData: "",
     };
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
-    console.log('--> Right before Jwt')
+    // const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+    console.log('--> Right before Jwt', storedAuthSig, resourceId)
     const jwt = await window.litNodeClient.getSignedToken({
       accessControlConditions: accessControlConditions,
       chain: chain,
-      authSig: authSig,
+      authSig: storedAuthSig,
       resourceId: resourceId
     });
 
@@ -118,6 +118,7 @@ const ShopifyRedeem = () => {
 
   const redeemPromotion = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
+      console.log('JWT', jwt)
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
         console.log('product data', resp.data);
