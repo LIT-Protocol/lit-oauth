@@ -53,7 +53,7 @@ export default function ShopifySplash() {
       <div className={'access-service-background'}/>
       <section className={'access-service-card-container'}>
         <Card className={'access-service-card'}>
-          <CardContent className={'access-service-card-header'}>
+          <CardContent className={'shopify-service-card-header'}>
             <span className={'access-service-card-header-left'}>
               <h1>Token Access Verification</h1>
             </span>
