@@ -156,11 +156,12 @@ const ShopifyRedeem = () => {
           <Card className={'access-service-card'}>
             <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-              <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
-              <div className={'access-service-card-title'}>
-                <h2>Lit Apps</h2>
-                <p>The power of blockchain-defined access combine with your current tool suite.</p>
-              </div>
+              {/*<div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>*/}
+              {/*<div className={'access-service-card-title'}>*/}
+              {/*  <h2>Lit Apps</h2>*/}
+              {/*  <p>The power of blockchain-defined access combine with your current tool suite.</p>*/}
+              {/*</div>*/}
+              <h2>Token Access Verification</h2>
             </span>
               <span className={'access-service-card-header-right'}>
                 <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Find more apps on the<strong
@@ -188,9 +189,26 @@ const ShopifyRedeem = () => {
                     <div className={'product-information-left'}>
                       <img className={"product-image"} src={product.images[0].src}/>
                     </div>
+                    <div className={'product-information-center'}>
+                      <span className={'product-detail'}>
+                        <p>Discount:</p>
+                        <p>{draftOrderDetails.value}% off full price</p>
+                      </span>
+                      <span className={'product-detail'}>
+                        <p>Requirements:</p>
+                        <p>{humanizedAccessControlConditions}</p>
+                      </span>
+                    </div>
                     <div className={'product-information-right'}>
-                      <p>You qualify!</p>
-                      <p className={'product-title'}>%{draftOrderDetails.value} off of {product.title}</p>
+                      <p>
+                        {product.vendor} is using wallet verification to provide token-access based discounts. In order
+                        to receive this discount, please connect your wallet
+                      </p>
+                      <p>Lit Apps will be able to see.</p>
+                      <ul>
+                        <li>Your public wallet address</li>
+                        <li>Your email address</li>
+                      </ul>
                     </div>
                   </div>
                 )}

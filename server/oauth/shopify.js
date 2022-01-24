@@ -77,17 +77,18 @@ export default async function (fastify, opts) {
 
   // NEW_SECTION: required shopify endpoints
 
-  fastify.get('/api/shopify/getCustomerData', async (request, reply) => {
+  fastify.post('/api/shopify/getCustomerData', async (request, reply) => {
+
 
     return 'will return data'
   })
 
-  fastify.get('/api/shopify/deleteCustomerData', async (request, reply) => {
+  fastify.post('/api/shopify/deleteCustomerData', async (request, reply) => {
 
     return 'will delete data'
   })
 
-  fastify.get('/api/shopify/deleteShopData', async (request, reply) => {
+  fastify.post('/api/shopify/deleteShopData', async (request, reply) => {
     console.log('DELETE QUERY', request.query)
     const { shop } = request.query;
     const shortenedShopName = shortenShopName(shop);
