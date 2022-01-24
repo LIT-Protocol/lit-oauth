@@ -161,7 +161,7 @@ const ShopifyRedeem = () => {
               {/*  <h2>Lit Apps</h2>*/}
               {/*  <p>The power of blockchain-defined access combine with your current tool suite.</p>*/}
               {/*</div>*/}
-              <h2>Token Access Verification</h2>
+              <h1>Token Access Verification</h1>
             </span>
               <span className={'access-service-card-header-right'}>
                 <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Find more apps on the<strong
@@ -191,10 +191,10 @@ const ShopifyRedeem = () => {
                     </div>
                     <div className={'product-information-center'}>
                       <span className={'product-detail'}>
-                        <p>Discount:</p>
-                        <p>{draftOrderDetails.value}% off full price</p>
+                        <p><strong>Discount:</strong></p>
+                        <p><strong>{draftOrderDetails.value}% off full price</strong></p>
                       </span>
-                      <span className={'product-detail'}>
+                      <span className={'product-conditions'}>
                         <p>Requirements:</p>
                         <p>{humanizedAccessControlConditions}</p>
                       </span>

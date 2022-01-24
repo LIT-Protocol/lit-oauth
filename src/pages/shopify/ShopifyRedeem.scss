@@ -73,10 +73,25 @@
 
   .product-information-center {
     width: 37%;
+
+    .product-detail {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .product-condition {
+      display: flex;
+      flex-direction: column;
+
+      p {
+        text-align: left;
+      }
+    }
   }
 
   .product-information-right {
     width: 37%;
+    text-align: left;
 
     .product-title {
 
