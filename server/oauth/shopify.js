@@ -291,8 +291,10 @@ export default async function (fastify, opts) {
       note: 'inaugural draft order',
       line_items:
         [{
-          title: draftOrderDetails.title,
-          sku: sku,
+          // title: draftOrderDetails.title,
+          title: product.title,
+          // sku: sku,
+          id: product.id,
           price: draftOrderDetails.price,
           quantity: 1,
           applied_discount: {
