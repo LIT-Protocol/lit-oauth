@@ -123,30 +123,29 @@ export default function GoogleProvisionAccessModal(props) {
         <DialogContent style={{ paddingTop: "0" }}>
           <section className={"provision-access-current-controls"}>
             <h4>Current Access Control Conditions</h4>
-            {props.humanizedAccessControlArray.length > 0 && (
+            {!!props.humanizedAccessControlArray && (
               <List dense={true}>
-                Humanized
-                {/*{props.humanizedAccessControlArray.map((acc, i) => (*/}
-                {/*  <ListItem*/}
-                {/*    key={i}*/}
-                {/*    className={"provision-access-control-item"}*/}
-                {/*    secondaryAction={*/}
-                {/*      <IconButton*/}
-                {/*        onClick={() => props.removeIthAccessControlCondition(i)}*/}
-                {/*      >*/}
-                {/*        <DeleteIcon/>*/}
-                {/*      </IconButton>*/}
-                {/*    }*/}
-                {/*  >*/}
-                {/*    <ListItemText*/}
-                {/*      primary={acc}*/}
-                {/*    />*/}
-                {/*  </ListItem>*/}
-                {/*))}*/}
+                {props.humanizedAccessControlArray.split('and').map((acc, i) => (
+                  <ListItem
+                    key={i}
+                    className={"provision-access-control-item"}
+                    secondaryAction={
+                      <IconButton
+                        onClick={() => props.removeIthAccessControlCondition(i)}
+                      >
+                        <DeleteIcon/>
+                      </IconButton>
+                    }
+                  >
+                    <ListItemText
+                      primary={acc}
+                    />
+                  </ListItem>
+                ))}
               </List>
 
             )}
-            {!props.humanizedAccessControlArray.length && (
+            {!props.accessControlConditions.length && (
               <span>No current access control conditions</span>
             )}
           </section>

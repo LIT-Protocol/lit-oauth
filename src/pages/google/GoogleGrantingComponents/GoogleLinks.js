@@ -71,10 +71,8 @@ export default function GoogleLinks(props) {
                   </TableCell>
                   <TableCell align="left">
                     <List>
-                      Humanized for now
-                      {/*{share.humanizedAccessControlConditions.map((acc, i) => (*/}
-                      {/*  <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>*/}
-                      {/*))}*/}
+                      <ListItem className={'access-control-list-item'} disablePadding
+                                key={i}>- {share.humanizedAccessControlConditions}</ListItem>
                     </List>
                   </TableCell>
                   <TableCell align="left">{share.assetType}</TableCell>

@@ -76,41 +76,41 @@ export default function ZoomProvisionAccessModal(props) {
                     </TableHead>
                     <TableBody>
                       {props.meetings.length > 0 &&
-                        props.meetings.map((meeting, i) => (
-                          <TableRow
-                            key={i}
-                            sx={{
-                              "&:last-child td, &:last-child th": { border: 0 },
-                            }}
-                          >
-                            <TableCell component="th" scope="row">
-                              {meeting.topic}
-                            </TableCell>
-                            <TableCell align="left">
-                              {DateTime.fromISO(
-                                meeting.start_time
-                              ).toLocaleString(DATETIME_MED)}
-                            </TableCell>
-                            <TableCell align="left">
-                              {DateTime.fromISO(
-                                meeting.created_at
-                              ).toLocaleString(DATETIME_MED)}
-                            </TableCell>
-                            <TableCell align="center">
-                              <Tooltip title={"Select this meeting"}>
-                                <IconButton
-                                  size={"small"}
-                                  onClick={() => {
-                                    console.log("MEETING", meeting);
-                                    props.setSelectedMeeting(() => meeting);
-                                  }}
-                                >
-                                  <ArrowForwardIcon />
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                      props.meetings.map((meeting, i) => (
+                        <TableRow
+                          key={i}
+                          sx={{
+                            "&:last-child td, &:last-child th": { border: 0 },
+                          }}
+                        >
+                          <TableCell component="th" scope="row">
+                            {meeting.topic}
+                          </TableCell>
+                          <TableCell align="left">
+                            {DateTime.fromISO(
+                              meeting.start_time
+                            ).toLocaleString(DATETIME_MED)}
+                          </TableCell>
+                          <TableCell align="left">
+                            {DateTime.fromISO(
+                              meeting.created_at
+                            ).toLocaleString(DATETIME_MED)}
+                          </TableCell>
+                          <TableCell align="center">
+                            <Tooltip title={"Select this meeting"}>
+                              <IconButton
+                                size={"small"}
+                                onClick={() => {
+                                  console.log("MEETING", meeting);
+                                  props.setSelectedMeeting(() => meeting);
+                                }}
+                              >
+                                <ArrowForwardIcon/>
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -125,7 +125,7 @@ export default function ZoomProvisionAccessModal(props) {
                           props.setSelectedMeeting(() => null);
                         }}
                       >
-                        <ArrowBackIcon />
+                        <ArrowBackIcon/>
                       </IconButton>
                     </Tooltip>
                     <p>
@@ -152,7 +152,7 @@ export default function ZoomProvisionAccessModal(props) {
                   <h4>Current Access Control Conditions</h4>
                   {props.humanizedAccessControlArray.length > 0 && (
                     <List dense={true}>
-                      {props.humanizedAccessControlArray.map(
+                      {props.humanizedAccessControlArray.split('and').map(
                         (accessControl, i) => (
                           <ListItem
                             className={"provision-access-control-item"}
@@ -163,11 +163,11 @@ export default function ZoomProvisionAccessModal(props) {
                                   props.removeIthAccessControlCondition(i)
                                 }
                               >
-                                <DeleteIcon />
+                                <DeleteIcon/>
                               </IconButton>
                             }
                           >
-                            <ListItemText primary={accessControl} />
+                            <ListItemText primary={accessControl}/>
                           </ListItem>
                         )
                       )}
