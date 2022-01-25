@@ -293,7 +293,7 @@ export default async function (fastify, opts) {
         [{
           // title: draftOrderDetails.title,
           title: product.title,
-          note: draftOrderDetails.title,
+          // note: draftOrderDetails.title,
           // sku: sku,
           id: product.id,
           price: draftOrderDetails.price,
