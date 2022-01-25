@@ -18,7 +18,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Tooltip
+  Tooltip,
 } from "@mui/material";
 import { DateTime } from "luxon";
 import { DATETIME_MED } from "luxon/src/impl/formats";
@@ -32,22 +32,27 @@ export default function ZoomMeetings(props) {
   const handleOpenDeleteModal = (shareInfo) => {
     setDeleteShareInfo(shareInfo);
     setOpenDeleteWarningModal(true);
-  }
+  };
 
   const handleConfirmDelete = () => {
     props.handleDeleteLinkAction(deleteShareInfo);
     setOpenDeleteWarningModal(false);
-  }
+  };
 
   return (
     <section>
-      <Card className={'links-card'}>
-        <span className={'links-header'}>
+      <Card className={"links-card"}>
+        <span className={"links-header"}>
           <h3>Your Zoom Meetings</h3>
-          <Button variant='outlined' onClick={() => props.handleOpenProvisionAccessDialog()}>Provision Access</Button>
+          <Button
+            variant="outlined"
+            onClick={() => props.handleOpenProvisionAccessDialog()}
+          >
+            Provision Access
+          </Button>
         </span>
         <TableContainer component={Paper}>
-          <Table sx={{minWidth: 650}}>
+          <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 <TableCell align="left">Meeting Title</TableCell>
@@ -58,61 +63,73 @@ export default function ZoomMeetings(props) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {props.listOfShares.length > 0 && props.listOfShares.map((share, i) => (
-                <TableRow
-                  key={i}
-                  sx={{'&:last-child td, &:last-child th': {border: 0}}}
-                >
-                  <TableCell component="th" scope="row">
-                    {share.name}
-                  </TableCell>
-                  <TableCell align="left">
-                    <List>
-                      {share.humanizedAccessControlConditions.map((acc, i) => (
-                        <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
-                      ))}
-                    </List>
-                  </TableCell>
-                  <TableCell align="left">{DateTime.fromISO(share.startTime).toLocaleString(DATETIME_MED)}</TableCell>
-                  <TableCell align="left">{DateTime.fromISO(share.createdAt).toLocaleString(DATETIME_MED)}</TableCell>
-                  <TableCell align="left">
-                    <span className={'links-actions'}>
-                      {/*<IconButton size={'small'} onClick={props.handleEditLinkAction}>*/}
-                      {/*  <EditIcon/>*/}
-                      {/*</IconButton>*/}
-                      <Tooltip title={'Copy share link'}>
-                        <IconButton size={'small'} onClick={() => props.handleCopyLinkAction(share)}>
-                          <LinkIcon/>
-                        </IconButton>
-                      </Tooltip>
-                      {/*<IconButton size={'small'} onClick={props.handleDownloadLinkAction}>*/}
-                      {/*  <DownloadIcon/>*/}
-                      {/*</IconButton>*/}
-                      <Tooltip title={'Delete link'}>
-                        <IconButton size={'small'} onClick={() => handleOpenDeleteModal(share)}>
-                          <DeleteIcon/>
-                        </IconButton>
-                      </Tooltip>
-                    </span>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {props.listOfShares.length > 0 &&
+                props.listOfShares.map((share, i) => (
+                  <TableRow
+                    key={i}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {share.name}
+                    </TableCell>
+                    <TableCell align="left">
+                      {share.humanizedAccessControlConditions}
+                    </TableCell>
+                    <TableCell align="left">
+                      {DateTime.fromISO(share.startTime).toLocaleString(
+                        DATETIME_MED
+                      )}
+                    </TableCell>
+                    <TableCell align="left">
+                      {DateTime.fromISO(share.createdAt).toLocaleString(
+                        DATETIME_MED
+                      )}
+                    </TableCell>
+                    <TableCell align="left">
+                      <span className={"links-actions"}>
+                        {/*<IconButton size={'small'} onClick={props.handleEditLinkAction}>*/}
+                        {/*  <EditIcon/>*/}
+                        {/*</IconButton>*/}
+                        <Tooltip title={"Copy share link"}>
+                          <IconButton
+                            size={"small"}
+                            onClick={() => props.handleCopyLinkAction(share)}
+                          >
+                            <LinkIcon />
+                          </IconButton>
+                        </Tooltip>
+                        {/*<IconButton size={'small'} onClick={props.handleDownloadLinkAction}>*/}
+                        {/*  <DownloadIcon/>*/}
+                        {/*</IconButton>*/}
+                        <Tooltip title={"Delete link"}>
+                          <IconButton
+                            size={"small"}
+                            onClick={() => handleOpenDeleteModal(share)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
         </TableContainer>
       </Card>
-      <Dialog
-        open={openDeleteWarningModal}
-      >
+      <Dialog open={openDeleteWarningModal}>
         <DialogTitle>Warning</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete link titled <strong>{deleteShareInfo.name}</strong>?
+          Are you sure you want to delete link titled{" "}
+          <strong>{deleteShareInfo.name}</strong>?
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteWarningModal(false)}>
             Cancel
           </Button>
-          <Button onClick={() => handleConfirmDelete(deleteShareInfo)}>Yes</Button>
+          <Button onClick={() => handleConfirmDelete(deleteShareInfo)}>
+            Yes
+          </Button>
         </DialogActions>
       </Dialog>
     </section>

@@ -6,17 +6,23 @@ import reportWebVitals from "./reportWebVitals";
 import LitJsSdk from "lit-js-sdk";
 import Bugsnag from "@bugsnag/js";
 import BugsnagPluginReact from "@bugsnag/plugin-react";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 import { AppContextProvider } from "./context/app";
 
 dotenv.config({
-  path: '../.env'
+  path: "../.env",
 });
+
+console.log(
+  "process.env.REACT_APP_LIT_PROTOCOL_OAUTH_ENVIRONMENT",
+  process.env.REACT_APP_LIT_PROTOCOL_OAUTH_ENVIRONMENT
+);
 
 Bugsnag.start({
   apiKey: "cf16e209b17501304af19b24e1a89eb6",
   plugins: [new BugsnagPluginReact()],
-  releaseStage: process.env.LIT_PROTOCOL_OAUTH_ENVIRONMENT,
+  releaseStage: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_ENVIRONMENT,
+  enabledReleaseStages: ["production", "development"],
 });
 
 const ErrorBoundary = Bugsnag.getPlugin("react").createErrorBoundary(React);
