@@ -288,11 +288,12 @@ export default async function (fastify, opts) {
     }
 
     const draftOrderRequest = {
-      note: 'inaugural draft order',
+      note: `Draft order using: ${draftOrderDetails.title}`,
       line_items:
         [{
           // title: draftOrderDetails.title,
           title: product.title,
+          note: draftOrderDetails.title,
           // sku: sku,
           id: product.id,
           price: draftOrderDetails.price,
