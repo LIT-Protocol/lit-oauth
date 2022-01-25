@@ -56,20 +56,6 @@ export default async function (fastify, opts) {
     return typeOfAuth;
   })
 
-  fastify.post('/api/shopify/checkForAccessToken', async (request, reply) => {
-    console.log('Access token', request.body)
-    // const { shop } = request.body;
-    // const shortenedShopName = shortenShopName(shop);
-    // const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
-    // console.log('CHECK FOR ACCESS TOKEN', queryForExistingShop)
-    // if (queryForExistingShop.length) {
-    //   return true;
-    // } else {
-    //   return false;
-    // }
-    return 'ACCESS YO!'
-  })
-
   fastify.post('/api/shopify/deleteCallback', async (request, reply) => {
     console.log('DELETE CALLBACK BODY', request.body)
     return true;
@@ -290,7 +276,7 @@ export default async function (fastify, opts) {
 
     let id = draftOrderDetails.id;
     id = id.split('/').pop();
-    console.log('SKU', id)
+    console.log('GLOBAL ID', id)
 
     let product;
     try {
