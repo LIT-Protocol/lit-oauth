@@ -124,6 +124,7 @@ export default async function (fastify, opts) {
         humanized_access_control_conditions,
         active,
         title,
+        asset_id_on_service,
         asset_type,
         user_id,
         draft_order_details,
@@ -139,6 +140,7 @@ export default async function (fastify, opts) {
           humanized_access_control_conditions,
           active,
           title,
+          asset_id_on_service,
           asset_type,
           user_id,
           draft_order_details,
@@ -212,8 +214,8 @@ export default async function (fastify, opts) {
         const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
         console.log('Iterate over found DOs.  No:', i)
         console.log('Iterate over found DOs.  Req', request.body.productGid)
-        console.log('Iterate over found DOs.  asset:', d.asset_id_on_service)
-        return request.body.productGid === d.asset_id_on_service;
+        console.log('Iterate over found DOs.  asset:', d.assetIdOnService)
+        return request.body.productGid === d.assetIdOnService;
       })
       return filteredDraftOrders[0].id;
     } else {
