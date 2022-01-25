@@ -326,7 +326,7 @@ export default async function (fastify, opts) {
       console.log('err.name', err.name)
       console.log('err.code', err.code)
       console.log('err.timings', err.timings)
-      return null;
+      return err;
     }
   })
 

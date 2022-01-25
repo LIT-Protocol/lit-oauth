@@ -44,7 +44,7 @@ export default function GoogleLinks(props) {
         </span>
         {/*{props.listOfShares && props.listOfShares.length && (<TableContainer component={Paper}>*/}
         <TableContainer component={Paper}>
-          <Table sx={{minWidth: 650}}>
+          <Table sx={{ minWidth: 650 }}>
             <TableHead>
               <TableRow>
                 <TableCell align="left">File Name</TableCell>
@@ -59,16 +59,18 @@ export default function GoogleLinks(props) {
               {props.listOfShares.map((share, i) => (
                 <TableRow
                   key={i}
-                  sx={{'&:last-child td, &:last-child th': {border: 0}}}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell component="th" scope="row">
                     {share.name}
                   </TableCell>
                   <TableCell align="left">
                     <List>
-                      {share.humanizedAccessControlConditions.map((acc, i) => (
-                        <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
-                      ))}
+                      {!!share.humanizedAccessControlConditions && !!share.humanizedAccessControlConditions.length && (
+                        share.humanizedAccessControlConditions.map((acc, i) => (
+                          <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
+                        ))
+                      )}
                     </List>
                   </TableCell>
                   <TableCell align="left">{share.assetType}</TableCell>
