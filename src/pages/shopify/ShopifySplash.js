@@ -22,7 +22,7 @@ export default function ShopifySplash() {
       const shop = queryParams.get('shop');
       const productId = queryParams.get('productId');
       // TODO: comment back in
-      // window.history.replaceState(null, null, window.location.pathname);
+      window.history.replaceState(null, null, window.location.pathname);
       if (!shop) {
         setPromotionStatus('notFound');
       } else {
@@ -43,7 +43,7 @@ export default function ShopifySplash() {
         setPromotionStatus('found');
         console.log('${res.data}', res.data)
         // TODO: comment back in
-        // window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
+        window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
       }
     } catch (err) {
       console.log('Error retrieving access control conditions');
