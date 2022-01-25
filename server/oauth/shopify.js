@@ -194,15 +194,19 @@ export default async function (fastify, opts) {
 // NEW_SECTION: Start of customer calls
 
   fastify.post('/api/shopify/checkForPromotions', async (request, reply) => {
+    console.log('-->  start check for promotions', request.body)
     const shortenedShopName = shortenShopName(request.body.shopName);
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where('shop_name', '=', shortenedShopName);
 
+    console.log('-->  check for promotion shopId', shop[0].shopId)
+
     const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where('shop_id', '=', shop[0].shopId);
 
+    console.log('-->  check for promotion draftOrders', draftOrders)
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
         const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
