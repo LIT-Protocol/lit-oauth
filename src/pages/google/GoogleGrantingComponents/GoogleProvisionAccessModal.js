@@ -22,7 +22,7 @@ export default function GoogleProvisionAccessModal(props) {
   let picker;
 
   const loadPicker = () => {
-    window.gapi.load("picker", {callback: createPicker()});
+    window.gapi.load("picker", { callback: createPicker() });
   }
 
   const createPicker = async () => {
@@ -70,7 +70,7 @@ export default function GoogleProvisionAccessModal(props) {
         <DialogTitle className={"provision-access-header"}>
           Provision Access
         </DialogTitle>
-        <DialogContent style={{paddingBottom: "0"}}>
+        <DialogContent style={{ paddingBottom: "0" }}>
           <section className={"provision-access-container"}>
             <p>Google Drive Link</p>
             <span>
@@ -78,12 +78,12 @@ export default function GoogleProvisionAccessModal(props) {
                 disabled
                 value={props["file"] ? props.file["name"] : ""}
                 autoFocus
-                style={{paddingLeft: "0 !important"}}
+                style={{ paddingLeft: "0 !important" }}
                 fullWidth
                 InputProps={{
                   startAdornment: (
                     <Button
-                      style={{marginRight: "1rem", width: "10rem"}}
+                      style={{ marginRight: "1rem", width: "10rem" }}
                       onClick={() => loadPicker()}
                     >
                       Choose File
@@ -91,7 +91,7 @@ export default function GoogleProvisionAccessModal(props) {
                   ),
                   endAdornment: (
                     <IconButton
-                      style={{marginLeft: "0.5rem"}}
+                      style={{ marginLeft: "0.5rem" }}
                       onClick={() => {
                         props.setFile(null);
                         props.setAccessControlConditions([]);
@@ -120,28 +120,29 @@ export default function GoogleProvisionAccessModal(props) {
             </FormControl>
           </section>
         </DialogContent>
-        <DialogContent style={{paddingTop: "0"}}>
+        <DialogContent style={{ paddingTop: "0" }}>
           <section className={"provision-access-current-controls"}>
             <h4>Current Access Control Conditions</h4>
             {props.humanizedAccessControlArray.length > 0 && (
               <List dense={true}>
-                {props.humanizedAccessControlArray.map((acc, i) => (
-                  <ListItem
-                    key={i}
-                    className={"provision-access-control-item"}
-                    secondaryAction={
-                      <IconButton
-                        onClick={() => props.removeIthAccessControlCondition(i)}
-                      >
-                        <DeleteIcon/>
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText
-                      primary={acc}
-                    />
-                  </ListItem>
-                ))}
+                Humanized
+                {/*{props.humanizedAccessControlArray.map((acc, i) => (*/}
+                {/*  <ListItem*/}
+                {/*    key={i}*/}
+                {/*    className={"provision-access-control-item"}*/}
+                {/*    secondaryAction={*/}
+                {/*      <IconButton*/}
+                {/*        onClick={() => props.removeIthAccessControlCondition(i)}*/}
+                {/*      >*/}
+                {/*        <DeleteIcon/>*/}
+                {/*      </IconButton>*/}
+                {/*    }*/}
+                {/*  >*/}
+                {/*    <ListItemText*/}
+                {/*      primary={acc}*/}
+                {/*    />*/}
+                {/*  </ListItem>*/}
+                {/*))}*/}
               </List>
 
             )}
