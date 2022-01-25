@@ -35,6 +35,11 @@ export default function GoogleLinks(props) {
     setOpenDeleteWarningModal(false);
   }
 
+  useEffect(() => {
+    console.log('PROPS - GOOGLE LINK', props.listOfShares)
+  }, [props.listOfShares])
+
+
   return (
     <section>
       <Card className={'links-card'}>
@@ -66,11 +71,10 @@ export default function GoogleLinks(props) {
                   </TableCell>
                   <TableCell align="left">
                     <List>
-                      {!!share.humanizedAccessControlConditions && !!share.humanizedAccessControlConditions.length && (
-                        share.humanizedAccessControlConditions.map((acc, i) => (
-                          <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>
-                        ))
-                      )}
+                      Humanized for now
+                      {/*{share.humanizedAccessControlConditions.map((acc, i) => (*/}
+                      {/*  <ListItem className={'access-control-list-item'} disablePadding key={i}>- {acc}</ListItem>*/}
+                      {/*))}*/}
                     </List>
                   </TableCell>
                   <TableCell align="left">{share.assetType}</TableCell>
