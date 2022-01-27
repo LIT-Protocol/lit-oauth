@@ -1800,11 +1800,6 @@ shopify-api-node@^3.8.1:
     qs "^6.5.2"
     stopcock "^1.0.0"
 
-shopify-token@^4.0.4:
-  version "4.0.4"
-  resolved "https://registry.yarnpkg.com/shopify-token/-/shopify-token-4.0.4.tgz#6b31928816f31c58a02402b5f1c6596cbcda698c"
-  integrity sha512-wkAdXSr1T3kNf7BALXG9iybGhDimDts6aJSbMVNFqPu+seQaeHsgVN4hgUV9A0d/WkpByf4obNUMzVvht9rIkw==
-
 side-channel@^1.0.4:
   version "1.0.4"
   resolved "https://registry.npmjs.org/side-channel/-/side-channel-1.0.4.tgz"

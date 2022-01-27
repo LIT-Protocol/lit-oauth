@@ -1,10 +1,8 @@
 import { shortenProductId, shortenShopName, validateMerchantToken } from "./shopifyHelpers.js";
-import ShopifyToken from 'shopify-token';
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import axios from "axios";
-import { request } from "http2";
 
 dotenv.config({
   path: "../../env",
