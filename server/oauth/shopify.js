@@ -2,26 +2,10 @@ import { shortenProductId, shortenShopName, validateMerchantToken } from "./shop
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
-import axios from "axios";
 
 dotenv.config({
   path: "../../env",
 });
-
-const getApiSecret = (name) => {
-  if (name === 'lit-protocol') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET;
-  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET;
-}
-
-const getApiKey = (name) => {
-  if (name === 'lit-protocol') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY;
-  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY;
-}
-
-const getScopes = name => {
-  if (name === 'lit-protocol') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
-  if (name === 'lit-protocol-shop') return process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SCOPES;
-}
 
 export default async function (fastify, opts) {
   // NEW_SECTION: save auth
@@ -96,7 +80,7 @@ export default async function (fastify, opts) {
   // NEW_SECTION: merchant calls
 
   fastify.post('/api/shopify/checkIfProductHasBeenUsed', async (request, reply) => {
-    console.log('check GID', request.body.gid)
+    console.log('check BODY', request.body)
     // try {
     //   const result = await validateMerchantToken(request.headers.authorization);
     //   if (!result) {
