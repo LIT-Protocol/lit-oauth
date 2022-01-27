@@ -97,7 +97,7 @@ export default async function (fastify, opts) {
 
   // NEW_SECTION: merchant calls
 
-  fastify.post('/api/shopify/checkIfProductUsed', async (request, reply) => {
+  fastify.post('/api/shopify/checkIfProductHasBeenUsed', async (request, reply) => {
     console.log('check GID', request.body)
     // try {
     //   const result = await validateMerchantToken(request.headers.authorization);
