@@ -4,6 +4,7 @@ import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import axios from "axios";
+import { request } from "http2";
 
 dotenv.config({
   path: "../../env",
@@ -96,11 +97,24 @@ export default async function (fastify, opts) {
 
   // NEW_SECTION: merchant calls
 
+  fastify.post('/api/shopify/checkIfProductUsed', async (request, reply) => {
+    console.log('check GID', request.body)
+    try {
+      const result = await validateMerchantToken(request.headers.authorization);
+      if (!result) {
+        return 'Unauthorized';
+      }
+
+      const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
+      console.log('Check query for existing product', queryForExistingProduct)
+    } catch (err) {
+      return err;
+    }
+  })
+
   fastify.post('/api/shopify/saveDraftOrder', async (request, reply) => {
     try {
-      console.log('TOKEN', request.headers.authorization)
       const result = await validateMerchantToken(request.headers.authorization);
-      console.log('SAVE RESULT', result)
       if (!result) {
         return 'Unauthorized';
       }
