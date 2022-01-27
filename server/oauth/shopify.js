@@ -38,11 +38,6 @@ export default async function (fastify, opts) {
     return typeOfAuth;
   })
 
-  fastify.post('/api/shopify/deleteCallback', async (request, reply) => {
-    console.log('DELETE CALLBACK BODY', request.body)
-    return true;
-  })
-
   // NEW_SECTION: required shopify endpoints
 
   fastify.post('/api/shopify/getCustomerData', async (request, reply) => {
@@ -132,7 +127,8 @@ export default async function (fastify, opts) {
 
       return query.id;
     } catch (err) {
-      return 'Unauthorized';
+      console.error('--> Error saving draft order:', err);
+      return err;
     }
   })
 
@@ -151,7 +147,7 @@ export default async function (fastify, opts) {
 
       return draftOrders;
     } catch (err) {
-      console.log('Error time', err)
+      console.error('--> Error getting all draft orders:', err)
       return err;
     }
   })
@@ -171,7 +167,8 @@ export default async function (fastify, opts) {
 
       return draftOrders;
     } catch (err) {
-      return 'Unauthorized';
+      console.error('--> Error deleting draft order');
+      return '--> Error deleting draft order';
     }
   })
 
@@ -184,19 +181,12 @@ export default async function (fastify, opts) {
       .query()
       .where('shop_name', '=', shortenedShopName);
 
-    console.log('-->  check for promotion shopId', shop[0].shopId)
-
     const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where('shop_id', '=', shop[0].shopId);
 
-    console.log('-->  check for promotion draftOrders', draftOrders)
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
-        const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
-        console.log('Iterate over found DOs.  No:', i)
-        console.log('Iterate over found DOs.  Req', request.body.productGid)
-        console.log('Iterate over found DOs.  asset:', d.assetIdOnService)
         return request.body.productGid === d.assetIdOnService;
       })
       return filteredDraftOrders[0].id;
@@ -233,14 +223,8 @@ export default async function (fastify, opts) {
   })
 
   fastify.post('/api/shopify/redeemDraftOrder', async (request, reply) => {
-    console.log('REDEEM ORDER BODY', request.body)
     const { uuid, jwt } = request.body;
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
-    console.log('--> verified', verified)
-    console.log('--> baseUrl', payload.baseUrl, process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST)
-    console.log('--> compare baseUrl', payload.baseUrl === process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST)
-    console.log('--> payload path', payload.path, "/shopify/l/" + uuid)
-    console.log('--> compare payload path', payload.path === "/shopify/l/" + uuid)
     if (
       !verified ||
       payload.baseUrl !==
@@ -264,33 +248,24 @@ export default async function (fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    console.log('--> Draft order details', draftOrderDetails)
-
-    let sku = draftOrderDetails.sku;
-    sku = sku.split('/').pop();
-    console.log('SKU', sku)
-
     let id = draftOrderDetails.id;
     id = id.split('/').pop();
-    console.log('GLOBAL ID', id)
 
     let product;
     try {
-      // product = await shopify.product.get(sku)
       product = await shopify.product.get(id)
       console.log('product res', product)
     } catch (err) {
-      console.log('error getting product:', err)
+      console.error('--> Error getting product:', err)
+      return err;
     }
 
     const draftOrderRequest = {
       note: `Draft order using: ${draftOrderDetails.title}`,
       line_items:
         [{
-          // title: draftOrderDetails.title,
           title: product.title,
           // note: draftOrderDetails.title,
-          // sku: sku,
           id: product.id,
           price: draftOrderDetails.price,
           quantity: 1,
@@ -303,14 +278,11 @@ export default async function (fastify, opts) {
 
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest)
-      console.log('Draft order res', draftOrderRes)
       if (draftOrderRes) {
         return { redeemUrl: draftOrderRes.invoice_url, draftOrderDetails, product };
       }
     } catch (err) {
-      console.log('err.name', err.name)
-      console.log('err.code', err.code)
-      console.log('err.timings', err.timings)
+      console.error('--> Error creating draft order', err);
       return err;
     }
   })
