@@ -104,8 +104,9 @@ export default async function (fastify, opts) {
     //   }
 
     const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
-    // const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query()
+    const allQuery = await fastify.objection.models.shopifyDraftOrders.query()
     console.log('Check query for existing product', queryForExistingProduct)
+    console.log('Check all queries', allQuery)
     return queryForExistingProduct;
     // } catch (err) {
     //   return err;
