@@ -38,33 +38,26 @@ export default async function (fastify, opts) {
     return typeOfAuth;
   })
 
-  // NEW_SECTION: required shopify endpoints
+  // NEW_SECTION: required GDPR shopify endpoints
 
   fastify.post('/api/shopify/getCustomerData', async (request, reply) => {
-
-
-    return 'will return data'
+    // will not be needed because we do not store customer data
+    reply.code(200).send(true);
   })
 
   fastify.post('/api/shopify/deleteCustomerData', async (request, reply) => {
-
-    return 'will delete data'
+    // will not be needed because we do not store customer data
+    reply.code(200).send(true);
   })
 
   fastify.post('/api/shopify/deleteShopData', async (request, reply) => {
-    console.log('DELETE QUERY', request.query)
-    const { shop } = request.query;
-    const shortenedShopName = shortenShopName(shop);
-    // const result = await validateMerchantToken(request.headers.authorization);
-    //
-    // if (!result) {
-    //   return 'Unauthorized';
-    // }
-
-    const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
-
-    console.log('Query for existing shops delete', queryForExistingShop)
-    return 'will delete shop data'
+    const result = await validateMerchantToken(request.headers.authorization);
+    if (!result) {
+      reply.code(401).send('Unauthorized');
+      return;
+    }
+    // TODO: will need to be tested to delete shop data upon deleting the app
+    reply.code(200).send(true);
   })
 
   fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
