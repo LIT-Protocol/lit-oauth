@@ -103,8 +103,8 @@ export default async function (fastify, opts) {
     //     return 'Unauthorized';
     //   }
 
-    // const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
-    const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query()
+    const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
+    // const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query()
     console.log('Check query for existing product', queryForExistingProduct)
     return queryForExistingProduct;
     // } catch (err) {
