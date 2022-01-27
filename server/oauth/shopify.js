@@ -99,17 +99,18 @@ export default async function (fastify, opts) {
 
   fastify.post('/api/shopify/checkIfProductUsed', async (request, reply) => {
     console.log('check GID', request.body)
-    try {
-      const result = await validateMerchantToken(request.headers.authorization);
-      if (!result) {
-        return 'Unauthorized';
-      }
+    // try {
+    //   const result = await validateMerchantToken(request.headers.authorization);
+    //   if (!result) {
+    //     return 'Unauthorized';
+    //   }
 
-      const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
-      console.log('Check query for existing product', queryForExistingProduct)
-    } catch (err) {
-      return err;
-    }
+    const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', request.body.gid)
+    console.log('Check query for existing product', queryForExistingProduct)
+    return queryForExistingProduct;
+    // } catch (err) {
+    //   return err;
+    // }
   })
 
   fastify.post('/api/shopify/saveDraftOrder', async (request, reply) => {
