@@ -15,7 +15,6 @@ export default async function (fastify, opts) {
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores.query().where('shop_name', '=', shortenedShopName);
 
-    console.log('----> SAVE ACCESS TOKEN', request.body)
     let typeOfAuth = 'newCustomer';
     if (!queryForExistingShop.length) {
       await fastify.objection.models.shopifyStores
@@ -80,24 +79,19 @@ export default async function (fastify, opts) {
   // NEW_SECTION: merchant calls
 
   fastify.post('/api/shopify/checkIfProductHasBeenUsed', async (request, reply) => {
-    console.log('check BODY', request.body)
-    // try {
-    //   const result = await validateMerchantToken(request.headers.authorization);
-    //   if (!result) {
-    //     return 'Unauthorized';
-    //   }
+    try {
+      const result = await validateMerchantToken(request.headers.authorization);
+      if (!result) {
+        return 'Unauthorized';
+      }
+      const gid = request.body.gid;
 
-    const gid = request.body.gid;
-    console.log('double check GID', gid)
+      const queryForUsedProducts = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', gid)
 
-    const allQuery = await fastify.objection.models.shopifyDraftOrders.query()
-    const queryForExistingProduct = await fastify.objection.models.shopifyDraftOrders.query().where('asset_id_on_service', '=', gid)
-    console.log('Check query for existing product', queryForExistingProduct)
-    console.log('Check all queries', allQuery)
-    return queryForExistingProduct;
-    // } catch (err) {
-    //   return err;
-    // }
+      return queryForUsedProducts;
+    } catch (err) {
+      return err;
+    }
   })
 
   fastify.post('/api/shopify/saveDraftOrder', async (request, reply) => {
