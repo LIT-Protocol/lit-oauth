@@ -135,7 +135,6 @@ const ShopifyRedeem = () => {
   }
 
   const callRedeemDraftOrder = async () => {
-    setLoading(true);
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT in redeem draft order', jwt)
       try {
