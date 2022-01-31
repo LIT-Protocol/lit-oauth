@@ -222,7 +222,7 @@ const ShopifyRedeem = () => {
               </div>
             </CardContent>
             <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
-              {storedAuthSig && accessVerified && !loading(
+              {storedAuthSig && accessVerified && !loading && (
                 <Tooltip title={getSubmitTooltip()} placement="top">
                   <span className={"access-service-card-launch-button"} onClick={async () => {
                     await callRedeemDraftOrder()
