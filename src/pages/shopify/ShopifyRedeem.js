@@ -11,7 +11,7 @@ import {
   TextField,
   Tooltip
 } from "@mui/material";
-import { getPromotion, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
+import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -55,7 +55,7 @@ const ShopifyRedeem = () => {
 
   useEffect(() => {
     if (!!storedAuthSig && !accessVerified) {
-      setUpRedeemDraftOrder();
+      callSetUpRedeemDraftOrder();
     }
   }, [storedAuthSig])
 
@@ -116,7 +116,7 @@ const ShopifyRedeem = () => {
     }
   }
 
-  const setUpRedeemDraftOrder = async () => {
+  const callSetUpRedeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT', jwt)
       try {
