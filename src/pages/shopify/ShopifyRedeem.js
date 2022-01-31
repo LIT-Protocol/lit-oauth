@@ -141,9 +141,10 @@ const ShopifyRedeem = () => {
 
   const callRedeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('JWT', jwt)
+      console.log('JWT in redeem draft order', jwt)
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
+        console.log('Check redeem draft order', resp.data)
         window.location.href = resp.data.redeemUrl;
       } catch (err) {
         // ADD_ERROR_HANDLING
