@@ -32,7 +32,6 @@ export const setUpRedeemDraftOrder = async (uuid, jwt) => {
     });
 }
 
-
 export const redeemDraftOrder = async (uuid, jwt) => {
   return await axios
     .post(API_HOST + "/api/shopify/redeemDraftOrder", {

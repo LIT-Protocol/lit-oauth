@@ -33,7 +33,6 @@ const ShopifyRedeem = () => {
   const [storedAuthSig, setStoredAuthSig] = useState(null);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
-  const [redeemUrl, setRedeemUrl] = useState(null);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
 
   document.addEventListener('lit-ready', function (e) {
@@ -55,7 +54,7 @@ const ShopifyRedeem = () => {
   }, [draftOrderId, connectedToLitNodeClient])
 
   useEffect(() => {
-    if (!!storedAuthSig) {
+    if (!!storedAuthSig && !accessVerified) {
       setUpRedeemDraftOrder();
     }
   }, [storedAuthSig])
@@ -163,12 +162,6 @@ const ShopifyRedeem = () => {
       return 'Please sign in to wallet.';
     } else {
       return 'Click to redeem access.';
-    }
-  }
-
-  const makeSummary = () => {
-    if (draftOrderDetails.value === 0) {
-
     }
   }
 
