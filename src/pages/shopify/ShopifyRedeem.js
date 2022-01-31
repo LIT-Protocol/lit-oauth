@@ -140,7 +140,7 @@ const ShopifyRedeem = () => {
     })
   }
 
-  const redeemDraftOrder = async () => {
+  const callRedeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT', jwt)
       try {
@@ -234,7 +234,7 @@ const ShopifyRedeem = () => {
                 <Tooltip title={getSubmitTooltip()} placement="top">
                   <span className={"access-service-card-launch-button"} onClick={async () => {
                     // window.location.href = redeemUrl;
-                    await redeemDraftOrder()
+                    await callRedeemDraftOrder()
                   }}>
                     Redeem Promotion
                     <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
