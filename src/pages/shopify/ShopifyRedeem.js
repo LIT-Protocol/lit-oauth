@@ -56,7 +56,7 @@ const ShopifyRedeem = () => {
 
   useEffect(() => {
     if (!!storedAuthSig) {
-      redeemPromotion();
+      setUpRedeemDraftOrder();
     }
   }, [storedAuthSig])
 
@@ -115,23 +115,37 @@ const ShopifyRedeem = () => {
       console.log('Error getting JWT:', err)
       return null;
     }
-
-
   }
 
-  const redeemPromotion = async () => {
+  const setUpRedeemDraftOrder = async () => {
+    checkForPromotionAccessControl().then(async (jwt) => {
+      console.log('JWT', jwt)
+      try {
+        const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
+        setProduct(resp.data.product);
+        setDraftOrderDetails(resp.data.draftOrderDetails);
+        setAccessVerified(true);
+        setLoading(false);
+        // setRedeemUrl(resp.data.redeemUrl);
+        // window.location.href = resp.data.redeemUrl;
+      } catch (err) {
+        // ADD_ERROR_HANDLING
+        setLoading(false);
+        console.log('Error creating draft order:', err)
+      }
+    }).catch(err => {
+      // ADD_ERROR_HANDLING
+      setLoading(false);
+      console.log('Error provisioning access:', err);
+    })
+  }
+
+  const redeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT', jwt)
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
-        console.log('product data', resp.data);
-        setProduct(resp.data.product);
-        console.log('draft order info', resp.data.draftOrderDetails);
-        setDraftOrderDetails(resp.data.draftOrderDetails);
-        setAccessVerified(true);
-        setLoading(false);
-        setRedeemUrl(resp.data.redeemUrl);
-        // window.location.href = resp.data.redeemUrl;
+        window.location.href = resp.data.redeemUrl;
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
@@ -219,7 +233,8 @@ const ShopifyRedeem = () => {
               {storedAuthSig && accessVerified && !loading && (
                 <Tooltip title={getSubmitTooltip()} placement="top">
                   <span className={"access-service-card-launch-button"} onClick={async () => {
-                    window.location.href = redeemUrl;
+                    // window.location.href = redeemUrl;
+                    await redeemDraftOrder()
                   }}>
                     Redeem Promotion
                     <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">

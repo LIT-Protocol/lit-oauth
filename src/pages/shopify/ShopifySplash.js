@@ -7,7 +7,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
 const promotionStatusObj = {
   checking: 'Checking for promotion.',
-  notFound: 'Sorry, no promotion was found.',
+  notFound: 'Sorry, this promotion does not seem to exist.',
   found: 'Promotion found.'
 }
 

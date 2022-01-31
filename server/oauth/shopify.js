@@ -56,7 +56,7 @@ export default async function (fastify, opts) {
       reply.code(401).send('Unauthorized');
       return;
     }
-    // TODO: will need to be tested to delete shop data upon deleting the app
+    // TODO: will need to be expanded and tested to delete shop data upon deleting the app
     reply.code(200).send(true);
   })
 
@@ -215,6 +215,52 @@ export default async function (fastify, opts) {
     }
   })
 
+  fastify.post('/api/shopify/setUpDraftOrder', async (request, reply) => {
+    const { uuid, jwt } = request.body;
+    const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + uuid
+    ) {
+      return "Unauthorized."
+    }
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', request.body.uuid);
+
+    const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where('shop_id', '=', draftOrder[0].shopId);
+
+    const shopify = new Shopify({
+      shopName: shop[0].shopName,
+      accessToken: shop[0].accessToken,
+    });
+
+    let id = draftOrderDetails.id;
+    id = id.split('/').pop();
+
+    let product;
+    try {
+      product = await shopify.product.get(id)
+      console.log('--> Product details:', product)
+    } catch (err) {
+      console.error('--> Error getting product:', err)
+      return err;
+    }
+
+    try {
+      return { draftOrderDetails, product };
+    } catch (err) {
+      console.error('--> Error creating draft order', err);
+      return err;
+    }
+  })
+
   fastify.post('/api/shopify/redeemDraftOrder', async (request, reply) => {
     const { uuid, jwt } = request.body;
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
@@ -224,7 +270,7 @@ export default async function (fastify, opts) {
       `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/shopify/l/" + uuid
     ) {
-      return "JWT verification failed."
+      return "Unauthorized."
     }
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
@@ -272,13 +318,11 @@ export default async function (fastify, opts) {
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest)
       if (draftOrderRes) {
-        return { redeemUrl: draftOrderRes.invoice_url, draftOrderDetails, product };
+        return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {
-      console.error('--> Error creating draft order', err);
+      console.error('--> Error redeeming draft order', err);
       return err;
     }
   })
-
-
 }
