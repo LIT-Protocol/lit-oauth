@@ -33,6 +33,7 @@ const ShopifyRedeem = () => {
   const [storedAuthSig, setStoredAuthSig] = useState(null);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
+  const [redeemUrl, setRedeemUrl] = useState(null);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
 
   document.addEventListener('lit-ready', function (e) {
@@ -97,10 +98,6 @@ const ShopifyRedeem = () => {
       role: "customer",
       extraData: "",
     };
-    // console.log('--> Stored Auth Sig', storedAuthSig)
-    // console.log('--> Resource Id', resourceId)
-    // console.log('--> chain', chain)
-    // console.log('--> Acc', accessControlConditions)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
         accessControlConditions: accessControlConditions,
@@ -125,8 +122,6 @@ const ShopifyRedeem = () => {
         setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);
         setLoading(false);
-        // setRedeemUrl(resp.data.redeemUrl);
-        // window.location.href = resp.data.redeemUrl;
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
@@ -140,12 +135,15 @@ const ShopifyRedeem = () => {
   }
 
   const callRedeemDraftOrder = async () => {
+    setLoading(true);
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT in redeem draft order', jwt)
       try {
         const resp = await redeemDraftOrder(draftOrderId, jwt);
         console.log('Check redeem draft order', resp.data)
+        setRedeemUrl(resp.data.redeemUrl)
         window.location.href = resp.data.redeemUrl;
+        setLoading(false);
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
@@ -224,10 +222,9 @@ const ShopifyRedeem = () => {
               </div>
             </CardContent>
             <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
-              {storedAuthSig && accessVerified && !loading && (
+              {storedAuthSig && accessVerified && !loading(
                 <Tooltip title={getSubmitTooltip()} placement="top">
                   <span className={"access-service-card-launch-button"} onClick={async () => {
-                    // window.location.href = redeemUrl;
                     await callRedeemDraftOrder()
                   }}>
                     Redeem Promotion
