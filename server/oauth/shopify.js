@@ -2,6 +2,7 @@ import { shortenProductId, shortenShopName, validateMerchantToken } from "./shop
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
+import { sendSlackMetricsReportMessage } from "../utils.js";
 
 dotenv.config({
   path: "../../env",

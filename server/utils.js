@@ -1,4 +1,5 @@
-import atob from 'atob';
+import atob from "atob";
+import axios from "axios";
 
 const toCamel = (s) => {
   return s.replace(/([-_][a-z])/gi, ($1) => {
@@ -71,4 +72,14 @@ export const parseJwt = (token) => {
   );
 
   return JSON.parse(jsonPayload);
+};
+
+export const sendSlackMetricsReportMessage = ({ msg }) => {
+  const url =
+    "https://hooks.slack.com/services/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";
+  return axios.post(
+    url,
+    { text: msg },
+    { headers: { "Content-Type": "application/json" } }
+  );
 };
