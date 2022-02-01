@@ -207,7 +207,7 @@ const ShopifyRedeem = () => {
 
   const getRedeemButtonCondition = () => {
     if (loadingDraftOrderLink) {
-      return `<CircularProgress />`
+      return 'Loading...'
     } else if (!selectedProductVariant) {
       return 'Select a Product'
     } else {
