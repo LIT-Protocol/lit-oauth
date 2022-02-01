@@ -75,8 +75,10 @@ export const parseJwt = (token) => {
 };
 
 export const sendSlackMetricsReportMessage = ({ msg }) => {
-  const url =
-    "https://hooks.slack.com/services/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";
+  const url = process.env.LIT_PROTOCOL_OAUTH_SLACK_WEBHOOK_URL;
+  if (!url) {
+    return;
+  }
   return axios.post(
     url,
     { text: msg },
