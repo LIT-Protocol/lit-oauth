@@ -278,6 +278,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
     const { uuid, selectedProductVariant, jwt } = request.body;
+    console.log('---> Start of redeem draft order', request.body)
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||

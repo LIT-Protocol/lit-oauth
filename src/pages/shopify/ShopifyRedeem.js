@@ -31,6 +31,7 @@ const ShopifyRedeem = () => {
   const { performWithAuthSig } = useAppContext();
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
+  const [errorText, setErrorText] = useState(null);
 
   const [draftOrderId, setDraftOrderId] = useState(null);
   const [draftOrderDetails, setDraftOrderDetails] = useState(null);
@@ -107,6 +108,7 @@ const ShopifyRedeem = () => {
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
       console.log('check get Access Control resp', resp.data)
       return provisionAccess(resp.data.parsedAcc).then(jwt => {
+        console.log('provision access jwt', jwt)
         return jwt;
       });
     } catch (err) {
@@ -176,7 +178,7 @@ const ShopifyRedeem = () => {
       try {
         const resp = await redeemDraftOrder(draftOrderId, selectedProductVariant, jwt);
         console.log('Check redeem draft order', resp.data)
-        // window.location.href = resp.data.redeemUrl;
+        window.location.href = resp.data.redeemUrl;
         setLoading(false);
       } catch (err) {
         // ADD_ERROR_HANDLING
@@ -227,7 +229,7 @@ const ShopifyRedeem = () => {
                   <div>
                     <p>Sorry, you do not qualify for this promotion.</p>
                     <p>The conditions for access were not met.</p>
-                    <p>{humanizedAccessControlConditions}</p>
+                    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
                   </div>
                 )}
                 {storedAuthSig && accessVerified && !loading &&
