@@ -55,6 +55,11 @@
   height: 100%;
 }
 
+.redeem-service-card-content {
+  height: 20.5rem;
+  position: relative;
+}
+
 .product-information-container {
   display: flex;
   //flex-direction: column;
@@ -76,6 +81,9 @@
     width: 30%;
     padding: 0 3%;
     font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
 
     .product-detail {
       display: flex;
@@ -115,6 +123,21 @@
 
     }
   }
+}
 
+.redeem-card-actions {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
 
+  div {
+    position: absolute;
+    bottom: 0;
+
+    .MuiButton-root {
+      border-radius: 0;
+      padding: 1rem 2rem;
+    }
+  }
 }

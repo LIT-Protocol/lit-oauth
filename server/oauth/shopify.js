@@ -277,7 +277,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
-    const { uuid, jwt } = request.body;
+    const { uuid, selectedProductVariant, jwt } = request.body;
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||
@@ -320,6 +320,7 @@ export default async function (fastify, opts) {
         {
           title: product.title,
           // note: draftOrderDetails.title,
+          variant_id: selectedProductVariant.id,
           id: product.id,
           price: draftOrderDetails.price,
           quantity: 1,

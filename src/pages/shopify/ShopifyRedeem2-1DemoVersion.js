@@ -9,16 +9,12 @@ import {
   CircularProgress,
   Snackbar,
   TextField,
-  Select,
-  MenuItem,
-  Tooltip, FormControl, InputLabel
+  Tooltip
 } from "@mui/material";
 import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
-import { litMatrixShirtStub, litMatrixShirtDraftOrder } from "../../stubData/litMatrixShirtStub";
 
 const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -37,11 +33,8 @@ const ShopifyRedeem = () => {
   const [storedAuthSig, setStoredAuthSig] = useState(null);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
+  const [productVariants, setProductVariants] = useState(null);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
-
-  const [selectedProductVariant, setSelectedProductVariant] = useState('');
-  const [variantMenuOptions, setVariantMenuOptions] = useState('');
-  const [selectedVariantMenuOption, setSelectedVariantMenuOption] = useState('');
 
   document.addEventListener('lit-ready', function (e) {
     setConnectedToLitNodeClient(true);
@@ -63,26 +56,9 @@ const ShopifyRedeem = () => {
 
   useEffect(() => {
     if (!!storedAuthSig && !accessVerified) {
-      // TODO: comment back in
       callSetUpRedeemDraftOrder();
-
-      // TODO: for local dev, delete after use
-      // setAccessVerified(true);
-      // setLoading(false);
-      // setProduct(litMatrixShirtStub);
-      // setDraftOrderDetails(litMatrixShirtDraftOrder);
-      // formatSelectMenuOptions(litMatrixShirtStub);
     }
   }, [storedAuthSig])
-
-  useEffect(() => {
-    if (selectedVariantMenuOption.length) {
-      console.log('Selected Menu Option', selectedVariantMenuOption)
-      const selectedVariant = product.variants.find(v => v.option1 === selectedVariantMenuOption)
-      console.log('SelectedVariant', selectedVariant)
-      setSelectedProductVariant(selectedVariant);
-    }
-  }, [selectedVariantMenuOption])
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -144,9 +120,11 @@ const ShopifyRedeem = () => {
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
         console.log('--> data in setUpDO', resp.data)
+        if (resp.data.variants.length > 1) {
+          setProductVariants(resp.data.variants);
+        }
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
-        formatSelectMenuOptions(resp.data.product);
         setAccessVerified(true);
         setLoading(false);
       } catch (err) {
@@ -161,20 +139,13 @@ const ShopifyRedeem = () => {
     })
   }
 
-  const formatSelectMenuOptions = (product) => {
-    const mappedVariantRows = product.variants.map((p) => {
-      return p.option1
-    })
-    setVariantMenuOptions(mappedVariantRows);
-  }
-
   const callRedeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT in redeem draft order', jwt)
       try {
-        const resp = await redeemDraftOrder(draftOrderId, selectedProductVariant, jwt);
+        const resp = await redeemDraftOrder(draftOrderId, jwt);
         console.log('Check redeem draft order', resp.data)
-        // window.location.href = resp.data.redeemUrl;
+        window.location.href = resp.data.redeemUrl;
         setLoading(false);
       } catch (err) {
         // ADD_ERROR_HANDLING
@@ -191,8 +162,6 @@ const ShopifyRedeem = () => {
   const getSubmitTooltip = () => {
     if (!accessVerified) {
       return 'Please sign in to wallet.';
-    } else if (!selectedProductVariant) {
-      return 'Please select a product.';
     } else {
       return 'Click to redeem access.';
     }
@@ -213,7 +182,7 @@ const ShopifyRedeem = () => {
                 className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon/></p></a>
             </span>
             </CardContent>
-            <CardContent className={'redeem-service-card-content'}>
+            <CardContent className={'shopify-service-card-content'}>
               <div className={"center-content"}>
                 {((!storedAuthSig || !accessVerified && loading)) && (
                   <div>
@@ -245,18 +214,6 @@ const ShopifyRedeem = () => {
                         <p className={'product-attribute-label'}>Requirement:</p>
                         <p className={'product-condition'}>{humanizedAccessControlConditions}</p>
                       </span>
-                      {!!variantMenuOptions && (
-                        <FormControl fullWidth>
-                          <InputLabel>Select a product</InputLabel>
-                          <Select value={selectedVariantMenuOption} label={'Select a product'}
-                                  onChange={(e) => setSelectedVariantMenuOption(e.target.value)}
-                          >
-                            {variantMenuOptions.map((v, i) => (
-                              <MenuItem key={i} value={v}>{product.title} - {v}</MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      )}
                     </div>
                     <div className={'product-information-right'}>
                       <p>
@@ -267,21 +224,17 @@ const ShopifyRedeem = () => {
                 )}
               </div>
             </CardContent>
-            <CardActions className={'redeem-card-actions'} style={{ padding: '0' }}>
+            <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
               {storedAuthSig && accessVerified && !loading && (
                 <Tooltip title={getSubmitTooltip()} placement="top">
-                  {/*<span className={"access-service-card-launch-button"} onClick={async () => {*/}
-                  <div>
-                    <Button disabled={!selectedProductVariant} variant={"contained"} className={"redeem-button"}
-                            onClick={async () => {
-                              await callRedeemDraftOrder()
-                            }}>
-                      {!selectedProductVariant ? 'Select a Product' : 'Redeem Promotion'}
-                      {/*<svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
-                      {/*  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>*/}
-                      {/*</svg>*/}
-                    </Button>
-                  </div>
+                  <span className={"access-service-card-launch-button"} onClick={async () => {
+                    await callRedeemDraftOrder()
+                  }}>
+                    Redeem Promotion
+                    <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>
+                    </svg>
+                  </span>
                 </Tooltip>
               )}
             </CardActions>
