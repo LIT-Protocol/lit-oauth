@@ -1,5 +1,4 @@
 import {
-  shortenProductId,
   shortenShopName,
   validateMerchantToken,
 } from "./shopifyHelpers.js";
@@ -237,7 +236,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/shopify/l/" + uuid
     ) {
       return "Unauthorized.";
@@ -283,7 +282,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/shopify/l/" + uuid
     ) {
       return "Unauthorized.";

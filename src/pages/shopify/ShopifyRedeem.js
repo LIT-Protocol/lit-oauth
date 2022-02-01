@@ -79,6 +79,7 @@ const ShopifyRedeem = () => {
     try {
       const resp = await getAccessControl(draftOrderId);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
+      console.log('check get Access Control resp', resp.data)
       return provisionAccess(resp.data.parsedAcc).then(jwt => {
         return jwt;
       });
@@ -118,6 +119,7 @@ const ShopifyRedeem = () => {
       console.log('JWT', jwt)
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
+        console.log('--> data in setUpDO', resp.data)
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
         setAccessVerified(true);
