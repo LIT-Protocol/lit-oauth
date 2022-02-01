@@ -1,5 +1,5 @@
 import { authUser } from "../auth.js";
-import { keysToCamel } from "../utils.js";
+import { keysToCamel, sendSlackMetricsReportMessage } from "../utils.js";
 import LitJsSdk from "lit-js-sdk";
 import { getSharingLinkPath } from "../../src/pages/zoom/utils.js";
 import {
@@ -94,6 +94,10 @@ export default async function (fastify, opts) {
         refreshToken: data.refresh_token,
         scope: data.scope,
         extraData: JSON.stringify({ token: data, user }),
+      });
+
+      await sendSlackMetricsReportMessage({
+        msg: `Zoom account connected ${user.email} - ${authSig.address}`,
       });
     }
 
@@ -330,6 +334,10 @@ export default async function (fastify, opts) {
       access_control_conditions: JSON.stringify(accessControlConditions),
       name: meeting.topic,
       asset_type: meeting.type,
+    });
+
+    await sendSlackMetricsReportMessage({
+      msg: `Zoom meeting shared by ${userId}`,
     });
 
     const mostRecentShare = await fastify.objection.models.shares
