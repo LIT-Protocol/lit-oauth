@@ -101,7 +101,9 @@ const ShopifyRedeem = () => {
 
   const checkForPromotionAccessControl = async () => {
     try {
+      console.log('Check for Promo - start')
       const resp = await getAccessControl(draftOrderId);
+      console.log('Check for promo getAccessControl', resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
       console.log('check get Access Control resp', resp.data)
       return provisionAccess(resp.data.parsedAcc).then(jwt => {
