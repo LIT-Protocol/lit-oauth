@@ -83,7 +83,7 @@
     font-size: 14px;
     display: flex;
     flex-direction: column;
-    justify-content: space-around;
+    //justify-content: space-around;
 
     .product-detail {
       display: flex;
@@ -106,6 +106,8 @@
     .product-conditions {
       display: flex;
       font-weight: bold;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
 
       .product-condition {
         text-align: start;
