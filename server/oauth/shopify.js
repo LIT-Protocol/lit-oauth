@@ -341,4 +341,48 @@ export default async function (fastify, opts) {
       return err;
     }
   });
+
+  // TEST ENDPOINTS
+  fastify.post("/api/shopify/getProductInformation", async (request, reply) => {
+    // const { uuid, jwt } = request.body;
+    // const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
+    // if (
+    //   !verified ||
+    //   payload.baseUrl !==
+    //   `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+    //   payload.path !== "/shopify/l/" + uuid
+    // ) {
+    //   return "Unauthorized.";
+    // }
+    // const draftOrder = await fastify.objection.models.shopifyDraftOrders
+    //   .query()
+    //   .where("id", "=", request.body.uuid);
+
+    // const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_id", "=", request.body.shopId);
+
+    const shopify = new Shopify({
+      shopName: shop[0].shopName,
+      accessToken: shop[0].accessToken,
+    });
+
+    let product;
+    try {
+      product = await shopify.product.get(request.body.productId);
+      console.log("--> Product details:", product);
+    } catch (err) {
+      console.error("--> Error getting product:", err);
+      return err;
+    }
+
+    try {
+      return { product };
+    } catch (err) {
+      console.error("--> Error creating draft order", err);
+      return err;
+    }
+  });
 }

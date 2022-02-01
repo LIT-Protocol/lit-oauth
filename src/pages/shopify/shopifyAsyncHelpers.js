@@ -39,3 +39,11 @@ export const redeemDraftOrder = async (uuid, jwt) => {
       jwt
     });
 }
+
+export const getProductInformation = async (shopId, productId) => {
+  return await axios
+    .post(API_HOST + "/api/shopify/getProductInformation", {
+      shopId,
+      productId
+    });
+}
