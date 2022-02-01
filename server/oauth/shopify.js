@@ -359,10 +359,13 @@ export default async function (fastify, opts) {
     //   .where("id", "=", request.body.uuid);
 
     // const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+    console.log('Get Product Info Body', request.body)
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
-      .where("shop_id", "=", request.body.shopId);
+      .where("shop_name", "=", request.body.shopName);
+
+    console.log('Get Product Info Shop', shop)
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -381,7 +384,7 @@ export default async function (fastify, opts) {
     try {
       return { product };
     } catch (err) {
-      console.error("--> Error creating draft order", err);
+      console.error("--> Error returning product info", err);
       return err;
     }
   });
