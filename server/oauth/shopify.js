@@ -323,7 +323,7 @@ export default async function (fastify, opts) {
           // note: draftOrderDetails.title,
           variant_id: selectedProductVariant.id,
           id: product.id,
-          price: draftOrderDetails.price,
+          price: selectedProductVariant.price,
           quantity: 1,
           applied_discount: {
             value_type: draftOrderDetails.valueType.toLowerCase(),

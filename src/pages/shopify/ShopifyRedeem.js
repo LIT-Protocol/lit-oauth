@@ -44,6 +44,8 @@ const ShopifyRedeem = () => {
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
   const [selectedVariantMenuOption, setSelectedVariantMenuOption] = useState('');
 
+  const [loadingDraftOrderLink, setLoadingDraftOrderLink] = useState(false);
+
   document.addEventListener('lit-ready', function (e) {
     setConnectedToLitNodeClient(true);
   }, false)
@@ -79,7 +81,7 @@ const ShopifyRedeem = () => {
   useEffect(() => {
     if (selectedVariantMenuOption.length) {
       console.log('Selected Menu Option', selectedVariantMenuOption)
-      const selectedVariant = product.variants.find(v => v.option1 === selectedVariantMenuOption)
+      const selectedVariant = product.variants.find(v => v.title === selectedVariantMenuOption)
       console.log('SelectedVariant', selectedVariant)
       setSelectedProductVariant(selectedVariant);
     }
@@ -167,12 +169,13 @@ const ShopifyRedeem = () => {
 
   const formatSelectMenuOptions = (product) => {
     const mappedVariantRows = product.variants.map((p) => {
-      return p.option1
+      return p.title
     })
     setVariantMenuOptions(mappedVariantRows);
   }
 
   const callRedeemDraftOrder = async () => {
+    setLoadingDraftOrderLink(true);
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT in redeem draft order', jwt)
       try {
@@ -199,6 +202,16 @@ const ShopifyRedeem = () => {
       return 'Please select a product.';
     } else {
       return 'Click to redeem access.';
+    }
+  }
+
+  const getRedeemButtonCondition = () => {
+    if (loadingDraftOrderLink) {
+      return `<CircularProgress />`
+    } else if (!selectedProductVariant) {
+      return 'Select a Product'
+    } else {
+      return 'Redeem Promotion'
     }
   }
 
@@ -280,7 +293,7 @@ const ShopifyRedeem = () => {
                             onClick={async () => {
                               await callRedeemDraftOrder()
                             }}>
-                      {!selectedProductVariant ? 'Select a Product' : 'Redeem Promotion'}
+                      {getRedeemButtonCondition()}
                       {/*<svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
                       {/*  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>*/}
                       {/*</svg>*/}
