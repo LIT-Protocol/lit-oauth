@@ -201,11 +201,46 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteDraftOrder", async (request, reply) => {
+    console.log('Delete draft order request body', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
 
       if (!result) {
         return "Unauthorized";
+      }
+
+      const shop = await fastify.objection.models.shopifyStores
+        .query()
+        .where("shop_id", "=", request.body.shopId);
+
+      console.log('Delete draft order shop', shop)
+
+      const shopify = new Shopify({
+        shopName: shop[0].shopName,
+        accessToken: shop[0].accessToken,
+      });
+
+      let id = shop.assetIdOnService;
+      id = id.split("/").pop();
+
+      let product;
+      let splitTags;
+      try {
+        product = await shopify.product.get(id);
+        splitTags = product.tags.split(',');
+        console.log("--> Product details on save DO:", product);
+      } catch (err) {
+        console.error("--> Error getting product on save DO:", err);
+        return err;
+      }
+
+      try {
+        const filteredTags = splitTags.filter(t => (t !== 'lit-discount' || t !== 'lit-exclusive'));
+        product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+        console.log("--> Update product on save DO:", product);
+      } catch (err) {
+        console.error("--> Error updating product on save DO:", err);
+        return err;
       }
 
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
