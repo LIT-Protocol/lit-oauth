@@ -131,11 +131,27 @@ export default async function (fastify, opts) {
       id = id.split("/").pop();
 
       let product;
+      let splitTags;
       try {
         product = await shopify.product.get(id);
+        splitTags = product.tags.split(',');
         console.log("--> Product details on save DO:", product);
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
+        return err;
+      }
+
+      if (asset_type === 'exclusive') {
+        splitTags.push('lit-exclusive');
+      } else if (asset_type === 'discount') {
+        splitTags.push('lit-discount');
+      }
+
+      try {
+        product = await shopify.product.update(id, { tags: splitTags.join(',') });
+        console.log("--> Update product on save DO:", product);
+      } catch (err) {
+        console.error("--> Error updating product on save DO:", err);
         return err;
       }
 
@@ -154,6 +170,8 @@ export default async function (fastify, opts) {
           extra_data,
           summary,
         });
+
+      console.log('Saved draft order', query)
 
       return query.id;
     } catch (err) {
