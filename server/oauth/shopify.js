@@ -235,6 +235,7 @@ export default async function (fastify, opts) {
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
+      console.log('---> CHECK FILTERED TAGS', filteredTags)
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
     } catch (err) {
       console.error("--> Error updating product on save DO:", err);
