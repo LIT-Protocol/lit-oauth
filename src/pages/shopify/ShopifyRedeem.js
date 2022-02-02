@@ -54,15 +54,15 @@ const ShopifyRedeem = () => {
     if (!connectedToLitNodeClient) {
       connectToLitNode();
     }
-    if (!draftOrderId && connectedToLitNodeClient) {
-      const queryString = window.location.search;
-      const queryParams = new URLSearchParams(queryString);
-      const id = queryParams.get('id');
-      setDraftOrderId(id);
-      // window.history.replaceState(null, null, window.location.pathname);
-      signIntoLit();
-    }
-  }, [draftOrderId, connectedToLitNodeClient])
+    // if (!draftOrderId && connectedToLitNodeClient) {
+    //   const queryString = window.location.search;
+    //   const queryParams = new URLSearchParams(queryString);
+    //   const id = queryParams.get('id');
+    //   setDraftOrderId(id);
+    //   // window.history.replaceState(null, null, window.location.pathname);
+    //   signIntoLit();
+    // }
+  }, [connectedToLitNodeClient])
 
   useEffect(() => {
     if (!!storedAuthSig && !accessVerified) {
@@ -91,6 +91,12 @@ const ShopifyRedeem = () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
     await litNodeClient.connect();
     window.litNodeClient = litNodeClient;
+    const queryString = window.location.search;
+    const queryParams = new URLSearchParams(queryString);
+    const id = queryParams.get('id');
+    setDraftOrderId(id);
+    // window.history.replaceState(null, null, window.location.pathname);
+    signIntoLit();
   }
 
   const signIntoLit = async () => {
