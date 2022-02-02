@@ -39,6 +39,7 @@ const ShopifyRedeem = () => {
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
+  const [chain, setChain] = useState(null);
 
   const [selectedProductVariant, setSelectedProductVariant] = useState('');
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
@@ -54,27 +55,11 @@ const ShopifyRedeem = () => {
     if (!connectedToLitNodeClient) {
       connectToLitNode();
     }
-    // if (!draftOrderId && connectedToLitNodeClient) {
-    //   const queryString = window.location.search;
-    //   const queryParams = new URLSearchParams(queryString);
-    //   const id = queryParams.get('id');
-    //   setDraftOrderId(id);
-    //   // window.history.replaceState(null, null, window.location.pathname);
-    //   signIntoLit();
-    // }
   }, [connectedToLitNodeClient])
 
   useEffect(() => {
     if (!!storedAuthSig && !accessVerified) {
-      // TODO: comment back in
       callSetUpRedeemDraftOrder();
-
-      // TODO: for local dev, delete after use
-      // setAccessVerified(true);
-      // setLoading(false);
-      // setProduct(litMatrixShirtStub);
-      // setDraftOrderDetails(litMatrixShirtDraftOrder);
-      // formatSelectMenuOptions(litMatrixShirtStub);
     }
   }, [storedAuthSig])
 
@@ -95,7 +80,6 @@ const ShopifyRedeem = () => {
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
     setDraftOrderId(id);
-    // window.history.replaceState(null, null, window.location.pathname);
     signIntoLit();
   }
 
@@ -128,6 +112,7 @@ const ShopifyRedeem = () => {
 
   const provisionAccess = async (accessControlConditions) => {
     const chain = accessControlConditions[0].chain;
+    setChain(chain);
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
       path: "/shopify/l/" + draftOrderId,
@@ -249,6 +234,7 @@ const ShopifyRedeem = () => {
                     <p>Sorry, you do not qualify for this promotion.</p>
                     <p>The conditions for access were not met.</p>
                     <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
+                    <p>{chain ? `On chain: ${chain}}}` : ''}</p>
                   </div>
                 )}
                 {storedAuthSig && accessVerified && !loading &&
