@@ -141,6 +141,7 @@ export default async function (fastify, opts) {
         return err;
       }
 
+      console.log('---> Saves asset type', asset_type)
       if (asset_type === 'exclusive') {
         splitTags.push('lit-exclusive');
       } else if (asset_type === 'discount') {
