@@ -213,7 +213,6 @@ export default async function (fastify, opts) {
       .where("shop_id", "=", request.body.shopId);
 
     // deletes exclusive or discount tag from deleted draft order
-    console.log('Delete draft order shop', shop)
     const draftToDelete = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.id);
@@ -222,8 +221,6 @@ export default async function (fastify, opts) {
       shopName: shop[0].shopName,
       accessToken: shop[0].accessToken,
     });
-
-    console.log('Delete draft order entry', draftToDelete)
 
     let id = draftToDelete[0].assetIdOnService;
     console.log('Check asset Id', id)
@@ -242,8 +239,7 @@ export default async function (fastify, opts) {
     }
 
     try {
-      const filteredTags = splitTags.filter(t => (t !== 'lit-discount' || t !== 'lit-exclusive'));
-      console.log('Check filtered tags in delete', filteredTags)
+      const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
       console.log("--> Update product on save DO:", product);
     } catch (err) {
