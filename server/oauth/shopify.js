@@ -103,6 +103,7 @@ export default async function (fastify, opts) {
       if (!result) {
         return "Unauthorized";
       }
+
       const {
         shop_id,
         access_control_conditions,
@@ -116,6 +117,27 @@ export default async function (fastify, opts) {
         extra_data,
         summary,
       } = request.body;
+
+      const shop = await fastify.objection.models.shopifyStores
+        .query()
+        .where("shop_id", "=", shop_id);
+
+      const shopify = new Shopify({
+        shopName: shop[0].shopName,
+        accessToken: shop[0].accessToken,
+      });
+
+      let id = asset_id_on_service;
+      id = id.split("/").pop();
+
+      let product;
+      try {
+        product = await shopify.product.get(id);
+        console.log("--> Product details on save DO:", product);
+      } catch (err) {
+        console.error("--> Error getting product on save DO:", err);
+        return err;
+      }
 
       const query = await fastify.objection.models.shopifyDraftOrders
         .query()
