@@ -210,21 +210,22 @@ export default async function (fastify, opts) {
       return "Unauthorized";
     }
 
-    const draftToDelete = await fastify.objection.models.shopifyDraftOrders
-      .query()
-      .where("id", "=", request.body.id);
-
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_id", "=", request.body.shopId);
 
     // deletes exclusive or discount tag from deleted draft order
     console.log('Delete draft order shop', shop)
+    const draftToDelete = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.id);
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
       accessToken: shop[0].accessToken,
     });
+
+    console.log('Delete draft order entry', draftToDelete)
 
     let id = draftToDelete.assetIdOnService;
     id = id.split("/").pop();
