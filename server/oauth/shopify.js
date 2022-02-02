@@ -210,6 +210,10 @@ export default async function (fastify, opts) {
       return "Unauthorized";
     }
 
+    const draftToDelete = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.id);
+
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_id", "=", request.body.shopId);
@@ -222,15 +226,15 @@ export default async function (fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    let id = shop.assetIdOnService;
+    let id = draftToDelete.assetIdOnService;
     id = id.split("/").pop();
 
     let product;
     let splitTags;
     try {
       product = await shopify.product.get(id);
-      splitTags = product.tags.split(',');
       console.log("--> Product details on save DO:", product);
+      splitTags = product.tags.split(',');
     } catch (err) {
       console.error("--> Error getting product on save DO:", err);
       return err;
