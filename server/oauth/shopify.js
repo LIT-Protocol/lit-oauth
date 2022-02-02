@@ -141,7 +141,6 @@ export default async function (fastify, opts) {
         return err;
       }
 
-      console.log('---> Saves asset type', asset_type)
       if (asset_type === 'exclusive') {
         splitTags.push('lit-exclusive');
       } else if (asset_type === 'discount') {
@@ -183,9 +182,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/getAllUserDraftOrders", async (request, reply) => {
     try {
-      console.log("BEFORE GET ALL DRAFT ORDERS", request.body);
       const result = await validateMerchantToken(request.headers.authorization);
-      console.log("AFTER CHECK TOKEN", result);
       if (!result) {
         return "Unauthorized";
       }
@@ -224,15 +221,12 @@ export default async function (fastify, opts) {
     });
 
     let id = draftToDelete[0].assetIdOnService;
-    console.log('Check asset Id', id)
     id = id.split("/").pop();
-    console.log('Check split id', id)
 
     let product;
     let splitTags;
     try {
       product = await shopify.product.get(id);
-      console.log("--> Product details on save DO:", product);
       splitTags = product.tags.split(',');
     } catch (err) {
       console.error("--> Error getting product on save DO:", err);
@@ -242,7 +236,6 @@ export default async function (fastify, opts) {
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
-      console.log("--> Update product on save DO:", product);
     } catch (err) {
       console.error("--> Error updating product on save DO:", err);
       return err;
