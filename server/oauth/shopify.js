@@ -228,7 +228,9 @@ export default async function (fastify, opts) {
     console.log('Delete draft order entry', draftToDelete)
 
     let id = draftToDelete.assetIdOnService;
+    console.log('Check asset Id', id)
     id = id.split("/").pop();
+    console.log('Check split id', id)
 
     let product;
     let splitTags;
