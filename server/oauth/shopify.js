@@ -136,7 +136,6 @@ export default async function (fastify, opts) {
       try {
         product = await shopify.product.get(id);
         splitTags = product.tags.split(',');
-        console.log("--> Product details on save DO:", product);
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
         return err;
@@ -150,7 +149,6 @@ export default async function (fastify, opts) {
 
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
-        console.log("--> Update product on save DO:", product);
       } catch (err) {
         console.error("--> Error updating product on save DO:", err);
         return err;
@@ -227,7 +225,7 @@ export default async function (fastify, opts) {
 
     console.log('Delete draft order entry', draftToDelete)
 
-    let id = draftToDelete.assetIdOnService;
+    let id = draftToDelete[0].assetIdOnService;
     console.log('Check asset Id', id)
     id = id.split("/").pop();
     console.log('Check split id', id)
