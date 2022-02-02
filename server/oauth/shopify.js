@@ -238,6 +238,7 @@ export default async function (fastify, opts) {
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' || t !== 'lit-exclusive'));
+      console.log('Check filtered tags in delete', filteredTags)
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
       console.log("--> Update product on save DO:", product);
     } catch (err) {
