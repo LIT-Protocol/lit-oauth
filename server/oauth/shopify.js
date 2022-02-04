@@ -15,6 +15,7 @@ export default async function (fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
+    console.log('Check start of save access token')
     const { shop, accessToken, email } = request.body;
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
@@ -42,7 +43,9 @@ export default async function (fastify, opts) {
         });
     }
 
-    return typeOfAuth;
+    reply.code(200);
+    console.log('---> Right before end of save access token')
+    return true;
   });
 
   // NEW_SECTION: required GDPR shopify endpoints
