@@ -66,6 +66,7 @@ export default async function (fastify, opts) {
       reply.code(401).send("Unauthorized");
       return;
     }
+    console.log('Webhook to delete shop data')
     // TODO: will need to be expanded and tested to delete shop data upon deleting the app
     reply.code(200).send(true);
   });
