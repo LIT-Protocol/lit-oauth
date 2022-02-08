@@ -1,8 +1,8 @@
 import BaseModel from "./BaseModel.js";
 
-export default class ShopifyShares extends BaseModel {
+export default class ShopifyDraftOrders extends BaseModel {
   static get tableName() {
-    return "shopify_shares";
+    return "shopify_draft_orders";
   }
 
   static get columns() {
@@ -16,7 +16,7 @@ export default class ShopifyShares extends BaseModel {
       'summary',
       'asset_type',
       'user_id',
-      'discount_details',
+      'draft_order_details',
       'extra_data',
       'active'
     ];

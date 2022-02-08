@@ -1,0 +1,145 @@
+.full-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f0eef5;
+}
+
+.shopify-redeem-container {
+  width: 30rem;
+  min-height: 13rem;
+  padding: 1rem;
+  border: 1px solid #2C0C72;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, .25));
+}
+
+.logo-container {
+  margin-bottom: 1rem;
+}
+
+.shopify-logo {
+  height: 4rem;
+  width: 4rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.logo-plus {
+  padding: 0 0.5rem;
+}
+
+.lit-logo {
+  height: 5rem;
+  width: 4rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+}
+
+.spinner {
+  margin-bottom: 1rem;
+}
+
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.redeem-service-card-content {
+  height: 20.5rem;
+  position: relative;
+}
+
+.product-information-container {
+  display: flex;
+  //flex-direction: column;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  margin-top: 1rem;
+  //align-items: center;
+
+  .product-information-left {
+    width: 25%;
+
+    .product-image {
+      width: 100%;
+    }
+  }
+
+  .product-information-center {
+    width: 30%;
+    padding: 0 3%;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    //justify-content: space-around;
+
+    .product-detail {
+      display: flex;
+      justify-content: start;
+
+    }
+
+    .product-attribute-label {
+      min-width: 5.5rem;
+      margin-right: 2rem;
+      text-align: start;
+      font-weight: bold;
+    }
+
+    .product-discount {
+      text-align: start;
+      font-weight: bold;
+    }
+
+    .product-conditions {
+      display: flex;
+      font-weight: bold;
+      margin-top: 1rem;
+      margin-bottom: 2rem;
+
+      .product-condition {
+        text-align: start;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+    }
+  }
+
+  .product-information-right {
+    width: 33%;
+    text-align: left;
+
+    .product-title {
+
+    }
+  }
+}
+
+.redeem-card-actions {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: flex-end;
+
+  div {
+    position: absolute;
+    bottom: 0;
+
+    .MuiButton-root {
+      border-radius: 0;
+      padding: 1rem 2rem;
+    }
+  }
+}
