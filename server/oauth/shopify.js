@@ -17,9 +17,11 @@ export default async function (fastify, opts) {
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
+    console.log('--> Check save token', request.body)
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
+
 
     let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
