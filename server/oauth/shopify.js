@@ -16,10 +16,24 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
+    console.log('---> SHOP, ACCESS TOKEN', shop, accessToken)
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
+
+    try {
+      const shopify = new Shopify({
+        shopName: shop,
+        accessToken: accessToken,
+      });
+
+      let shopDetails = await shopify.shop.get([shop, accessToken]);
+      console.log('---> Success: shopDetails', shopDetails)
+
+    } catch (err) {
+      console.log('----> Error getting shopify details')
+    }
 
     let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
@@ -109,6 +123,7 @@ export default async function (fastify, opts) {
 
       const {
         shop_id,
+        shop_name,
         access_control_conditions,
         humanized_access_control_conditions,
         active,
@@ -128,7 +143,8 @@ export default async function (fastify, opts) {
 
       const shop = await fastify.objection.models.shopifyStores
         .query()
-        .where("shop_id", "=", shop_id);
+        // .where("shop_id", "=", shop_id);
+        .where("shop_name", "=", shortenShopName(shop_name));
 
       console.log('---> saveDraftOrder, check shop data', shop)
 
@@ -476,4 +492,7 @@ export default async function (fastify, opts) {
       return err;
     }
   });
+
+  // TODO: delete all stores in db
+  // fastify.post()
 }
