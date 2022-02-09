@@ -223,7 +223,7 @@ const ShopifyRedeem = () => {
             </CardContent>
             <CardContent className={'redeem-service-card-content'}>
               <div className={"center-content"}>
-                {((!storedAuthSig || !accessVerified && loading)) && (
+                {((!storedAuthSig || !accessVerified) && loading) && (
                   <div>
                     <CircularProgress className={"spinner"}/>
                     <p>Signing in.</p>

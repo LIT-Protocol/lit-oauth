@@ -126,6 +126,8 @@ export default async function (fastify, opts) {
         .query()
         .where("shop_id", "=", shop_id);
 
+      console.log('---> saveDraftOrder, check shop data', shop)
+
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
         shopName: shop[0].shopName,
