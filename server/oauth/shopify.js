@@ -16,6 +16,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
+    console.log('---> SHOP, ACCESS TOKEN', shop, accessToken)
     const shortenedShopName = shortenShopName(shop);
     console.log('--> Check save token', request.body)
     const queryForExistingShop = await fastify.objection.models.shopifyStores
@@ -25,10 +26,26 @@ export default async function (fastify, opts) {
 
     let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
+      let shopDetails;
+
+      try {
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        shopDetails = await shopify.shop.get([shop, accessToken]);
+        console.log('---> Success: shopDetails', shopDetails)
+
+      } catch (err) {
+        console.log('----> Error getting shopify details')
+      }
+
       await fastify.objection.models.shopifyStores.query().insert({
         shop_name: shortenedShopName,
         access_token: accessToken,
         email: email,
+        shop_id: shopDetails.id
       });
       await sendSlackMetricsReportMessage({
         msg: `Shopify account connected ${email}`,
@@ -111,6 +128,7 @@ export default async function (fastify, opts) {
 
       const {
         shop_id,
+        shop_name,
         access_control_conditions,
         humanized_access_control_conditions,
         active,
@@ -130,7 +148,8 @@ export default async function (fastify, opts) {
 
       const shop = await fastify.objection.models.shopifyStores
         .query()
-        .where("shop_id", "=", shop_id);
+        // .where("shop_id", "=", shop_id);
+        .where("shop_name", "=", shortenShopName(shop_name));
 
       console.log('---> saveDraftOrder, check shop data', shop)
 
@@ -478,4 +497,13 @@ export default async function (fastify, opts) {
       return err;
     }
   });
+
+  // TODO: delete all stores in db
+  fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .delete()
+
+    return 'success deleting'
+  })
 }
