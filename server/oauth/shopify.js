@@ -22,25 +22,27 @@ export default async function (fastify, opts) {
       .query()
       .where("shop_name", "=", shortenedShopName);
 
-    try {
-      const shopify = new Shopify({
-        shopName: shop,
-        accessToken: accessToken,
-      });
-
-      let shopDetails = await shopify.shop.get([shop, accessToken]);
-      console.log('---> Success: shopDetails', shopDetails)
-
-    } catch (err) {
-      console.log('----> Error getting shopify details')
-    }
 
     let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
+      let shopDetails;
+      try {
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        let shopDetails = await shopify.shop.get([shop, accessToken]);
+        console.log('---> Success: shopDetails', shopDetails)
+
+      } catch (err) {
+        console.log('----> Error getting shopify details')
+      }
       await fastify.objection.models.shopifyStores.query().insert({
         shop_name: shortenedShopName,
         access_token: accessToken,
         email: email,
+        shop_id: shopDetails.id
       });
       await sendSlackMetricsReportMessage({
         msg: `Shopify account connected ${email}`,
