@@ -241,8 +241,10 @@ const ShopifyRedeem = () => {
                 !!product && !!draftOrderDetails && (
                   <div className={'product-information-container'}>
                     <div className={'product-information-left'}>
-                      {!!product['images'].length && !!product.images['0']['src'] && (
+                      {(!!product['images'].length && !!product.images['0']['src']) ? (
                         <img className={"product-image"} src={product.images[0].src}/>
+                      ) : (
+                        <div className={"no-product-image"}>No image available</div>
                       )}
                     </div>
                     <div className={'product-information-center'}>
