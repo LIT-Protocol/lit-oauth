@@ -498,11 +498,11 @@ export default async function (fastify, opts) {
   });
 
   // TODO: delete all stores in db
-  fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
+  fastify.post('/api/shopify/testDelete', async (request, reply) => {
     console.log('--> Delete stores')
-    // const shop = await fastify.objection.models.shopifyStores
-    //   .query()
-    //   .delete()
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .delete()
 
     return 'success deleting'
   })
