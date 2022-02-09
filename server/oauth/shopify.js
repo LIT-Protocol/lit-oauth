@@ -26,7 +26,7 @@ export default async function (fastify, opts) {
     let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
       let shopDetails;
-      
+
       try {
         const shopify = new Shopify({
           shopName: shop,
@@ -498,5 +498,11 @@ export default async function (fastify, opts) {
   });
 
   // TODO: delete all stores in db
-  // fastify.post()
+  fastify.post('/api/shopify/testEndpoint', async (request, reply) => {
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .delete()
+
+    return 'success deleting'
+  })
 }
