@@ -16,9 +16,7 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
-    console.log('---> SHOP, ACCESS TOKEN', shop, accessToken)
     const shortenedShopName = shortenShopName(shop);
-    console.log('--> Check save token', request.body)
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
@@ -35,10 +33,9 @@ export default async function (fastify, opts) {
         });
 
         shopDetails = await shopify.shop.get([shop, accessToken]);
-        console.log('---> Success: shopDetails', shopDetails)
 
       } catch (err) {
-        console.log('----> Error getting shopify details')
+        console.log('----> Error getting shopify details', err)
       }
 
       await fastify.objection.models.shopifyStores.query().insert({
@@ -119,7 +116,6 @@ export default async function (fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
-    console.log('---> saveDraftOrder, request.body', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
@@ -144,14 +140,10 @@ export default async function (fastify, opts) {
       const getAllShops = await fastify.objection.models.shopifyStores
         .query()
 
-      console.log('---> saveDraftOrder, getAllShops', getAllShops)
-
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
-
-      console.log('---> saveDraftOrder, check shop data', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
@@ -202,8 +194,6 @@ export default async function (fastify, opts) {
           summary,
         });
 
-      console.log('Saved draft order', query)
-
       return query.id;
     } catch (err) {
       console.error("--> Error saving draft order:", err);
@@ -230,7 +220,6 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteDraftOrder", async (request, reply) => {
-    console.log('Delete draft order request body', request.body)
     const result = await validateMerchantToken(request.headers.authorization);
 
     if (!result) {
@@ -266,7 +255,6 @@ export default async function (fastify, opts) {
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-      console.log('---> CHECK FILTERED TAGS', filteredTags)
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
     } catch (err) {
       console.error("--> Error updating product on save DO:", err);
@@ -290,7 +278,6 @@ export default async function (fastify, opts) {
   // NEW_SECTION: Start of customer calls
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
-    console.log("-->  start check for promotions", request.body);
     const shortenedShopName = shortenShopName(request.body.shopName);
     const shop = await fastify.objection.models.shopifyStores
       .query()
@@ -369,7 +356,6 @@ export default async function (fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(id);
-      console.log("--> Product details:", product);
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;
@@ -385,7 +371,6 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
     const { uuid, selectedProductVariant, jwt } = request.body;
-    console.log('---> Start of redeem draft order', request.body)
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||
@@ -416,7 +401,6 @@ export default async function (fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(id);
-      console.log("--> Product details:", product);
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;
