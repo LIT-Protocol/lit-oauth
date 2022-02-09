@@ -120,8 +120,8 @@ const ShopifyRedeem = () => {
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
         console.log('--> data in setUpDO', resp.data)
-        if (resp.data.variants.length > 1) {
-          setProductVariants(resp.data.variants);
+        if (resp.data.product['variants'].length > 1) {
+          setProductVariants(resp.data.product.variants);
         }
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
