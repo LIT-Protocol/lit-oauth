@@ -100,6 +100,7 @@ export default async function (fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
+    console.log('---> saveDraftOrder, request.body', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
@@ -119,6 +120,11 @@ export default async function (fastify, opts) {
         extra_data,
         summary,
       } = request.body;
+
+      const getAllShops = await fastify.objection.models.shopifyStores
+        .query()
+
+      console.log('---> saveDraftOrder, getAllShops', getAllShops)
 
       const shop = await fastify.objection.models.shopifyStores
         .query()
