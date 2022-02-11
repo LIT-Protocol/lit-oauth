@@ -61,7 +61,7 @@ export default function GoogleGranting(props) {
 
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
-        console.log('CHECK HUMANIZATION', humanizedAccessControlConditions)
+        console.log("CHECK HUMANIZATION", humanizedAccessControlConditions);
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
@@ -339,7 +339,7 @@ export default function GoogleGranting(props) {
     const auth2 = await window.gapi.auth2.getAuthInstance();
     await auth2.signOut().then(async () => {
       auth2.disconnect();
-      window.location = `https://dev.litgateway.com/apps`;
+      window.location = `https://litgateway.com/apps`;
     });
   };
 
@@ -431,11 +431,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps/>
+      <BackToApps />
       {(!storedAuthSig["sig"] || token === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress/>
+          <CircularProgress />
           <h3>Waiting for Google Account - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (

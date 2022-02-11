@@ -6,7 +6,7 @@ export const AppContext = createContext({
 });
 
 export const AppContextProvider = (props) => {
-  const {children} = props;
+  const { children } = props;
 
   const [authSig, setAuthSig] = useState(null);
   const [tokenList, setTokenList] = useState(null);
@@ -14,20 +14,20 @@ export const AppContextProvider = (props) => {
 
   const performWithAuthSig = async (
     action,
-    {chain} = {chain: "ethereum"}
+    { chain } = { chain: "ethereum" }
   ) => {
     //TODO add chain selection???
 
     let currentAuthSig = authSig;
     if (!currentAuthSig) {
       try {
-        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({chain});
+        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
         setAuthSig(currentAuthSig);
-        console.log('app.js CURRENT AUTH SIG', currentAuthSig)
+        console.log("app.js CURRENT AUTH SIG", currentAuthSig);
       } catch (e) {
         if (e.code === 4001) {
-          window.location = 'https://dev.litgateway.com/apps';
-          return
+          window.location = "https://litgateway.com/apps";
+          return;
         }
         if (e?.errorCode === "no_wallet") {
           setGlobalError({
@@ -64,7 +64,7 @@ export const AppContextProvider = (props) => {
           const tokens = await LitJsSdk.getTokenList();
           setTokenList(tokens);
         } catch (err) {
-          console.log('Error fetching token list:', err)
+          console.log("Error fetching token list:", err);
         }
       };
       go();
