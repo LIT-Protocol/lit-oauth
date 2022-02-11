@@ -15,8 +15,6 @@
   },
   "dependencies": {
     "@bugsnag/js": "^7.11.0",
-    "@googleapis/drive": "^0.3.1",
-    "@googleapis/oauth2": "^0.2.0",
     "@shopify/shopify-api": "^2.0.0",
     "atob": "^2.1.2",
     "axios": "^0.21.4",
@@ -29,8 +27,7 @@
     "fastify-postgres": "^3.6.0",
     "fastify-static": "^4.2.3",
     "gapi-script": "^1.2.0",
-    "google-auth-library": "^7.10.1",
-    "googleapis": "^87.0.0",
+    "googleapis": "^95.0.0",
     "http2": "^3.3.7",
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
