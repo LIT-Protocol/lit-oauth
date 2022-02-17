@@ -33,14 +33,11 @@ export default function GoogleProvisionAccessModal(props) {
 
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
-      const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
-        .setIncludeFolders(true)
-        .setSelectFolderEnabled(true);
+      const view = new google.picker.DocsView(google.picker.ViewId.DOCS);
 
       picker = new google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
-        .enableFeature(window.google.picker.Feature.SUPPORT_DRIVES)
         .setOAuthToken(accessToken)
         .setAppId(process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID)
         .setDeveloperKey(
