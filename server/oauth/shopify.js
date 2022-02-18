@@ -19,6 +19,7 @@ export default async function (fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
+    console.log('---> SAVE ACCESS TOKEN BODY', request.body)
     const { shop, accessToken, email } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
@@ -342,6 +343,8 @@ export default async function (fastify, opts) {
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
+
+    console.log('SHOP[0]', draftOrder[0])
 
     const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
 
