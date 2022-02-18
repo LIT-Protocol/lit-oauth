@@ -33,6 +33,18 @@ export const validateMerchantToken = async (token) => {
   })
 }
 
+export const validateDoodlesToken = async (token) => {
+  const removeBearer = token.split(' ');
+  const splitToken = removeBearer[1];
+  return new Promise((resolve, reject) => {
+    // jsonwebtoken.verify(splitToken, process.env.LIT_CUSTOM_SHOPIFY_API_SECRET, { algorithms: ['H256'] }, (err, decoded) => {
+    jsonwebtoken.verify(splitToken, process.env.LIT_DOODLES_SECRET, ['H256'], (err, decoded) => {
+      if (err) reject(false);
+      else if (decoded) resolve(decoded);
+    })
+  })
+}
+
 export const shortenShopName = (shopName) => {
   const splitName = shopName.split('.');
   return splitName[0];
