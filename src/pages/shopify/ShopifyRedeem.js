@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
+import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
@@ -209,14 +210,14 @@ const ShopifyRedeem = () => {
   return (
     <div className={"full-container"}>
       <div>
-        <div className={'access-service-background'}/>
-        <section className={'access-service-card-container'}>
-          <Card className={'access-service-card'}>
+        <div className={'shopify-service-background'}/>
+        <section className={'shopify-service-card-container'}>
+          <Card className={'shopify-service-card'}>
             <CardContent className={'shopify-service-card-header'}>
-            <span className={'access-service-card-header-left'}>
+            <span className={'shopify-service-card-header-left'}>
               <h1>Token Access Verification</h1>
             </span>
-              <span className={'access-service-card-header-right'}>
+              <span className={'shopify-service-card-header-right'}>
               <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
                 className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon/></p></a>
             </span>
@@ -229,16 +230,17 @@ const ShopifyRedeem = () => {
                     <p>Signing in.</p>
                   </div>
                 )}
-                {(storedAuthSig && !accessVerified && !loading) && (
-                  <div>
-                    <p>Sorry, you do not qualify for this promotion.</p>
-                    <p>The conditions for access were not met.</p>
-                    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
-                    <p>{chain ? `On chain: ${chain}}}` : ''}</p>
-                  </div>
-                )}
-                {storedAuthSig && accessVerified && !loading &&
-                !!product && !!draftOrderDetails && (
+                {/*{(storedAuthSig && !accessVerified && !loading) && (*/}
+                {/*  <div>*/}
+                {/*    <p>Sorry, you do not qualify for this promotion.</p>*/}
+                {/*    <p>The conditions for access were not met.</p>*/}
+                {/*    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>*/}
+                {/*    <p>{chain ? `On chain: ${chain}}}` : ''}</p>*/}
+                {/*  </div>*/}
+                {/*)}*/}
+                {/*{storedAuthSig && accessVerified && !loading &&*/}
+                {/*!!product && !!draftOrderDetails && (*/}
+                {!storedAuthSig && (
                   <div className={'product-information-container'}>
                     <div className={'product-information-left'}>
                       {(!!product['images'].length && !!product.images['0']['src']) ? (
