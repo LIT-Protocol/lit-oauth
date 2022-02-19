@@ -19,15 +19,6 @@ import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
-import { litMatrixShirtStub, litMatrixShirtDraftOrder } from "../../stubData/litMatrixShirtStub";
-
-const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
-
-const loadingStatus = {
-  loading: 'Loading...',
-
-}
-
 const ShopifyRedeem = () => {
   const { performWithAuthSig } = useAppContext();
   const [loading, setLoading] = useState(true);
@@ -230,20 +221,19 @@ const ShopifyRedeem = () => {
                     <p>Signing in.</p>
                   </div>
                 )}
-                {/*{(storedAuthSig && !accessVerified && !loading) && (*/}
-                {/*  <div>*/}
-                {/*    <p>Sorry, you do not qualify for this promotion.</p>*/}
-                {/*    <p>The conditions for access were not met.</p>*/}
-                {/*    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>*/}
-                {/*    <p>{chain ? `On chain: ${chain}}}` : ''}</p>*/}
-                {/*  </div>*/}
-                {/*)}*/}
-                {/*{storedAuthSig && accessVerified && !loading &&*/}
-                {/*!!product && !!draftOrderDetails && (*/}
-                {!storedAuthSig && (
+                {(storedAuthSig && !accessVerified && !loading) && (
+                  <div>
+                    <p>Sorry, you do not qualify for this promotion.</p>
+                    <p>The conditions for access were not met.</p>
+                    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
+                    <p>{chain ? `On chain: ${chain}}}` : ''}</p>
+                  </div>
+                )}
+                {storedAuthSig && accessVerified && !loading &&
+                !!product && !!draftOrderDetails && (
                   <div className={'product-information-container'}>
                     <div className={'product-information-left'}>
-                      {(!!product['images'].length && !!product.images['0']['src']) ? (
+                      {(!!product['images'] && !!product['images'].length && !!product.images['0']['src']) ? (
                         <img className={"product-image"} src={product.images[0].src}/>
                       ) : (
                         <div className={"no-product-image"}>No image available</div>
@@ -301,6 +291,11 @@ const ShopifyRedeem = () => {
               )}
             </CardActions>
           </Card>
+          <span className={'shopify-service-card-mobile'}>
+            <h1>Token Access Verification</h1>
+            <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
+              className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
+          </span>
           {/*<Snackbar*/}
           {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}*/}
           {/*  open={openSnackbar}*/}
