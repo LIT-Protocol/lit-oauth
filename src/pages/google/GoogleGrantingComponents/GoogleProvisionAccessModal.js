@@ -23,7 +23,7 @@ export default function GoogleProvisionAccessModal(props) {
 
   const loadPicker = () => {
     window.gapi.load("picker", { callback: createPicker() });
-  }
+  };
 
   const createPicker = async () => {
     const googleAuth = await window.gapi.auth2.getAuthInstance();
@@ -33,7 +33,7 @@ export default function GoogleProvisionAccessModal(props) {
 
     if (accessToken?.length) {
       const origin = window.location.protocol + "//" + window.location.host;
-      const view = new google.picker.View(google.picker.ViewId.DOCS);
+      const view = new google.picker.DocsView(google.picker.ViewId.DOCS);
 
       picker = new google.picker.PickerBuilder()
         .setOrigin(origin)
@@ -97,7 +97,7 @@ export default function GoogleProvisionAccessModal(props) {
                         props.setAccessControlConditions([]);
                       }}
                     >
-                      <DeleteIcon/>
+                      <DeleteIcon />
                     </IconButton>
                   ),
                 }}
@@ -125,25 +125,26 @@ export default function GoogleProvisionAccessModal(props) {
             <h4>Current Access Control Conditions</h4>
             {!!props.humanizedAccessControlArray && (
               <List dense={true}>
-                {props.humanizedAccessControlArray.split('and').map((acc, i) => (
-                  <ListItem
-                    key={i}
-                    className={"provision-access-control-item"}
-                    secondaryAction={
-                      <IconButton
-                        onClick={() => props.removeIthAccessControlCondition(i)}
-                      >
-                        <DeleteIcon/>
-                      </IconButton>
-                    }
-                  >
-                    <ListItemText
-                      primary={acc}
-                    />
-                  </ListItem>
-                ))}
+                {props.humanizedAccessControlArray
+                  .split("and")
+                  .map((acc, i) => (
+                    <ListItem
+                      key={i}
+                      className={"provision-access-control-item"}
+                      secondaryAction={
+                        <IconButton
+                          onClick={() =>
+                            props.removeIthAccessControlCondition(i)
+                          }
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      }
+                    >
+                      <ListItemText primary={acc} />
+                    </ListItem>
+                  ))}
               </List>
-
             )}
             {!props.accessControlConditions.length && (
               <span>No current access control conditions</span>

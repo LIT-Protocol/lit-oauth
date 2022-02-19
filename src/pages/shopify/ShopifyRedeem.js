@@ -15,17 +15,9 @@ import {
 } from "@mui/material";
 import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
+import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
-
-import { litMatrixShirtStub, litMatrixShirtDraftOrder } from "../../stubData/litMatrixShirtStub";
-
-const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
-
-const loadingStatus = {
-  loading: 'Loading...',
-
-}
 
 const ShopifyRedeem = () => {
   const { performWithAuthSig } = useAppContext();
@@ -209,14 +201,14 @@ const ShopifyRedeem = () => {
   return (
     <div className={"full-container"}>
       <div>
-        <div className={'access-service-background'}/>
-        <section className={'access-service-card-container'}>
-          <Card className={'access-service-card'}>
+        <div className={'shopify-service-background'}/>
+        <section className={'shopify-service-card-container'}>
+          <Card className={'shopify-service-card'}>
             <CardContent className={'shopify-service-card-header'}>
-            <span className={'access-service-card-header-left'}>
+            <span className={'shopify-service-card-header-left'}>
               <h1>Token Access Verification</h1>
             </span>
-              <span className={'access-service-card-header-right'}>
+              <span className={'shopify-service-card-header-right'}>
               <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
                 className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon/></p></a>
             </span>
@@ -241,7 +233,7 @@ const ShopifyRedeem = () => {
                 !!product && !!draftOrderDetails && (
                   <div className={'product-information-container'}>
                     <div className={'product-information-left'}>
-                      {(!!product['images'].length && !!product.images['0']['src']) ? (
+                      {(!!product['images'] && !!product['images'].length && !!product.images['0']['src']) ? (
                         <img className={"product-image"} src={product.images[0].src}/>
                       ) : (
                         <div className={"no-product-image"}>No image available</div>
@@ -299,6 +291,11 @@ const ShopifyRedeem = () => {
               )}
             </CardActions>
           </Card>
+          <span className={'shopify-service-card-mobile'}>
+            <h1>Token Access Verification</h1>
+            <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
+              className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
+          </span>
           {/*<Snackbar*/}
           {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}*/}
           {/*  open={openSnackbar}*/}
