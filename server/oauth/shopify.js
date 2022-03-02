@@ -1,5 +1,5 @@
 import {
-  shortenShopName, validateDoodlesToken,
+  shortenShopName,
   validateMerchantToken,
 } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
