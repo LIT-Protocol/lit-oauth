@@ -15,7 +15,7 @@ const checkShopName = () => {
 
 }
 
-export default async function (fastify, opts) {
+export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
