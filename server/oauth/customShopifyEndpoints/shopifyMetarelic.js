@@ -9,22 +9,22 @@ dotenv.config({
   path: "../../env",
 });
 
-const validateMetarelicToken = async (token) => {
+const validateMetarelicsToken = async (token) => {
   const removeBearer = token.split(' ');
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
-    jsonwebtoken.verify(splitToken, process.env.LIT_METARELIC_SHOPIFY_SECRET, ['H256'], (err, decoded) => {
+    jsonwebtoken.verify(splitToken, process.env.LIT_METARELICS_SHOPIFY_SECRET, ['H256'], (err, decoded) => {
       if (err) reject(false);
       else if (decoded) resolve(decoded);
     })
   })
 }
 
-export default async function shopifyMetarelicEndpoints(fastify, opts) {
+export default async function shopifyMetarelicsEndpoints(fastify, opts) {
 
-  // Metarelic ENDPOINTS
-  fastify.post("/api/shopify/deleteMetarelicShopData", async (request, reply) => {
-    const result = await validateMetarelicToken(request.headers.authorization);
+  // Metarelics ENDPOINTS
+  fastify.post("/api/shopify/deleteMetarelicsShopData", async (request, reply) => {
+    const result = await validateMetarelicsToken(request.headers.authorization);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -35,10 +35,10 @@ export default async function shopifyMetarelicEndpoints(fastify, opts) {
   });
 
   fastify.post(
-    "/api/shopify/checkIfMetarelicProductHasBeenUsed",
+    "/api/shopify/checkIfMetarelicsProductHasBeenUsed",
     async (request, reply) => {
       try {
-        const result = await validateMetarelicToken(
+        const result = await validateMetarelicsToken(
           request.headers.authorization
         );
         if (!result) {
@@ -58,9 +58,9 @@ export default async function shopifyMetarelicEndpoints(fastify, opts) {
     }
   );
 
-  fastify.post("/api/shopify/saveMetarelicDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/saveMetarelicsDraftOrder", async (request, reply) => {
     try {
-      const result = await validateMetarelicToken(request.headers.authorization);
+      const result = await validateMetarelicsToken(request.headers.authorization);
       if (!result) {
         return "Unauthorized";
       }
@@ -144,9 +144,9 @@ export default async function shopifyMetarelicEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllMetarelicDraftOrders", async (request, reply) => {
+  fastify.post("/api/shopify/getAllMetarelicsDraftOrders", async (request, reply) => {
     try {
-      const result = await validateMetarelicToken(request.headers.authorization);
+      const result = await validateMetarelicsToken(request.headers.authorization);
       if (!result) {
         return "Unauthorized";
       }
@@ -162,8 +162,8 @@ export default async function shopifyMetarelicEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteMetarelicDraftOrder", async (request, reply) => {
-    const result = await validateMetarelicToken(request.headers.authorization);
+  fastify.post("/api/shopify/deleteMetarelicsDraftOrder", async (request, reply) => {
+    const result = await validateMetarelicsToken(request.headers.authorization);
 
     if (!result) {
       return "Unauthorized";
