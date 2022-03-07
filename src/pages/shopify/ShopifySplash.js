@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { checkForPromotions } from "./shopifyAsyncHelpers";
 import { CircularProgress, Card, CardContent, CardActions, Tooltip } from "@mui/material";
 
-import './ShopifySplash.scss';
 import './ShopifyStyles.scss';
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 
