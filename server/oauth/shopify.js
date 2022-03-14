@@ -19,8 +19,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
-    console.log('---> SAVE ACCESS TOKEN BODY', request.body)
-    console.log('---> SAVE ACCESS TOKEN HEADERS', request.headers)
     const { shop, accessToken, email } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
@@ -153,6 +151,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       extra_data,
       summary,
     } = request.body;
+
+    console.log('---> SAVE ACCESS TOKEN HEADERS', request.headers)
 
     try {
       const result = await validateMerchantToken(request.headers.authorization);
