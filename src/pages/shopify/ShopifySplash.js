@@ -51,7 +51,7 @@ export default function ShopifySplash() {
         window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
       }
     } catch (err) {
-      console.log('Error retrieving access control conditions');
+      console.log('Error retrieving access control conditions.');
     }
   }
 

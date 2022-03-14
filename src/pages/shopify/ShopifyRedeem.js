@@ -72,16 +72,23 @@ const ShopifyRedeem = () => {
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
     setDraftOrderId(id);
+    console.log('-----> just before log in to lit')
     signIntoLit();
   }
 
   const signIntoLit = async () => {
-    await performWithAuthSig(async (authSig) => {
-      if (!storedAuthSig || !storedAuthSig["sig"]) {
-        console.log("Stop auth if authSig is not yet available");
-      }
-      setStoredAuthSig(authSig);
-    })
+    try {
+      await performWithAuthSig(async (authSig) => {
+        if (!storedAuthSig || !storedAuthSig["sig"]) {
+          console.log("Stop auth if authSig is not yet available");
+        }
+        setStoredAuthSig(authSig);
+      })
+    } catch(err) {
+      setErrorText(err);
+      setLoading(false);
+      console.log('Error connecting wallet:', err)
+    }
   }
 
   const checkForPromotionAccessControl = async () => {
@@ -221,12 +228,21 @@ const ShopifyRedeem = () => {
                     <p>Signing in.</p>
                   </div>
                 )}
+                {errorText && (
+                  <div>
+                    <p>There was an error.</p>
+                    {/* <p>{errorText}</p> */}
+                    <p>Please connect your wallet manually or click below to try again.</p>
+                    <p>If you are on mobile, use the browser in the Metamask app.</p>
+                    <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                  </div>
+                )}
                 {(storedAuthSig && !accessVerified && !loading) && (
                   <div>
                     <p>Sorry, you do not qualify for this promotion.</p>
                     <p>The conditions for access were not met.</p>
                     <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
-                    <p>{chain ? `On chain: ${chain}}}` : ''}</p>
+                    <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
                   </div>
                 )}
                 {storedAuthSig && accessVerified && !loading &&

@@ -20,6 +20,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     console.log('---> SAVE ACCESS TOKEN BODY', request.body)
+    console.log('---> SAVE ACCESS TOKEN HEADERS', request.headers)
     const { shop, accessToken, email } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
@@ -63,6 +64,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         });
     }
 
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenedShopName}.myshopify.com https://admin.shopify.com`)
     reply.code(200);
     return true;
   });
@@ -71,16 +73,32 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/getCustomerData", async (request, reply) => {
     // will not be needed because we do not store customer data
+    const result = await validateMerchantToken(request.headers.authorization);
+    const { shop_domain } = request.body;
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
+    if (!result) {
+      reply.code(401).send("Unauthorized");
+      return;
+    }
     reply.code(200).send(true);
   });
 
   fastify.post("/api/shopify/deleteCustomerData", async (request, reply) => {
     // will not be needed because we do not store customer data
+    const result = await validateMerchantToken(request.headers.authorization);
+    const { shop_domain } = request.body;
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
+    if (!result) {
+      reply.code(401).send("Unauthorized");
+      return;
+    }
     reply.code(200).send(true);
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
     const result = await validateMerchantToken(request.headers.authorization);
+    const { shop_domain } = request.body;
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -121,26 +139,27 @@ export default async function shopifyEndpoints(fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
+    const {
+      shop_id,
+      shop_name,
+      access_control_conditions,
+      humanized_access_control_conditions,
+      active,
+      title,
+      asset_id_on_service,
+      asset_type,
+      user_id,
+      draft_order_details,
+      extra_data,
+      summary,
+    } = request.body;
+
     try {
       const result = await validateMerchantToken(request.headers.authorization);
+      reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_name)}.myshopify.com https://admin.shopify.com`)
       if (!result) {
         return "Unauthorized";
       }
-
-      const {
-        shop_id,
-        shop_name,
-        access_control_conditions,
-        humanized_access_control_conditions,
-        active,
-        title,
-        asset_id_on_service,
-        asset_type,
-        user_id,
-        draft_order_details,
-        extra_data,
-        summary,
-      } = request.body;
 
       const getAllShops = await fastify.objection.models.shopifyStores
         .query()
@@ -240,10 +259,14 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.id);
 
+    const shopName = shop[0].shopName;
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shopName)}.myshopify.com https://admin.shopify.com`);
+
     const shopify = new Shopify({
-      shopName: shop[0].shopName,
+      shopName: shopName,
       accessToken: shop[0].accessToken,
     });
+
 
     let id = draftToDelete[0].assetIdOnService;
     id = id.split("/").pop();
@@ -291,6 +314,9 @@ export default async function shopifyEndpoints(fastify, opts) {
     const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("shop_id", "=", shop[0].shopId);
+
+    const shopName = shop[0].shopName;
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shopName)}.myshopify.com https://admin.shopify.com`);
 
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
