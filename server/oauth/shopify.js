@@ -94,7 +94,8 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    console.log('---> Check for shopify verification', request)
+    console.log('---> Check for shopify verification headers', request.headers)
+    console.log('---> Check for shopify verification body', request.body)
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
     reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
