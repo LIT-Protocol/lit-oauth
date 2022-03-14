@@ -22,6 +22,7 @@ export const checkValidHmacSignature = (queries, secret) => {
 }
 
 export const validateMerchantToken = async (token) => {
+  console.log('----> Start of validateMerchantToken', token)
   const removeBearer = token.split(' ');
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
