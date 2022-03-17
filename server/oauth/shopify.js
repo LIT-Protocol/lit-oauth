@@ -62,7 +62,6 @@ export default async function shopifyEndpoints(fastify, opts) {
         });
     }
 
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenedShopName}.myshopify.com https://admin.shopify.com`);
     reply.code(200);
     return true;
   });
@@ -73,7 +72,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     // will not be needed because we do not store customer data
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -85,7 +83,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     // will not be needed because we do not store customer data
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -94,11 +91,9 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    console.log('---> Check for shopify verification headers', request.headers)
-    console.log('---> Check for shopify verification body', request.body)
+    console.log('---> Start of delete shop data', request.body)
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_domain)}.myshopify.com https://admin.shopify.com`);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -158,7 +153,6 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       const result = await validateMerchantToken(request.headers.authorization);
-      reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shop_name)}.myshopify.com https://admin.shopify.com`)
       if (!result) {
         return "Unauthorized";
       }
@@ -228,8 +222,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllUserDraftOrders", async (request, reply) => {
-    console.log('---> Check for shopify verification headers', request.headers);
-    console.log('---> Check for shopify verification body', request.body);
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
@@ -264,7 +256,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .where("id", "=", request.body.id);
 
     const shopName = shop[0].shopName;
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shopName)}.myshopify.com https://admin.shopify.com`);
 
     const shopify = new Shopify({
       shopName: shopName,
@@ -320,7 +311,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .where("shop_id", "=", shop[0].shopId);
 
     const shopName = shop[0].shopName;
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenShopName(shopName)}.myshopify.com https://admin.shopify.com`);
 
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
