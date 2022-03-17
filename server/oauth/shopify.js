@@ -70,6 +70,10 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/getCustomerData", async (request, reply) => {
     // will not be needed because we do not store customer data
+    if (!request.headers.authorization) {
+      reply.code(401).send("Unauthorized");
+      return;
+    }
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
     if (!result) {
@@ -81,6 +85,10 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/deleteCustomerData", async (request, reply) => {
     // will not be needed because we do not store customer data
+    if (!request.headers.authorization) {
+      reply.code(401).send("Unauthorized");
+      return;
+    }
     const result = await validateMerchantToken(request.headers.authorization);
     const { shop_domain } = request.body;
     if (!result) {
@@ -91,9 +99,12 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    console.log('---> Start of delete shop data', request.body)
+    console.log('---> Start of delete shop data', request.headers)
+    if (!request.headers.authorization) {
+      reply.code(401).send("Unauthorized");
+      return;
+    }
     const result = await validateMerchantToken(request.headers.authorization);
-    const { shop_domain } = request.body;
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
