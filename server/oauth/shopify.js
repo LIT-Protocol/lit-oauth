@@ -62,7 +62,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         });
     }
 
-    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenedShopName}.myshopify.com https://admin.shopify.com`)
+    reply.header('Content-Security-Policy', `frame-ancestors https://${shortenedShopName}.myshopify.com https://admin.shopify.com`);
     reply.code(200);
     return true;
   });
@@ -228,6 +228,8 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllUserDraftOrders", async (request, reply) => {
+    console.log('---> Check for shopify verification headers', request.headers);
+    console.log('---> Check for shopify verification body', request.body);
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
