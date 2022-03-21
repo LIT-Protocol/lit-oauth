@@ -217,4 +217,9 @@ export default async function shopifyRhEndpoints(fastify, opts) {
       return "--> Error deleting draft order";
     }
   });
+
+  fastify.post('testRhEndpoint', async (request, reply) => {
+    console.log('rh point tested')
+    return 'rh endpoint successful'
+  })
 }
