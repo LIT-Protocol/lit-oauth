@@ -23,7 +23,7 @@ const validateRhToken = async (token) => {
 export default async function shopifyRhEndpoints(fastify, opts) {
 
   // RH ENDPOINTS
-  fastify.post("/api/shopify/deleteMetarelicsShopData", async (request, reply) => {
+  fastify.post("/api/shopify/deleteRhShopData", async (request, reply) => {
     const result = await validateRhToken(request.headers.authorization);
     if (!result) {
       reply.code(401).send("Unauthorized");
@@ -35,7 +35,7 @@ export default async function shopifyRhEndpoints(fastify, opts) {
   });
 
   fastify.post(
-    "/api/shopify/checkIfMetarelicsProductHasBeenUsed",
+    "/api/shopify/checkIfRhProductHasBeenUsed",
     async (request, reply) => {
       try {
         const result = await validateRhToken(
@@ -58,7 +58,7 @@ export default async function shopifyRhEndpoints(fastify, opts) {
     }
   );
 
-  fastify.post("/api/shopify/saveMetarelicsDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/saveRhDraftOrder", async (request, reply) => {
     try {
       const result = await validateRhToken(request.headers.authorization);
       if (!result) {
@@ -144,7 +144,7 @@ export default async function shopifyRhEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllMetarelicsDraftOrders", async (request, reply) => {
+  fastify.post("/api/shopify/getAllRhDraftOrders", async (request, reply) => {
     try {
       const result = await validateRhToken(request.headers.authorization);
       if (!result) {
@@ -162,7 +162,7 @@ export default async function shopifyRhEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteMetarelicsDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/deleteRhDraftOrder", async (request, reply) => {
     const result = await validateRhToken(request.headers.authorization);
 
     if (!result) {
