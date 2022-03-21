@@ -220,6 +220,6 @@ export default async function shopifyMetafactoryEndpoints(fastify, opts) {
 
   fastify.post('/api/shopify/testMetafactoryEndpoint', async (request, reply) => {
     console.log('rh point tested')
-    return 'rh endpoint successful'
+    return 'Metafactory endpoint successful'
   })
 }
