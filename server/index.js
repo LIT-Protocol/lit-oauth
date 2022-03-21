@@ -9,6 +9,7 @@ import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import shopifyDoodlesEndpoints from "./oauth/customShopifyEndpoints/shopifyDoodles.js";
 import shopifyMetarelicEndpoints from "./oauth/customShopifyEndpoints/shopifyMetarelic.js";
+import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
@@ -54,7 +55,7 @@ fastify.setErrorHandler((error, request, reply) => {
   if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
     Bugsnag.notify(error);
   }
-  reply.send({error});
+  reply.send({ error });
 });
 
 fastify.register(fastifyBugsnag, {
@@ -64,11 +65,11 @@ fastify.register(fastifyBugsnag, {
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const {authSig} = request.body;
+  const { authSig } = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return {error: "Invalid signature"};
+    return { error: "Invalid signature" };
   }
   const userId = authSig.address;
 
@@ -90,6 +91,7 @@ fastify.register(shopifyEndpoints);
 // TODO: erase custom shop endpoints once public Shopify store is active
 fastify.register(shopifyDoodlesEndpoints);
 fastify.register(shopifyMetarelicEndpoints);
+fastify.register(shopifyRhEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
