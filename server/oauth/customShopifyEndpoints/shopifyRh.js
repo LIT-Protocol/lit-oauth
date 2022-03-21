@@ -218,7 +218,7 @@ export default async function shopifyRhEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post('testRhEndpoint', async (request, reply) => {
+  fastify.post('/api/shopify/testRhEndpoint', async (request, reply) => {
     console.log('rh point tested')
     return 'rh endpoint successful'
   })
