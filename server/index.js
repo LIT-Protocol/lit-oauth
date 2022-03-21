@@ -9,7 +9,7 @@ import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import shopifyDoodlesEndpoints from "./oauth/customShopifyEndpoints/shopifyDoodles.js";
 import shopifyMetarelicEndpoints from "./oauth/customShopifyEndpoints/shopifyMetarelic.js";
-import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh";
+import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
