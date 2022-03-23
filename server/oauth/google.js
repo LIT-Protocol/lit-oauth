@@ -7,6 +7,7 @@ import { parseJwt, sendSlackMetricsReportMessage } from "../utils.js";
 export default async function (fastify, opts) {
   // store the user's access token
   fastify.post("/api/google/connect", async (req, res) => {
+    console.log('google connect endpoint', req.body)
     const { authSig, code } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
@@ -19,6 +20,8 @@ export default async function (fastify, opts) {
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       "postmessage"
     );
+
+
     const { tokens } = await oauth_client.getToken(code);
     oauth_client.setCredentials(tokens);
 
@@ -125,7 +128,7 @@ export default async function (fastify, opts) {
 
     if (
       payload.aud !==
-        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID ||
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID ||
       userId !== existingRows[0].idOnService
     ) {
       res.code(400);
@@ -326,7 +329,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
