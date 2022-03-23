@@ -113,47 +113,38 @@ export default function GoogleGranting(props) {
         console.log("Stop auth if authSig is not yet available");
       }
 
-      const client = window.google.accounts.oauth2.initCodeClient({
-        client_id: GOOGLE_CLIENT_KEY,
-        scope: "https://www.googleapis.com/auth/drive.file",
-        ux_mode: 'redirect',
-        redirect_uri: `${API_HOST}/api/google/connect`
-      });
-
-      console.log('CLIENT!', client)
-      client.requestCode();
-
-      // window.gapi.load("client:auth2", function () {
-      //   window.gapi.auth2
-      //     .init({
-      //       access_type: "offline",
-      //       client_id: GOOGLE_CLIENT_KEY,
-      //       scope: "https://www.googleapis.com/auth/drive.file",
-      //     })
-      //     .then(async (googleObject) => {
-      //       window.gapi.load("picker", { callback: onPickerApiLoad });
-      //       const userIsSignedIn = googleObject.isSignedIn.get();
-      //       if (!userIsSignedIn) {
-      //         // if no google user exists, push toward authenticate
-      //         await authenticate();
-      //       } else {
-      //         // if a google user does exist, load user from lit DB
-      //         const currentUserObject = window.gapi.auth2
-      //           .getAuthInstance()
-      //           .currentUser.get();
-      //         await handleLoadCurrentUser(currentUserObject);
-      //       }
-      //     });
+      // const client = window.google.accounts.oauth2.initCodeClient({
+      //   client_id: GOOGLE_CLIENT_KEY,
+      //   scope: "https://www.googleapis.com/auth/drive.file",
+      //   ux_mode: 'redirect',
+      //   redirect_uri: `${API_HOST}/api/google/connect`
       // });
-      // function initClient() {
-      //   client = google.accounts.oauth2.initCodeClient({
-      //     client_id: 'YOUR_CLIENT_ID',
-      //     scope: 'https://www.googleapis.com/auth/calendar.readonly \
-      //             https://www.googleapis.com/auth/photoslibrary.readonly',
-      //     ux_mode: 'redirect',
-      //     redirect_uri: 'YOUR_AUTHORIZATION_CODE_ENDPOINT_URI'
-      //   });
-      // }
+      //
+      // console.log('CLIENT!', client)
+      // client.requestCode();
+
+      window.gapi.load("client:auth2", function () {
+        window.gapi.auth2
+          .init({
+            access_type: "offline",
+            client_id: GOOGLE_CLIENT_KEY,
+            scope: "https://www.googleapis.com/auth/drive.file",
+          })
+          .then(async (googleObject) => {
+            window.gapi.load("picker", { callback: onPickerApiLoad });
+            const userIsSignedIn = googleObject.isSignedIn.get();
+            if (!userIsSignedIn) {
+              // if no google user exists, push toward authenticate
+              await authenticate();
+            } else {
+              // if a google user does exist, load user from lit DB
+              const currentUserObject = window.gapi.auth2
+                .getAuthInstance()
+                .currentUser.get();
+              await handleLoadCurrentUser(currentUserObject);
+            }
+          });
+      });
     });
   };
 
