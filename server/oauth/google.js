@@ -2,27 +2,38 @@ import axios from "axios";
 import { google } from "googleapis";
 import LitJsSdk from "lit-js-sdk";
 import { authUser } from "../auth.js";
+import { OAuth2Client } from "google-auth-library";
 import { parseJwt, sendSlackMetricsReportMessage } from "../utils.js";
+import { tokenIsValid, validateJWT } from "./googleHelpers.js";
 
 export default async function (fastify, opts) {
   // store the user's access token
-  fastify.post("/api/google/connect", async (req, res) => {
-    console.log('google connect endpoint', req.body)
-    const { authSig, code } = req.body;
+  // 2022-3-27 - new endpoints for google identity services
+
+  fastify.get("/api/oauth/google/callback", async (req, res) => {
+    console.log('/api/oauth/google/callback', req.query)
+    console.log('req.query', req.query)
+    // response.redirect(`${process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`);
+    const { state, code } = req.query;
+    if (!state) {
+      res.code(400);
+      return { error: "Invalid signature" };
+    }
+    const authSig = JSON.parse(state);
+
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
     }
 
-    // First - get Google Drive refresh token (given acct email and drive)
-    const oauth_client = new google.auth.OAuth2(
+    const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
-      "postmessage"
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
     );
 
-
     const { tokens } = await oauth_client.getToken(code);
+
     oauth_client.setCredentials(tokens);
 
     const parsedJwt = parseJwt(tokens.id_token);
@@ -56,11 +67,15 @@ export default async function (fastify, opts) {
 
     if (existingRows.length > 0) {
       // okay the token already exists, just update it
-      existingRows[0].patch({
-        refresh_token: tokens.refresh_token,
-        access_token: tokens.access_token,
-      });
-      connected_service_id = existingRows[0].id;
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("service_name", "=", "google")
+        .where("id_on_service", "=", idOnService)
+        .where("user_id", "=", authSig.address)
+        .patch({
+          refresh_token: tokens.refresh_token,
+          access_token: tokens.access_token,
+        });
     } else {
       // insert
       const query = await fastify.objection.models.connectedServices
@@ -69,102 +84,124 @@ export default async function (fastify, opts) {
           id_on_service: idOnService,
           email: about_info.data.user.emailAddress,
           refresh_token: tokens.refresh_token,
+          scope: tokens.scope,
           access_token: tokens.access_token,
           extra_data: about_info.data.user,
           user_id: authSig.address,
           service_name: "google",
         });
       connected_service_id = query.id;
+
       await sendSlackMetricsReportMessage({
         msg: `Google account connected ${about_info.data.user.emailAddress} - ${authSig.address}`,
       });
     }
 
-    const connectedGoogleServices =
-      await fastify.objection.models.connectedServices
-        .query()
-        .where("user_id", "=", authSig.address)
-        .where("idOnService", "=", idOnService)
-        .where("service_name", "=", "google");
-
-    const serialized = connectedGoogleServices.map((s) => ({
-      id: s.id,
-      email: s.email,
-      idOnService: s.idOnService,
-      accessToken: s.accessToken,
-    }));
-
-    return { connectedServices: serialized };
+    res.redirect(`${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`)
   });
 
-  // verify token and update if necessary
-  fastify.post("/api/google/verifyToken", async (req, res) => {
-    const { id_token, access_token, email } = req.body.googleAuthResponse;
-    const idOnService = req.body.idOnService;
-    const authSig = req.body.authSig;
+  fastify.post("/api/google/checkIfUserExists", async (request, response) => {
+    let jwtResult
+    const { authSig, payload } = request.body;
 
-    const oauth_client = new google.auth.OAuth2(
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID
-    );
+    try {
+      jwtResult = await validateJWT(payload)
+    } catch (err) {
+      console.log('jwt error', err)
+      return;
+    }
 
-    const ticket = await oauth_client.verifyIdToken({
-      idToken: id_token,
-      audience: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-    });
+    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+      response.code(400);
+      return { error: "Invalid signature" };
+    }
 
-    const payload = ticket.getPayload();
-    const userId = payload["sub"];
+    let userExists = false;
 
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("idOnService", "=", idOnService)
-      .where("id_on_service", "=", userId);
+      .where("user_id", "=", authSig.address);
 
-    if (!existingRows.length) {
-      res.code(400);
-      return { error: "User not found." };
+    const oauth_client = new OAuth2Client(
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
+    );
+
+    // let tokenExpiresSoon = await oauth_client.isTokenExpiring();
+
+    if (existingRows.length && !!existingRows[0].accessToken) {
+      oauth_client.setCredentials({
+        refresh_token: existingRows[0].refreshToken,
+      });
+
+      userExists = true;
+      const newTokens = await oauth_client.refreshAccessToken();
+
+      const drive = google.drive({
+        version: "v3",
+        auth: oauth_client,
+      });
+
+      let about_info;
+      try {
+        about_info = await drive.about.get({
+          fields: "user",
+        });
+      } catch (err) {
+        const errorObject = {
+          errorStatus: err.code,
+          errors: err.errors,
+        };
+        return errorObject;
+      }
+
+      await fastify.objection.models.connectedServices
+        .query()
+        .where("service_name", "=", "google")
+        .where("user_id", "=", authSig.address)
+        .patch({
+          refresh_token: newTokens.credentials.refresh_token,
+          access_token: newTokens.credentials.access_token,
+          scope: newTokens.credentials.scope,
+          extra_data: about_info.data.user,
+          email: about_info.data.user.emailAddress,
+        });
     }
 
-    if (
-      payload.aud !==
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID ||
-      userId !== existingRows[0].idOnService
-    ) {
-      res.code(400);
+    return userExists;
+  });
+
+  fastify.post("/api/google/getUserProfile", async (request, response) => {
+    let jwtResult;
+    const { authSig, payload } = request.body;
+
+    try {
+      jwtResult = await validateJWT(payload)
+    } catch (err) {
+      console.log('jwt error', err)
+      return;
+    }
+
+    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+      response.code(400);
       return { error: "Invalid signature" };
     }
 
-    existingRows[0].patch({
-      access_token: access_token,
-      email: email,
-    });
-
-    await fastify.objection.models.connectedServices
+    const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("user_id", "=", authSig.address)
-      .where("id_on_service", "=", userId)
-      .patch({
-        access_token: access_token,
-        email: email,
-      });
+      .where("user_id", "=", authSig.address);
 
-    const connectedGoogleServices =
-      await fastify.objection.models.connectedServices
-        .query()
-        .where("user_id", "=", authSig.address)
-        .where("id_on_service", "=", userId)
-        .where("service_name", "=", "google");
-
-    const serialized = connectedGoogleServices.map((s) => ({
-      id: s.id,
-      email: s.email,
-      idOnService: s.idOnService,
-      accessToken: s.accessToken,
-    }));
-
-    return { connectedServices: serialized };
+    const { scope, extraData, idOnService, email, accessToken } = existingRows[0];
+    return {
+      scope,
+      extraData,
+      idOnService,
+      email,
+      accessToken
+    }
   });
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
@@ -197,20 +234,20 @@ export default async function (fastify, opts) {
       .where("id", "=", shareUuid);
   });
 
-  fastify.post("/api/google/getUserProfile", async (req, res) => {
-    const idOnService = req.body.idOnService;
-    const authSigAddress = req.body.authSig.address;
-    const connectedServices = await fastify.objection.models.connectedServices
-      .query()
-      .where("service_name", "=", "google")
-      .where("id_on_service", "=", idOnService)
-      .where("user_id", "=", authSigAddress);
-
-    if (connectedServices?.length && connectedServices[0]["refreshToken"]) {
-      delete connectedServices[0].refreshToken;
-    }
-    return connectedServices;
-  });
+  // fastify.post("/api/google/getLitUserProfile", async (req, res) => {
+  //   const idOnService = req.body.idOnService;
+  //   const authSigAddress = req.body.authSig.address;
+  //   const connectedServices = await fastify.objection.models.connectedServices
+  //     .query()
+  //     .where("service_name", "=", "google")
+  //     .where("id_on_service", "=", idOnService)
+  //     .where("user_id", "=", authSigAddress);
+  //
+  //   if (connectedServices?.length && connectedServices[0]["refreshToken"]) {
+  //     delete connectedServices[0].refreshToken;
+  //   }
+  //   return connectedServices;
+  // });
 
   fastify.post("/api/google/share", async (req, res) => {
     const { authSig, connectedServiceId, token, idOnService } = req.body;
@@ -273,42 +310,6 @@ export default async function (fastify, opts) {
     };
   });
 
-  // TODO make this use objectionjs models
-  fastify.post("/api/google/delete", async (req, res) => {
-    const uuid = req.body.uuid;
-    // get email from token
-    const oauth_client = new google.auth.OAuth2(
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
-      "postmessage"
-    );
-    const { tokens } = await oauth_client.getToken(req.body.token);
-    oauth_client.setCredentials(tokens);
-
-    const drive = google.drive({
-      version: "v3",
-      auth: oauth_client,
-    });
-
-    const about_info = await drive.about.get({
-      fields: "user",
-    });
-
-    let email = about_info.data.user.emailAddress;
-    const query = {
-      text: "DELETE FROM links USING links AS l LEFT OUTER JOIN sharers ON l.sharer_id = sharers.id WHERE links.id = l.id AND links.id = $1 AND sharers.email = $2",
-      values: [uuid, email],
-    };
-
-    let deleted_row = await runQuery(query);
-
-    if (deleted_row === "error") {
-      return res.status(400).send();
-    } else {
-      return res.status(200).send();
-    }
-  });
-
   fastify.post("/api/google/conditions", async (req, res) => {
     const uuid = req.body.uuid;
 
@@ -325,6 +326,7 @@ export default async function (fastify, opts) {
     const role = req.body.role;
     const uuid = req.body.uuid;
     const jwt = req.body.jwt;
+    // TODO: expand security
     const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||
@@ -384,7 +386,50 @@ export default async function (fastify, opts) {
     return { fileId: share.assetIdOnService };
   });
 
-  fastify.get("/api/oauth/google/callback", async (request, response) => {
-    response.redirect(process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST);
+  fastify.post("/api/google/signOutUser", async (request, response) => {
+    let jwtResult;
+    const { authSig, payload } = request.body;
+
+    try {
+      jwtResult = await validateJWT(payload)
+    } catch (err) {
+      console.log('jwt error', err)
+      return;
+    }
+
+    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+      response.code(400);
+      return { error: "Invalid signature" };
+    }
+
+    const results = await fastify.objection.models.connectedServices
+      .query()
+      .where("service_name", "=", "google")
+      .where("user_id", "=", authSig.address)
+      .patch({ access_token: null })
+
+    return true;
   });
+
+  // TODO: remove before
+  // fastify.post("/api/google/deleteConnectedService", async (req, res) => {
+  //   console.log('/api/google/deleteShare', req.body)
+  //   const uuid = req.body;
+  //   // console.log('shareuuid', uuid)
+  //   const result = await fastify.objection.models.connectedServices
+  //     .query()
+  //   // .where("id", "=", uuid);
+  //
+  //   console.log('result', result)
+  //
+  //   return await fastify.objection.models.connectedServices
+  //     .query()
+  //     .delete()
+  //     .where("id", "=", uuid);
+  // });
+  //
+  // fastify.get("/api/oauth/google/testEndpoint", async (request, response) => {
+  //   console.log('test endpoint successfull')
+  //   return 'test endpoint successfull'
+  // })
 }

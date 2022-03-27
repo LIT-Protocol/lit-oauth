@@ -40,10 +40,10 @@ function GoogleLinkShare() {
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
-      const body = JSON.stringify({uuid: uuid});
-      const headers = {"Content-Type": "application/json"};
+      const body = JSON.stringify({ uuid: uuid });
+      const headers = { "Content-Type": "application/json" };
       axios
-        .post(`${BASE_URL}/api/google/conditions`, body, {headers})
+        .post(`${BASE_URL}/api/google/conditions`, body, { headers })
         .then(async (res) => {
           console.log("OUT THROUGH CONDITIONS", res.data);
 
@@ -76,7 +76,7 @@ function GoogleLinkShare() {
       extraData: "",
     };
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({chain});
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
 
     const jwt = await litNodeClient.getSignedToken({
       accessControlConditions: accessControlConditions,
@@ -86,7 +86,7 @@ function GoogleLinkShare() {
     });
 
     return jwt;
-  }
+  };
 
   // const handleDelete = () => {
   //   return gapi.auth2
@@ -122,9 +122,8 @@ function GoogleLinkShare() {
   // };
 
   const getFileTypeUrl = (fileType) => {
-    console.log("fileType", fileType);
     let fileTypeUrl;
-    if (fileType.includes("audio") || fileType.includes("mpeg")) {
+    if (fileType.includes("audio") || fileType.includes("mpeg") || fileType.includes("image")) {
       fileTypeUrl = "file";
     } else if (fileType.includes("document")) {
       fileTypeUrl = "document";
@@ -141,11 +140,10 @@ function GoogleLinkShare() {
   const handleSubmit = async () => {
     provisionAccess().then(async (jwt) => {
       const role = linkData["role"];
-      const body = {email, role, uuid, jwt};
-      const headers = {"Content-Type": "application/json"};
+      const body = { email, role, uuid, jwt };
+      const headers = { "Content-Type": "application/json" };
       try {
-        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, {headers});
-        console.log("DATA", shareLinkResponse);
+        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
         console.log(
           "LINK",
           `https://docs.google.com/${getFileTypeUrl(
@@ -202,14 +200,14 @@ function GoogleLinkShare() {
           <Card className={'access-service-card'}>
             <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-              <div style={{backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+              <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
               <div className={'access-service-card-title'}>
                 <h2>Lit Apps</h2>
                 <p>The power of blockchain-defined access combine with your current tool suite.</p>
               </div>
             </span>
               <span className={'access-service-card-header-right'}>
-                <a href={'https://litgateway.com/'} target={'_blank'}><p>Find more apps on the<strong
+                <a href={'https://litgateway.com/'} target={'_blank'} rel="noreferrer"><p>Find more apps on the<strong
                   className={'lit-gateway-title'}>Lit Gateway</strong><OpenInNewIcon/></p></a>
             </span>
             </CardContent>
@@ -224,13 +222,13 @@ function GoogleLinkShare() {
                 <p>Enter your email to redeem access.</p>
                 <TextField
                   helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
-                  style={{width: '75%'}}
+                  style={{ width: '75%' }}
                   autoFocus
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </section>
             </CardContent>
-            <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+            <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
               <Tooltip title={getSubmitTooltip()} placement="top">
                 <span className={getButtonClasses()} onClick={async () => {
                   if (!email.length) return;
@@ -245,7 +243,7 @@ function GoogleLinkShare() {
             </CardActions>
           </Card>
           <Snackbar
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             open={openSnackbar}
             autoHideDuration={4000}
             onClose={handleCloseSnackbar}

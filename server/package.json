@@ -27,6 +27,7 @@
     "fastify-postgres": "^3.6.0",
     "fastify-static": "^4.2.3",
     "gapi-script": "^1.2.0",
+    "google-auth-library": "^7.14.0",
     "googleapis": "^95.0.0",
     "http2": "^3.3.7",
     "jsonwebtoken": "^8.5.1",

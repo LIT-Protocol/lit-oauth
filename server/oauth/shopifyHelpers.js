@@ -1,6 +1,6 @@
+import jsonwebtoken from "jsonwebtoken";
 import HmacSHA256 from "crypto-js/hmac-sha256.js";
 import CryptoJS from "crypto-js";
-import jsonwebtoken from "jsonwebtoken";
 
 export const checkValidHmacSignature = (queries, secret) => {
   const { hmac, shop } = queries;

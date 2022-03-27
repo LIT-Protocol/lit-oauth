@@ -37,7 +37,7 @@ ReactDOM.render(
   <React.StrictMode>
     <ErrorBoundary>
       <AppContextProvider>
-        <App />
+        <App/>
       </AppContextProvider>
     </ErrorBoundary>
   </React.StrictMode>,
