@@ -4,7 +4,7 @@ import LitJsSdk from "lit-js-sdk";
 import { authUser } from "../auth.js";
 import { OAuth2Client } from "google-auth-library";
 import { parseJwt, sendSlackMetricsReportMessage } from "../utils.js";
-import { tokenIsValid, validateJWT } from "./googleHelpers.js";
+import { validateJWT } from "./googleHelpers.js";
 
 export default async function (fastify, opts) {
   // store the user's access token
@@ -101,17 +101,17 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/checkIfUserExists", async (request, response) => {
-    let jwtResult
-    const { authSig, payload } = request.body;
+    let authSig
+    const { payload } = request.body;
 
     try {
-      jwtResult = await validateJWT(payload)
+      authSig = await validateJWT(payload)
     } catch (err) {
       console.log('jwt error', err)
       return;
     }
 
-    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+    if (!authUser(authSig)) {
       response.code(400);
       return { error: "Invalid signature" };
     }
@@ -174,17 +174,17 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (request, response) => {
-    let jwtResult;
-    const { authSig, payload } = request.body;
+    let authSig;
+    const { payload } = request.body;
 
     try {
-      jwtResult = await validateJWT(payload)
+      authSig = await validateJWT(payload)
     } catch (err) {
       console.log('jwt error', err)
       return;
     }
 
-    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+    if (!authUser(authSig)) {
       response.code(400);
       return { error: "Invalid signature" };
     }
@@ -233,21 +233,6 @@ export default async function (fastify, opts) {
       .delete()
       .where("id", "=", shareUuid);
   });
-
-  // fastify.post("/api/google/getLitUserProfile", async (req, res) => {
-  //   const idOnService = req.body.idOnService;
-  //   const authSigAddress = req.body.authSig.address;
-  //   const connectedServices = await fastify.objection.models.connectedServices
-  //     .query()
-  //     .where("service_name", "=", "google")
-  //     .where("id_on_service", "=", idOnService)
-  //     .where("user_id", "=", authSigAddress);
-  //
-  //   if (connectedServices?.length && connectedServices[0]["refreshToken"]) {
-  //     delete connectedServices[0].refreshToken;
-  //   }
-  //   return connectedServices;
-  // });
 
   fastify.post("/api/google/share", async (req, res) => {
     const { authSig, connectedServiceId, token, idOnService } = req.body;
@@ -387,17 +372,17 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/signOutUser", async (request, response) => {
-    let jwtResult;
-    const { authSig, payload } = request.body;
+    let authSig;
+    const { payload } = request.body;
 
     try {
-      jwtResult = await validateJWT(payload)
+      authSig = await validateJWT(payload)
     } catch (err) {
       console.log('jwt error', err)
       return;
     }
 
-    if (!authUser(authSig) || !tokenIsValid(authSig, jwtResult)) {
+    if (!authUser(authSig)) {
       response.code(400);
       return { error: "Invalid signature" };
     }

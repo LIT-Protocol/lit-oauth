@@ -117,7 +117,7 @@ export default function GoogleGranting(props) {
 
       const payload = makeJwt(authSig);
 
-      const userExists = await checkIfUserExists(payload, authSig);
+      const userExists = await checkIfUserExists(payload);
 
       const stringifiedAuthSig = JSON.stringify(authSig);
 
@@ -142,7 +142,7 @@ export default function GoogleGranting(props) {
 
   const handleLoadCurrentUser = async (authSig) => {
     const payload = makeJwt(authSig);
-    const userInfo = await getUserProfile(payload, authSig);
+    const userInfo = await getUserProfile(payload);
     // check for google drive scope and sign user out if scope is not present
     if (userInfo.data['scope'] && userInfo.data['scope'].includes("https://www.googleapis.com/auth/drive.file")) {
       try {
@@ -215,7 +215,7 @@ export default function GoogleGranting(props) {
     setCurrentUser({});
     setConnectedServiceId("");
     const payload = makeJwt(storedAuthSig);
-    const userInfo = await signOutUser(payload, storedAuthSig);
+    const userInfo = await signOutUser(payload);
     window.location = `https://litgateway.com/apps`;
   };
 

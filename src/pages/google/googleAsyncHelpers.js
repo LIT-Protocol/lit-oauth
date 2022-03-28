@@ -3,20 +3,20 @@ import jwt from "jsonwebtoken";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const checkIfUserExists = async (payload, authSig) => {
+export const checkIfUserExists = async (payload) => {
   return await axios.post(
     `${API_HOST}/api/google/checkIfUserExists`,
     {
-      payload, authSig
+      payload
     }
   )
 }
 
-export const getUserProfile = async (payload, authSig) => {
+export const getUserProfile = async (payload) => {
   return await axios.post(
     `${API_HOST}/api/google/getUserProfile`,
     {
-      payload, authSig
+      payload
     }
   )
 }
@@ -67,11 +67,11 @@ export const deleteShare = async (shareUuid) => {
 //   return await axios.post(`${API_HOST}/api/google/deleteShare`, shareUuid);
 // }
 
-export const signOutUser = async (payload, authSig) => {
+export const signOutUser = async (payload) => {
   return await axios.post(
     `${API_HOST}/api/google/signOutUser`,
     {
-      payload, authSig
+      payload
     }
   )
 }
