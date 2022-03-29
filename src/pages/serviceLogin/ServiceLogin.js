@@ -35,7 +35,6 @@ export default function ServiceLogin() {
   const loadAuth = async () => {
     try {
       await performWithAuthSig(async (authSig) => {
-        console.log("AUTH", authSig);
         setStoredAuthSig(() => authSig);
       });
     } catch (err) {
@@ -161,14 +160,14 @@ export default function ServiceLogin() {
         <h2 className={"unselected-services-title"}>More Apps</h2>
         <span className={"unselected-services"}>
           {!!currentUnselectedServices.length &&
-            currentUnselectedServices.map((s, i) => (
-              <Card
-                key={i}
-                className={"unselected-service-card"}
-                sx={{ maxWidth: 345 }}
-              >
-                <CardMedia component="img" height="60" image={"/desk.jpeg"} />
-                <CardContent>
+          currentUnselectedServices.map((s, i) => (
+            <Card
+              key={i}
+              className={"unselected-service-card"}
+              sx={{ maxWidth: 345 }}
+            >
+              <CardMedia component="img" height="60" image={"/desk.jpeg"}/>
+              <CardContent>
                   <span className={"unselected-service-title"}>
                     <div
                       className={"service-image"}
@@ -179,22 +178,22 @@ export default function ServiceLogin() {
                     {/*  {s.serviceName}*/}
                     {/*</Typography>*/}
                   </span>
-                  <Typography variant="body2" color="text.secondary">
-                    Grant access to {s.serviceName} with blockchain
-                    requirements.
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    variant={"outlined"}
-                    onClick={() => changeService(s.serviceTag)}
-                    size="small"
-                  >
-                    Select
-                  </Button>
-                </CardActions>
-              </Card>
-            ))}
+                <Typography variant="body2" color="text.secondary">
+                  Grant access to {s.serviceName} with blockchain
+                  requirements.
+                </Typography>
+              </CardContent>
+              <CardActions>
+                <Button
+                  variant={"outlined"}
+                  onClick={() => changeService(s.serviceTag)}
+                  size="small"
+                >
+                  Select
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
         </span>
       </section>
       <Snackbar

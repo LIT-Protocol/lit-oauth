@@ -11,8 +11,6 @@ export default async function (fastify, opts) {
   // 2022-3-27 - new endpoints for google identity services
 
   fastify.get("/api/oauth/google/callback", async (req, res) => {
-    console.log('/api/oauth/google/callback', req.query)
-    console.log('req.query', req.query)
     // response.redirect(`${process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`);
     const { state, code } = req.query;
     if (!state) {

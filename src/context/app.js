@@ -23,7 +23,6 @@ export const AppContextProvider = (props) => {
       try {
         currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
         setAuthSig(currentAuthSig);
-        console.log("app.js CURRENT AUTH SIG", currentAuthSig);
       } catch (e) {
         if (e.code === 4001) {
           window.location = "https://litgateway.com/apps";
@@ -35,7 +34,7 @@ export const AppContextProvider = (props) => {
             details: (
               <>
                 Get one at{" "}
-                <a href="https://metamask.io" target="_blank">
+                <a href="https://metamask.io" target="_blank" rel="noreferrer">
                   metamask.io
                 </a>
               </>

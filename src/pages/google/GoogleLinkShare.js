@@ -36,7 +36,6 @@ function GoogleLinkShare() {
   };
 
   useEffect(() => {
-    console.log('SHARE TEST', linkData)
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
@@ -45,13 +44,10 @@ function GoogleLinkShare() {
       axios
         .post(`${BASE_URL}/api/google/conditions`, body, { headers })
         .then(async (res) => {
-          console.log("OUT THROUGH CONDITIONS", res.data);
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
           await litNodeClient.connect();
           setLitNodeClient(litNodeClient);
-          console.log('GOOGLE LINK DATA', res.data.share);
-          console.log(typeof res.data["role"]);
           setLinkData(res.data.share);
           setConditionsFetched(true);
         })

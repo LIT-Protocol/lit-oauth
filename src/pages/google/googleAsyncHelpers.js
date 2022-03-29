@@ -26,14 +26,6 @@ export const makeJwt = (payload) => {
   return jwt.sign(payload, secret);
 }
 
-// export const getLitUserProfile = async (authSig, idOnService) => {
-//   return await axios
-//     .post(API_HOST + "/api/google/getLitUserProfile", {
-//       authSig,
-//       idOnService,
-//     });
-// }
-
 export const share = async (requestData, requestOptions) => {
   const { driveId, role, token, connectedServiceId, accessControlConditions, authSig, idOnService } = requestData
   return await axios

@@ -99,7 +99,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    console.log('---> Start of delete shop data', request.headers)
     if (!request.headers.authorization) {
       reply.code(401).send("Unauthorized");
       return;
@@ -159,8 +158,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       extra_data,
       summary,
     } = request.body;
-
-    console.log('---> SAVE ACCESS TOKEN HEADERS', request.headers)
 
     try {
       const result = await validateMerchantToken(request.headers.authorization);
@@ -375,8 +372,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.uuid);
 
-    console.log('SHOP[0]', draftOrder[0])
-
     const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
 
     const shop = await fastify.objection.models.shopifyStores
@@ -490,13 +485,10 @@ export default async function shopifyEndpoints(fastify, opts) {
     //   .where("id", "=", request.body.uuid);
 
     // const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
-    console.log('Get Product Info Body', request.body)
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", request.body.shopName);
-
-    console.log('Get Product Info Shop', shop)
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -506,7 +498,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(request.body.productId);
-      console.log("--> Product details:", product);
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;
