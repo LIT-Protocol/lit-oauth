@@ -59,8 +59,11 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveAuthPlaygroundDraftOrder", async (request, reply) => {
+    console.log('check saveDraftOrder headers', request.headers)
+    console.log('check saveDraftOrder body', request.body)
     try {
       const result = await validateAuthPlaygroundToken(request.headers.authorization);
+      console.log('check saveDraftOrder result', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -87,6 +90,8 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
+
+      console.log('query shop', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
@@ -145,8 +150,11 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllAuthPlaygroundDraftOrders", async (request, reply) => {
+    // console.log('request.headers.authorization', request.headers)
+    // console.log('request.body', request.body)
     try {
       const result = await validateAuthPlaygroundToken(request.headers.authorization);
+      console.log('validate auth', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -154,6 +162,7 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
+      // console.log('draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {

@@ -20,6 +20,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
+    console.log('saveAccessToken start', request.body)
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
@@ -38,6 +39,8 @@ export default async function shopifyEndpoints(fastify, opts) {
 
         shopDetails = await shopify.shop.get([shop, accessToken]);
 
+        console.log('saveAccessToken shopDetails', shopDetails)
+
       } catch (err) {
         console.log('----> Error getting shopify details', err)
       }
@@ -52,6 +55,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         msg: `Shopify account connected ${email}`,
       });
     } else {
+      console.log('saveAccessToken store exists')
       typeOfAuth = "existingCustomer";
       await fastify.objection.models.shopifyStores
         .query()
@@ -229,7 +233,8 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllUserDraftOrders", async (request, reply) => {
+  fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
+    console.log('check getAllDraftOrders', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
