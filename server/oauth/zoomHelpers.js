@@ -38,12 +38,12 @@ export const getUser = async ({ accessToken, refreshToken }) => {
 };
 
 export const getMeetingsAndWebinars = async ({
-  accessToken,
-  refreshToken,
-  connectedServiceId,
-  fastify,
-  shares,
-}) => {
+                                               accessToken,
+                                               refreshToken,
+                                               connectedServiceId,
+                                               fastify,
+                                               shares,
+                                             }) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
@@ -110,21 +110,20 @@ export const getMeetingsAndWebinars = async ({
 };
 
 export const createMeetingInvite = async ({
-  accessToken,
-  refreshToken,
-  connectedServiceId,
-  fastify,
-  userId,
-  meetingId,
-  assetType,
-}) => {
+                                            accessToken,
+                                            refreshToken,
+                                            connectedServiceId,
+                                            fastify,
+                                            userId,
+                                            meetingId,
+                                            assetType,
+                                          }) => {
   return refreshTokenIfNeeded({
     accessToken,
     refreshToken,
     fastify,
     connectedServiceId,
     req: async (accessToken) => {
-      console.log('CHECK ON REFRESH')
       let url;
       if (assetType === "meeting") {
         url = `https://api.zoom.us/v2/meetings/${meetingId}/invite_links`;
@@ -156,16 +155,15 @@ export const createMeetingInvite = async ({
 };
 
 export const refreshAccessToken = async ({
-   connectedServiceId,
-   refreshToken,
-   fastify,
- }) => {
+                                           connectedServiceId,
+                                           refreshToken,
+                                           fastify,
+                                         }) => {
   console.log("Refreshing zoom access token");
   const q = {
     refresh_token: refreshToken,
     grant_type: "refresh_token",
   };
-  console.log('REFRESH TOKEN BEFORE!', refreshToken)
   const url =
     "https://zoom.us/oauth/token?" + new URLSearchParams(q).toString();
 
@@ -184,8 +182,6 @@ export const refreshAccessToken = async ({
     }
   );
 
-  console.log('REFRESH TOKEN AFTER', resp)
-
   await fastify.objection.models.connectedServices
     .query()
     .update({
@@ -198,12 +194,12 @@ export const refreshAccessToken = async ({
 };
 
 export const refreshTokenIfNeeded = async ({
-  accessToken,
-  refreshToken,
-  fastify,
-  connectedServiceId,
-  req,
-}) => {
+                                             accessToken,
+                                             refreshToken,
+                                             fastify,
+                                             connectedServiceId,
+                                             req,
+                                           }) => {
   try {
     const resp = await req(accessToken);
     return resp;

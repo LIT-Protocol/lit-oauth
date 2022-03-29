@@ -36,17 +36,15 @@ export default async function (fastify, opts) {
 
   fastify.post("/api/zoom/serviceLogout", async (request, reply) => {
     const user = request.body.user;
-    console.log("DELETE REQUEST", request.body.user);
 
     // fastify.delete(`http://zoom.us/oauth/users/${user}/token`)
     await axios
       .delete(`https://zoom.us/oauth/users/${user}/token`)
       .then((res) => {
-        console.log("RESULT OF DELETE USER", res);
         return res;
       })
       .catch((err) => {
-        console.log("DELETE ERR", err);
+        console.log("Error while deleting:", err);
       });
   });
 
@@ -157,8 +155,6 @@ export default async function (fastify, opts) {
       })
     );
 
-    console.log("GET MEETING AND WEBINARS ZOOM.JS");
-
     const meetingsAndWebinars = (
       await Promise.all(
         services.map((s) => {
@@ -245,24 +241,10 @@ export default async function (fastify, opts) {
       assetType: assetType,
     });
 
-    console.log("payload is", payload);
-    console.log("correct extra data is ", extraData);
-    console.log("shared link path is", sharedLinkPath);
-
-    console.log("CHECK CONDITIONS FOR SUCCESS", {
-      verified: verified,
-      baseUrl: `${payload.baseUrl} || ${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}`,
-      path: `${payload.path} || ${sharedLinkPath}`,
-      orgId: `${payload.orgId}`,
-      role: `${payload.role}`,
-      extraData1: JSON.parse(payload.extraData),
-      extraData2: JSON.parse(extraData),
-    });
-
     if (
       !verified ||
       payload.baseUrl !==
-        process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
+      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST ||
       payload.path !== sharedLinkPath ||
       payload.orgId !== "" ||
       payload.role !== "" ||
@@ -373,7 +355,7 @@ export default async function (fastify, opts) {
 
   // zoom will call this endpoint
   fastify.post("/api/zoom/deauth", async (request, reply) => {
-    /* incoming data: 
+    /* incoming data:
     {
       "event": "app_deauthorized",
       "payload": {

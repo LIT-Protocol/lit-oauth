@@ -20,6 +20,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
+    console.log('saveAccessToken start', request.body)
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
@@ -38,6 +39,8 @@ export default async function shopifyEndpoints(fastify, opts) {
 
         shopDetails = await shopify.shop.get([shop, accessToken]);
 
+        console.log('saveAccessToken shopDetails', shopDetails)
+
       } catch (err) {
         console.log('----> Error getting shopify details', err)
       }
@@ -52,6 +55,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         msg: `Shopify account connected ${email}`,
       });
     } else {
+      console.log('saveAccessToken store exists')
       typeOfAuth = "existingCustomer";
       await fastify.objection.models.shopifyStores
         .query()
@@ -99,7 +103,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    console.log('---> Start of delete shop data', request.headers)
     if (!request.headers.authorization) {
       reply.code(401).send("Unauthorized");
       return;
@@ -159,8 +162,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       extra_data,
       summary,
     } = request.body;
-
-    console.log('---> SAVE ACCESS TOKEN HEADERS', request.headers)
 
     try {
       const result = await validateMerchantToken(request.headers.authorization);
@@ -232,7 +233,8 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllUserDraftOrders", async (request, reply) => {
+  fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
+    console.log('check getAllDraftOrders', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
@@ -375,8 +377,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.uuid);
 
-    console.log('SHOP[0]', draftOrder[0])
-
     const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
 
     const shop = await fastify.objection.models.shopifyStores
@@ -490,13 +490,10 @@ export default async function shopifyEndpoints(fastify, opts) {
     //   .where("id", "=", request.body.uuid);
 
     // const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
-    console.log('Get Product Info Body', request.body)
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", request.body.shopName);
-
-    console.log('Get Product Info Shop', shop)
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -506,7 +503,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(request.body.productId);
-      console.log("--> Product details:", product);
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;

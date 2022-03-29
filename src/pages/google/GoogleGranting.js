@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ShareModal } from "lit-access-control-conditions-modal";
+// import { ShareModal } from "lit-access-control-conditions-modal";
+import { ShareModal } from "lit-share-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
@@ -12,6 +13,7 @@ import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 import BackToApps from "../sharedComponents/backToApps/BackToApps";
+import { checkIfUserExists, getUserProfile, makeJwt, signOutUser } from "./googleAsyncHelpers.js";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -29,13 +31,15 @@ export default function GoogleGranting(props) {
   const { performWithAuthSig } = useAppContext();
 
   const [file, setFile] = useState(null);
+  const [currentClient, setCurrentClient] = useState(null);
   const [allShares, setAllShares] = useState([]);
-  const [token, setToken] = useState("");
+  const [accessToken, setAccessToken] = useState("");
   const [connectedServiceId, setConnectedServiceId] = useState("");
   const [accessControlConditions, setAccessControlConditions] = useState([]);
   const [role, setRole] = useState("reader");
   const [currentUser, setCurrentUser] = useState({});
   const [storedAuthSig, setStoredAuthSig] = useState({});
+  const [permanent, setPermanent] = useState(true);
   const [humanizedAccessControlArray, setHumanizedAccessControlArray] =
     useState([]);
 
@@ -61,7 +65,6 @@ export default function GoogleGranting(props) {
 
     humanizeAccessControlConditions().then(
       (humanizedAccessControlConditions) => {
-        console.log("CHECK HUMANIZATION", humanizedAccessControlConditions);
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
@@ -104,59 +107,56 @@ export default function GoogleGranting(props) {
   };
 
   const loadAuth = async () => {
+    let client;
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
 
       if (!storedAuthSig || !storedAuthSig["sig"]) {
         console.log("Stop auth if authSig is not yet available");
-        return;
       }
-      window.gapi.load("client:auth2", function () {
-        window.gapi.auth2
-          .init({
-            access_type: "offline",
-            client_id: GOOGLE_CLIENT_KEY,
-            scope: "https://www.googleapis.com/auth/drive.file",
-          })
-          .then(async (googleObject) => {
-            window.gapi.load("picker", { callback: onPickerApiLoad });
-            const userIsSignedIn = googleObject.isSignedIn.get();
-            if (!userIsSignedIn) {
-              // if no google user exists, push toward authenticate
-              await authenticate();
-            } else {
-              // if a google user does exist, load user from lit DB
-              const currentUserObject = window.gapi.auth2
-                .getAuthInstance()
-                .currentUser.get();
-              await handleLoadCurrentUser(currentUserObject);
-            }
-          });
+
+      const payload = makeJwt(authSig);
+
+      const userExists = await checkIfUserExists(payload);
+
+      const stringifiedAuthSig = JSON.stringify(authSig);
+
+      const client = window.google.accounts.oauth2.initCodeClient({
+        client_id: GOOGLE_CLIENT_KEY,
+        scope: "https://www.googleapis.com/auth/drive.file",
+        ux_mode: 'redirect',
+        redirect_uri: `${API_HOST}/api/oauth/google/callback`,
+        state: stringifiedAuthSig
       });
+
+      setCurrentClient(client);
+
+      if (!userExists.data) {
+        // if no google user exists, redirect to authenticate
+        client.requestCode();
+      } else {
+        await handleLoadCurrentUser(authSig);
+      }
     });
   };
 
-  const handleLoadCurrentUser = async (currentUserObject) => {
-    const grantedScopes = currentUserObject.getGrantedScopes();
+  const handleLoadCurrentUser = async (authSig) => {
+    const payload = makeJwt(authSig);
+    const userInfo = await getUserProfile(payload);
     // check for google drive scope and sign user out if scope is not present
-    if (grantedScopes.includes("https://www.googleapis.com/auth/drive.file")) {
+    if (userInfo.data['scope'] && userInfo.data['scope'].includes("https://www.googleapis.com/auth/drive.file")) {
       try {
-        const idOnService = await currentUserObject.getId();
-        const currentLitUserProfile = await checkForCurrentLitUser(
-          storedAuthSig,
-          idOnService
-        );
-
-        if (currentLitUserProfile[0]) {
-          await setLatestAccessToken(currentUserObject, idOnService);
-        } else {
-          console.log("No user found locally. Please log in again.");
-          handleOpenSnackBar(
-            `No user found locally. Please log in again.`,
-            "error"
-          );
-          await authenticate();
+        const profileData = JSON.parse(userInfo.data.extraData);
+        const userProfile = {
+          idOnService: userInfo.data.idOnService,
+          email: userInfo.data.email,
+          displayName: profileData.displayName,
+          avatar: profileData.photoLink
         }
+
+        await getAllShares(authSig, userProfile.idOnService);
+        setCurrentUser(userProfile);
+        setAccessToken(userInfo.data.accessToken);
       } catch (err) {
         console.log("No user found locally:", err);
         handleOpenSnackBar(`No user found locally: ${err}`, "error");
@@ -170,130 +170,8 @@ export default function GoogleGranting(props) {
         `Insufficient Permission: Request had insufficient authentication scopes.`,
         "error"
       );
-      // await signOut();
+      await callSignOut();
     }
-  };
-
-  const checkForCurrentLitUser = async (authSig, idOnService) => {
-    try {
-      const userProfiles = await asyncHelpers.getLitUserProfile(
-        authSig,
-        idOnService
-      );
-      return userProfiles.data;
-    } catch (err) {
-      console.log("No user found locally:", err);
-      handleOpenSnackBar(`No user found locally: ${err}`, "error");
-      return [];
-    }
-  };
-
-  const setLatestAccessToken = async (currentUserObject, idOnService) => {
-    const googleAuthResponse = currentUserObject.getAuthResponse(true);
-    try {
-      const response = await asyncHelpers.verifyToken(
-        storedAuthSig,
-        googleAuthResponse,
-        idOnService
-      );
-      setConnectedServiceId(response.data.connectedServices[0].id);
-      setToken(response.data.connectedServices[0].accessToken);
-      await setUserProfile(currentUserObject, idOnService);
-      await getAllShares(storedAuthSig, idOnService);
-    } catch (err) {
-      console.log("Error verifying user:", err);
-      handleOpenSnackBar(`Error verifying user:, ${err}`, "error");
-    }
-  };
-
-  const authenticate = async () => {
-    try {
-      const authResult = await window.gapi.auth2
-        .getAuthInstance()
-        .grantOfflineAccess({
-          scope: "https://www.googleapis.com/auth/drive.file",
-        });
-      if (authResult.code) {
-        await storeToken(storedAuthSig, authResult.code);
-      }
-    } catch (err) {
-      if (err.error === "popup_blocked_by_browser") {
-        handleOpenSnackBar(
-          `Pop up was blocked by browser, please enable popups to continue.`,
-          "error"
-        );
-      } else {
-        handleOpenSnackBar(`Error logging in: ${err}`, "error");
-        console.log("Error logging in:", err);
-      }
-    }
-  };
-
-  const storeToken = async (authSig, code) => {
-    try {
-      const response = await asyncHelpers.storeConnectedServiceAccessToken(
-        authSig,
-        code
-      );
-      if (response.data["errorStatus"]) {
-        handleOpenSnackBar(
-          `Error logging in: ${response.data.errors[0]["message"]}`,
-          "error"
-        );
-        // await signOut();
-        return;
-      }
-
-      let currentUserObject = await window.gapi.auth2
-        .getAuthInstance()
-        .currentUser.get();
-      const idOnService = response.data.connectedServices[0].idOnService;
-      if (!!response.data["connectedServices"]) {
-        console.log(
-          'response.data["connectedServices"]',
-          response.data["connectedServices"]
-        );
-        await setConnectedServiceId(idOnService);
-
-        await setToken(response.data.connectedServices[0].accessToken);
-
-        if (!currentUserObject.getBasicProfile()) {
-          setTimeout(async () => {
-            console.log("Reload current user object.");
-            currentUserObject = await window.gapi.auth2
-              .getAuthInstance()
-              .currentUser.get();
-            await setUserProfile(currentUserObject, idOnService);
-            await getAllShares(storedAuthSig, idOnService);
-          }, 300);
-        } else {
-          console.log("Current user object present.");
-          await setUserProfile(currentUserObject, idOnService);
-          await getAllShares(storedAuthSig, idOnService);
-        }
-      }
-    } catch (err) {
-      console.log(`Error storing access token:, ${err.errors}`, err);
-      handleOpenSnackBar(
-        `Error storing access token, please reload:, ${err}`,
-        "error"
-      );
-      // await signOut();
-    }
-  };
-
-  const setUserProfile = async (currentUserObject, idOnService) => {
-    let userBasicProfile = await currentUserObject.getBasicProfile();
-
-    let userProfile = {
-      idOnService: idOnService,
-      email: userBasicProfile.getEmail(),
-      displayName: userBasicProfile.getName(),
-      givenName: userBasicProfile.getGivenName(),
-      avatar: userBasicProfile.getImageUrl(),
-    };
-
-    setCurrentUser(userProfile);
   };
 
   const onPickerApiLoad = () => {
@@ -331,20 +209,19 @@ export default function GoogleGranting(props) {
     });
   };
 
-  const signOut = async () => {
+  const callSignOut = async () => {
     setAccessControlConditions([]);
-    setToken("");
+    setAccessToken("");
     setCurrentUser({});
     setConnectedServiceId("");
-    const auth2 = await window.gapi.auth2.getAuthInstance();
-    await auth2.signOut().then(async () => {
-      auth2.disconnect();
-      window.location = `https://litgateway.com/apps`;
-    });
+    const payload = makeJwt(storedAuthSig);
+    const userInfo = await signOutUser(payload);
+    window.location = `https://litgateway.com/apps`;
   };
 
   const addToAccessControlConditions = async (r) => {
-    const concatAccessControlConditions = accessControlConditions.concat(r);
+    setPermanent(r.permanent);
+    const concatAccessControlConditions = accessControlConditions.concat(r.accessControlConditions);
     await setAccessControlConditions(concatAccessControlConditions);
   };
 
@@ -369,7 +246,7 @@ export default function GoogleGranting(props) {
     const requestData = {
       driveId: file.id,
       role: role,
-      token: token,
+      token: accessToken,
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
@@ -389,6 +266,7 @@ export default function GoogleGranting(props) {
         orgId: "",
         role: role.toString(),
         extraData: "",
+        permanent
       };
 
       window.litNodeClient.saveSigningCondition({
@@ -431,12 +309,12 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps />
-      {(!storedAuthSig["sig"] || token === "") &&
+      <BackToApps/>
+      {(!storedAuthSig["sig"] || accessToken === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress />
-          <h3>Waiting for Google Account - Ensure Pop-ups are enabled</h3>
+          <CircularProgress/>
+          <h3>Waiting for Google Account</h3>
         </div>
       ) : (
         <section className={"service-grid-container"}>
@@ -446,7 +324,7 @@ export default function GoogleGranting(props) {
               oauthServiceProvider={"Google"}
               currentUser={currentUser}
               serviceImageUrl={"/googledrive.png"}
-              signOut={signOut}
+              signOut={callSignOut}
             />
           </div>
           <div className={"service-grid-links"}>
@@ -472,7 +350,7 @@ export default function GoogleGranting(props) {
             humanizedAccessControlArray={humanizedAccessControlArray}
             handleAddAccessControl={handleAddAccessControl}
             handleGetShareLink={handleGetShareLink}
-            accessToken={token}
+            accessToken={accessToken}
             authSig={storedAuthSig}
             file={file}
             setFile={setFile}
@@ -482,20 +360,13 @@ export default function GoogleGranting(props) {
             openProvisionAccessDialog={openProvisionAccessDialog}
             setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
           />
-          {openShareModal && (
-            <ShareModal
-              showStep="ableToAccess"
-              className={"share-modal"}
-              show={false}
-              onClose={() => setOpenShareModal(false)}
-              sharingItems={[{ name: file.embedUrl }]}
-              onAccessControlConditionsSelected={async (restriction) => {
-                await addToAccessControlConditions(restriction);
-                setOpenShareModal(false);
-                setOpenProvisionAccessDialog(true);
-              }}
-            />
-          )}
+          <ShareModal onClose={() => setOpenShareModal(false)}
+                      showModal={openShareModal}
+                      onAccessControlConditionsSelected={async (restriction) => {
+                        await addToAccessControlConditions(restriction);
+                        setOpenShareModal(false);
+                        setOpenProvisionAccessDialog(true);
+                      }}/>
           <LitProtocolConnection
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}

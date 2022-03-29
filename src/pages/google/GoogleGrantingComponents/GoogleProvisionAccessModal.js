@@ -20,22 +20,25 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 export default function GoogleProvisionAccessModal(props) {
   let picker;
+  let pickerLoaded = false;
 
   const loadPicker = () => {
-    window.gapi.load("picker", { callback: createPicker() });
+    window.gapi.load("picker", {
+      callback: async () => {
+        pickerLoaded = true;
+        await createPicker();
+      }
+    });
   };
 
   const createPicker = async () => {
-    const googleAuth = await window.gapi.auth2.getAuthInstance();
-    const googleUser = await googleAuth.currentUser.get();
-    const googleAuthInstance = await googleUser.getAuthResponse(true);
-    const accessToken = googleAuthInstance.access_token;
+    const accessToken = props.accessToken;
 
-    if (accessToken?.length) {
+    if (accessToken?.length && pickerLoaded) {
       const origin = window.location.protocol + "//" + window.location.host;
-      const view = new google.picker.DocsView(google.picker.ViewId.DOCS);
-
-      picker = new google.picker.PickerBuilder()
+      const view = window.google.picker.ViewId.DOCS;
+      
+      picker = new window.google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
         .setOAuthToken(accessToken)
@@ -97,7 +100,7 @@ export default function GoogleProvisionAccessModal(props) {
                         props.setAccessControlConditions([]);
                       }}
                     >
-                      <DeleteIcon />
+                      <DeleteIcon/>
                     </IconButton>
                   ),
                 }}
@@ -137,11 +140,11 @@ export default function GoogleProvisionAccessModal(props) {
                             props.removeIthAccessControlCondition(i)
                           }
                         >
-                          <DeleteIcon />
+                          <DeleteIcon/>
                         </IconButton>
                       }
                     >
-                      <ListItemText primary={acc} />
+                      <ListItemText primary={acc}/>
                     </ListItem>
                   ))}
               </List>

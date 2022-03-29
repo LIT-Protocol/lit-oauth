@@ -1,34 +1,33 @@
 import axios from "axios";
+import jwt from "jsonwebtoken";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
-export const verifyToken = async (authSig, googleAuthResponse, idOnService) => {
-  return await axios
-    .post(API_HOST + "/api/google/verifyToken", {
-      authSig,
-      googleAuthResponse,
-      idOnService
-    });
+export const checkIfUserExists = async (payload) => {
+  return await axios.post(
+    `${API_HOST}/api/google/checkIfUserExists`,
+    {
+      payload
+    }
+  )
 }
 
-export const getLitUserProfile = async (authSig, idOnService) => {
-  return await axios
-    .post(API_HOST + "/api/google/getUserProfile", {
-      authSig,
-      idOnService,
-    });
+export const getUserProfile = async (payload) => {
+  return await axios.post(
+    `${API_HOST}/api/google/getUserProfile`,
+    {
+      payload
+    }
+  )
 }
 
-export const storeConnectedServiceAccessToken = async (authSig, code) => {
-  return await axios
-    .post(API_HOST + "/api/google/connect", {
-      authSig,
-      code,
-    });
+export const makeJwt = (payload) => {
+  const secret = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET;
+  return jwt.sign(payload, secret);
 }
 
 export const share = async (requestData, requestOptions) => {
-  const {driveId, role, token, connectedServiceId, accessControlConditions, authSig, idOnService} = requestData
+  const { driveId, role, token, connectedServiceId, accessControlConditions, authSig, idOnService } = requestData
   return await axios
     .post(
       API_HOST + "/api/google/share",
@@ -53,5 +52,18 @@ export const getAllShares = async (authSig, idOnService) => {
 }
 
 export const deleteShare = async (shareUuid) => {
-  return await axios.post(`${API_HOST}/api/google/deleteShare`, {uuid: shareUuid});
+  return await axios.post(`${API_HOST}/api/google/deleteShare`, { uuid: shareUuid });
+}
+
+// export const deleteConnectedService = async (shareUuid) => {
+//   return await axios.post(`${API_HOST}/api/google/deleteShare`, shareUuid);
+// }
+
+export const signOutUser = async (payload) => {
+  return await axios.post(
+    `${API_HOST}/api/google/signOutUser`,
+    {
+      payload
+    }
+  )
 }
