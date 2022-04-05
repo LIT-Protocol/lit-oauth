@@ -162,7 +162,7 @@ export default async function shopifyPoapEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
-      // console.log('draftOrders', draftOrders)
+      console.log('Poap draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {
