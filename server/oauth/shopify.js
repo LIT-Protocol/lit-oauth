@@ -364,6 +364,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/setUpDraftOrder", async (request, reply) => {
     const { uuid, jwt } = request.body;
+    console.log('setUpDraftOrderBody', uuid, jwt)
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||

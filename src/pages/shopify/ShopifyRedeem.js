@@ -40,6 +40,7 @@ const ShopifyRedeem = () => {
   const [loadingDraftOrderLink, setLoadingDraftOrderLink] = useState(false);
 
   document.addEventListener('lit-ready', function (e) {
+    console.log('lit-ready event listener')
     setConnectedToLitNodeClient(true);
   }, false)
 
@@ -50,7 +51,10 @@ const ShopifyRedeem = () => {
   }, [connectedToLitNodeClient])
 
   useEffect(() => {
+    console.log('useEffect check storedAuthSig', storedAuthSig)
+    console.log('useEffect check accessVerified', accessVerified)
     if (!!storedAuthSig && !accessVerified) {
+      console.log('useEffect before callSetUpRedeemDraftOrder')
       callSetUpRedeemDraftOrder();
     }
   }, [storedAuthSig])
@@ -79,12 +83,14 @@ const ShopifyRedeem = () => {
   const signIntoLit = async () => {
     try {
       await performWithAuthSig(async (authSig) => {
-        if (!storedAuthSig || !storedAuthSig["sig"]) {
-          console.log("Stop auth if authSig is not yet available");
-        }
+        console.log('check authSig', authSig)
+        // if (!storedAuthSig || !storedAuthSig["sig"]) {
+        //   console.log("Stop auth if authSig is not yet available");
+        //   return;
+        // }
         setStoredAuthSig(authSig);
       })
-    } catch(err) {
+    } catch (err) {
       setErrorText(err);
       setLoading(false);
       console.log('Error connecting wallet:', err)
@@ -110,7 +116,10 @@ const ShopifyRedeem = () => {
   }
 
   const provisionAccess = async (accessControlConditions) => {
-    const chain = accessControlConditions[0].chain;
+    console.log('accessControlConditions', accessControlConditions)
+    const chain = accessControlConditions?.[0]['chain'] ?? accessControlConditions?.[0][0]['chain'] ?? 'ethereum';
+    console.log('chain', chain)
+
     setChain(chain);
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
@@ -119,6 +128,13 @@ const ShopifyRedeem = () => {
       role: "customer",
       extraData: "",
     };
+    const signedTokenObj = {
+      accessControlConditions: accessControlConditions,
+      chain: chain,
+      authSig: storedAuthSig,
+      resourceId: resourceId
+    }
+    console.log('------> shopifyRedeem', signedTokenObj)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
         accessControlConditions: accessControlConditions,
