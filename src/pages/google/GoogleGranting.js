@@ -110,8 +110,9 @@ export default function GoogleGranting(props) {
     let client;
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
+      console.log('authSig', authSig)
 
-      if (!storedAuthSig || !storedAuthSig["sig"]) {
+      if (!authSig || !authSig["sig"]) {
         console.log("Stop auth if authSig is not yet available");
       }
 
