@@ -424,9 +424,9 @@ export default async function (fastify, opts) {
 
     return { result, length: allEntries.length };
   });
-//
-// fastify.get("/api/oauth/google/testEndpoint", async (request, response) => {
-//   console.log('test endpoint successfull')
-//   return 'test endpoint successfull'
-// })
+
+  fastify.get("/api/google/testEndpoint", async (request, response) => {
+    console.log('test endpoint successfull')
+    return 'test endpoint successfull'
+  })
 }
