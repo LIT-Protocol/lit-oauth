@@ -406,6 +406,7 @@ export default async function (fastify, opts) {
 
     return await fastify.objection.models.connectedServices
       .query()
+      .where('service_name', '=', 'google')
       .delete();
   });
 
