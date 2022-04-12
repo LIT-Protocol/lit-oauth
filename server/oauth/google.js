@@ -223,7 +223,7 @@ export default async function (fastify, opts) {
 
     const recoveredShares = await fastify.objection.models.shares
       .query()
-      .where("connected_service_id", "=", connectedService[0].id)
+      // .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
 
     return recoveredShares;
