@@ -121,24 +121,24 @@ export default function GoogleGranting(props) {
       const userExists = await checkIfUserExists(payload);
       console.log('check frontend userExists', userExists)
 
-      const stringifiedAuthSig = JSON.stringify(authSig);
-
-      const client = window.google.accounts.oauth2.initCodeClient({
-        client_id: GOOGLE_CLIENT_KEY,
-        scope: "https://www.googleapis.com/auth/drive.file",
-        ux_mode: 'redirect',
-        redirect_uri: `${API_HOST}/api/oauth/google/callback`,
-        state: stringifiedAuthSig
-      });
-
-      setCurrentClient(client);
-
-      if (!userExists.data) {
-        // if no google user exists, redirect to authenticate
-        client.requestCode();
-      } else {
-        await handleLoadCurrentUser(authSig);
-      }
+      // const stringifiedAuthSig = JSON.stringify(authSig);
+      //
+      // const client = window.google.accounts.oauth2.initCodeClient({
+      //   client_id: GOOGLE_CLIENT_KEY,
+      //   scope: "https://www.googleapis.com/auth/drive.file",
+      //   ux_mode: 'redirect',
+      //   redirect_uri: `${API_HOST}/api/oauth/google/callback`,
+      //   state: stringifiedAuthSig
+      // });
+      //
+      // setCurrentClient(client);
+      //
+      // if (!userExists.data) {
+      //   // if no google user exists, redirect to authenticate
+      //   client.requestCode();
+      // } else {
+      //   await handleLoadCurrentUser(authSig);
+      // }
     });
   };
 
