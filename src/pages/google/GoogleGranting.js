@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// import { ShareModal } from "lit-access-control-conditions-modal";
 import { ShareModal } from "lit-share-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";

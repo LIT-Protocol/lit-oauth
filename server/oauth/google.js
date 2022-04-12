@@ -104,6 +104,7 @@ export default async function (fastify, opts) {
   fastify.post("/api/google/checkIfUserExists", async (request, response) => {
     let authSig
     const { payload } = request.body;
+    console.log('start of checkIfUserExists')
 
     try {
       authSig = await validateJWT(payload)
@@ -111,6 +112,8 @@ export default async function (fastify, opts) {
       console.log('jwt error', err)
       return;
     }
+    
+    console.log('checkIfUserExists check after validateJWT', authSig)
 
     if (!authUser(authSig)) {
       response.code(400);
@@ -123,6 +126,8 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
+
+    console.log('checkExistingRows', existingRows)
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
