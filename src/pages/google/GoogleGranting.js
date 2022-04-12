@@ -119,6 +119,7 @@ export default function GoogleGranting(props) {
       const payload = makeJwt(authSig);
 
       const userExists = await checkIfUserExists(payload);
+      console.log('check frontend userExists', userExists)
 
       const stringifiedAuthSig = JSON.stringify(authSig);
 
