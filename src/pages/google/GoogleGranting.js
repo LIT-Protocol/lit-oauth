@@ -116,6 +116,7 @@ export default function GoogleGranting(props) {
         console.log("Stop auth if authSig is not yet available");
       }
 
+      console.log('check load')
       const payload = makeJwt(authSig);
 
       const userExists = await checkIfUserExists(payload);
