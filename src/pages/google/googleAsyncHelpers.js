@@ -22,6 +22,7 @@ export const getUserProfile = async (payload) => {
 }
 
 export const makeJwt = (payload) => {
+  console.log('makeJWT', payload, process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET)
   const secret = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET;
   return jwt.sign(payload, secret);
 }
