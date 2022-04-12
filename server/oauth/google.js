@@ -399,21 +399,21 @@ export default async function (fastify, opts) {
   });
 
   // TODO: remove before
-  fastify.post("/api/google/deleteConnectedService", async (req, res) => {
-    console.log('/api/google/deleteShare', req.body)
-    const uuid = req.body;
-    // console.log('shareuuid', uuid)
-    const result = await fastify.objection.models.connectedServices
-      .query()
-    // .where("id", "=", uuid);
-
-    console.log('result', result)
-
-    return await fastify.objection.models.connectedServices
-      .query()
-      .delete()
-      .where("id", "=", uuid);
-  });
+  // fastify.post("/api/google/deleteConnectedService", async (req, res) => {
+  //   console.log('/api/google/deleteShare', req.body)
+  //   const uuid = req.body;
+  //   // console.log('shareuuid', uuid)
+  //   const result = await fastify.objection.models.connectedServices
+  //     .query()
+  //   // .where("id", "=", uuid);
+  //
+  //   console.log('result', result)
+  //
+  //   return await fastify.objection.models.connectedServices
+  //     .query()
+  //     .delete()
+  //     .where("id", "=", uuid);
+  // });
   //
   // fastify.get("/api/oauth/google/testEndpoint", async (request, response) => {
   //   console.log('test endpoint successfull')
