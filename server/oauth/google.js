@@ -61,7 +61,6 @@ export default async function (fastify, opts) {
     const existingRows = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSig.address);
 
     let connected_service_id;
@@ -71,7 +70,6 @@ export default async function (fastify, opts) {
       await fastify.objection.models.connectedServices
         .query()
         .where("service_name", "=", "google")
-        .where("id_on_service", "=", idOnService)
         .where("user_id", "=", authSig.address)
         .patch({
           refresh_token: tokens.refresh_token,
