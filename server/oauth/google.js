@@ -12,6 +12,7 @@ export default async function (fastify, opts) {
 
   fastify.get("/api/oauth/google/callback", async (req, res) => {
     // response.redirect(`${process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`);
+    console.log('start of google callback')
     const { state, code } = req.query;
     if (!state) {
       res.code(400);
@@ -23,6 +24,8 @@ export default async function (fastify, opts) {
       res.code(400);
       return { error: "Invalid signature" };
     }
+
+    console.log('middle of google callback')
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,

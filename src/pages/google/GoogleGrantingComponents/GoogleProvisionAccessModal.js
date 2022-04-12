@@ -33,11 +33,12 @@ export default function GoogleProvisionAccessModal(props) {
 
   const createPicker = async () => {
     const accessToken = props.accessToken;
+    console.log('createPicker check access token', accessToken)
 
     if (accessToken?.length && pickerLoaded) {
       const origin = window.location.protocol + "//" + window.location.host;
       const view = window.google.picker.ViewId.DOCS;
-      
+
       picker = new window.google.picker.PickerBuilder()
         .setOrigin(origin)
         .addView(view)
