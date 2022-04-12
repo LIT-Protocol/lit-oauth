@@ -219,7 +219,6 @@ export default async function (fastify, opts) {
     const connectedService = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
-      .where("id_on_service", "=", idOnService)
       .where("user_id", "=", authSig.address);
 
     const recoveredShares = await fastify.objection.models.shares
@@ -249,7 +248,6 @@ export default async function (fastify, opts) {
       await fastify.objection.models.connectedServices
         .query()
         .where("service_name", "=", "google")
-        .where("id_on_service", "=", idOnService)
         .where("user_id", "=", authSig.address)
     )[0];
 
