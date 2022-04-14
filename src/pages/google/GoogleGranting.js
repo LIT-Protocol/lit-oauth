@@ -373,6 +373,9 @@ export default function GoogleGranting(props) {
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
           />
+          {navigator.brave && navigator.brave.isBrave() && (
+            <span className={'braveNotification'}>If using Brave Browser, popups and redirects will have to be allowed in order for this site to work correctly.</span>
+          )}
         </section>
       )}
       <Snackbar
