@@ -176,6 +176,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/deleteDoodlesDraftOrder", async (request, reply) => {
     const result = await validateDoodlesToken(request.headers.authorization);
+    console.log('start of deleteDoodlesDraftOrder', request.body)
 
     if (!result) {
       return "Unauthorized";
@@ -189,6 +190,9 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     const draftToDelete = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.id);
+
+    console.log('deleteDoodlesDraftOrder shop', shop)
+    console.log('deleteDoodlesDraftOrder draftToDelete', draftToDelete)
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -204,7 +208,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       product = await shopify.product.get(id);
       splitTags = product.tags.split(',');
     } catch (err) {
-      console.error("--> Error getting product on save DO:", err);
+      console.error("--> Error getting product on delete DO:", err);
       return err;
     }
 
@@ -212,7 +216,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
     } catch (err) {
-      console.error("--> Error updating product on save DO:", err);
+      console.error("--> Error updating product on delete DO:", err);
       return err;
     }
     // end delete exclusive or discount tag from deleted draft order
