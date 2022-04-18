@@ -206,11 +206,14 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     let splitTags;
     try {
       product = await shopify.product.get(id);
+      console.log('check on product', product)
       splitTags = product.tags.split(',');
     } catch (err) {
       console.error("--> Error getting product on delete DO:", err);
       return err;
     }
+
+    console.log('check after get product', product)
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
@@ -247,14 +250,14 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       allResults,
       specificResults
     };
-  })
+  });
 
   fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
     const uuid = request.body;
     const allResults = await fastify.objection.models.shopifyDraftOrders
       .query()
-      .where('id', '=', uuid)
-      .delete();
+      .delete()
+      .where('id', '=', uuid);
 
     return allResults;
   })
@@ -263,5 +266,5 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     console.log('toggle testDoodlesEndpoint');
 
     return 'doodles returned';
-  })
+  });
 }
