@@ -230,7 +230,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteDoodlesDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/checkOnDoodlesStores", async (request, reply) => {
     const name = request.body;
     const allResults = fastify.objection.models.shopifyStores
       .query()
