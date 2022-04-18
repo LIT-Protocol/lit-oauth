@@ -154,6 +154,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllDoodlesDraftOrders", async (request, reply) => {
+    console.log('start of getAllDoodlesDraftOrders', request.body)
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
       if (!result) {
@@ -163,6 +164,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
+
+      console.log('getAllDoodlesDraftOrders check draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {
@@ -226,4 +229,25 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       return "--> Error deleting draft order";
     }
   });
+
+  fastify.post("/api/shopify/deleteDoodlesDraftOrder", async (request, reply) => {
+    const name = request.body;
+    const allResults = fastify.objection.models.shopifyStores
+      .query()
+
+    const specificResults = fastify.objection.models.shopifyStores
+      .query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    return {
+      allResults,
+      specificResults
+    };
+  })
+
+  fastify.post("/api/shopify/testDoodlesEndpoint", async (request, reply) => {
+    console.log('toggle testDoodlesEndpoint');
+
+    return 'doodles returned';
+  })
 }
