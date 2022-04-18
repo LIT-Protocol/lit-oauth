@@ -400,6 +400,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       return err;
     }
 
+    console.log('check product', product)
+
     try {
       return { draftOrderDetails, product };
     } catch (err) {
