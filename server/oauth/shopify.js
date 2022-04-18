@@ -11,10 +11,6 @@ dotenv.config({
   path: "../../env",
 });
 
-const checkShopName = () => {
-
-}
-
 export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
@@ -56,7 +52,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       });
     } else {
       console.log('saveAccessToken store exists')
-      typeOfAuth = "existingCustomer";
       await fastify.objection.models.shopifyStores
         .query()
         .where("shop_name", "=", shortenedShopName)

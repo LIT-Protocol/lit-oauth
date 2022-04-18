@@ -249,6 +249,16 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     };
   })
 
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', uuid)
+      .delete();
+
+    return allResults;
+  })
+
   fastify.post("/api/shopify/testDoodlesEndpoint", async (request, reply) => {
     console.log('toggle testDoodlesEndpoint');
 
