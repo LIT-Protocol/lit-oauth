@@ -74,6 +74,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       summary,
     } = request.body;
 
+    console.log('start of saveDoodlesDraftOrder', request.body)
+
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
       console.log('saveDoodlesDraftOrder check token', result)
