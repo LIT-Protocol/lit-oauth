@@ -1,5 +1,5 @@
 import {
-  shortenShopName,
+  shortenShopName, validateMerchantToken,
 } from "../shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
@@ -38,7 +38,7 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     "/api/shopify/checkIfDoodlesProductHasBeenUsed",
     async (request, reply) => {
       try {
-        const result = await validateDoodlesToken(
+        const result = await validateMerchantToken(
           request.headers.authorization
         );
         if (!result) {
@@ -59,34 +59,34 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveDoodlesDraftOrder", async (request, reply) => {
+    const {
+      shop_id,
+      shop_name,
+      access_control_conditions,
+      humanized_access_control_conditions,
+      active,
+      title,
+      asset_id_on_service,
+      asset_type,
+      user_id,
+      draft_order_details,
+      extra_data,
+      summary,
+    } = request.body;
+
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
+      console.log('saveDoodlesDraftOrder check token', result)
       if (!result) {
         return "Unauthorized";
       }
-
-      const {
-        shop_id,
-        shop_name,
-        access_control_conditions,
-        humanized_access_control_conditions,
-        active,
-        title,
-        asset_id_on_service,
-        asset_type,
-        user_id,
-        draft_order_details,
-        extra_data,
-        summary,
-      } = request.body;
-
-      const getAllShops = await fastify.objection.models.shopifyStores
-        .query()
 
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
+
+      console.log('saveDoodlesDraftOrder check shopname', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
@@ -99,6 +99,9 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
 
       let product;
       let splitTags;
+
+      console.log('saveDoodlesDraftOrder check idOnService', id)
+
       try {
         product = await shopify.product.get(id);
         splitTags = product.tags.split(',');
@@ -106,6 +109,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         console.error("--> Error getting product on save DO:", err);
         return err;
       }
+
+      console.log('saveDoodlesDraftOrder check product', product)
 
       if (asset_type === 'exclusive') {
         splitTags.push('lit-exclusive');
@@ -136,6 +141,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
           extra_data,
           summary,
         });
+
+      console.log('saveDoodlesDraftOrder check draft order query', query)
 
       return query.id;
     } catch (err) {
