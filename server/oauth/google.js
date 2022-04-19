@@ -12,7 +12,7 @@ export default async function (fastify, opts) {
 
   fastify.get("/api/oauth/google/callback", async (req, res) => {
     // response.redirect(`${process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`);
-    console.log('start of google callback')
+    console.log("start of google callback");
     const { state, code } = req.query;
     if (!state) {
       res.code(400);
@@ -25,7 +25,7 @@ export default async function (fastify, opts) {
       return { error: "Invalid signature" };
     }
 
-    console.log('middle of google callback')
+    console.log("middle of google callback");
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -34,6 +34,7 @@ export default async function (fastify, opts) {
     );
 
     const { tokens } = await oauth_client.getToken(code);
+    console.log("tokens from google", tokens);
 
     oauth_client.setCredentials(tokens);
 
@@ -96,22 +97,24 @@ export default async function (fastify, opts) {
       });
     }
 
-    res.redirect(`${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`)
+    res.redirect(
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`
+    );
   });
 
   fastify.post("/api/google/checkIfUserExists", async (request, response) => {
-    let authSig
+    let authSig;
     const { payload } = request.body;
-    console.log('start of checkIfUserExists')
+    console.log("start of checkIfUserExists");
 
     try {
-      authSig = await validateJWT(payload)
+      authSig = await validateJWT(payload);
     } catch (err) {
-      console.log('jwt error', err)
+      console.log("jwt error", err);
       return;
     }
 
-    console.log('checkIfUserExists check after validateJWT', authSig)
+    console.log("checkIfUserExists check after validateJWT", authSig);
 
     if (!authUser(authSig)) {
       response.code(400);
@@ -125,7 +128,7 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
-    console.log('checkExistingRows', existingRows)
+    console.log("checkExistingRows", existingRows);
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -182,9 +185,9 @@ export default async function (fastify, opts) {
     const { payload } = request.body;
 
     try {
-      authSig = await validateJWT(payload)
+      authSig = await validateJWT(payload);
     } catch (err) {
-      console.log('jwt error', err)
+      console.log("jwt error", err);
       return;
     }
 
@@ -198,14 +201,15 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
-    const { scope, extraData, idOnService, email, accessToken } = existingRows[0];
+    const { scope, extraData, idOnService, email, accessToken } =
+      existingRows[0];
     return {
       scope,
       extraData,
       idOnService,
       email,
-      accessToken
-    }
+      accessToken,
+    };
   });
 
   fastify.post("/api/google/getAllShares", async (req, res) => {
@@ -318,7 +322,7 @@ export default async function (fastify, opts) {
     if (
       !verified ||
       payload.baseUrl !==
-      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
@@ -378,9 +382,9 @@ export default async function (fastify, opts) {
     const { payload } = request.body;
 
     try {
-      authSig = await validateJWT(payload)
+      authSig = await validateJWT(payload);
     } catch (err) {
-      console.log('jwt error', err)
+      console.log("jwt error", err);
       return;
     }
 
@@ -393,7 +397,7 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address)
-      .patch({ access_token: null })
+      .patch({ access_token: null });
 
     return true;
   });
