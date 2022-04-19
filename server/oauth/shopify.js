@@ -310,13 +310,18 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
+    console.log('checkForPromotions request.body', request.body);
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
 
+    console.log('checkForPromotions shop', shop);
+
     const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("shop_id", "=", shop[0].shopId);
+
+    console.log('checkForPromotions draftOrders', draftOrders);
 
     const shopName = shop[0].shopName;
 
@@ -343,11 +348,11 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAccessControl", async (request, reply) => {
+    console.log('getAccessControl - request.body', request.body)
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
 
-    console.log('getAccessControl - request.body', request.body)
     console.log('getAccessControl - draftOrder', draftOrder)
 
     if (draftOrder[0]) {

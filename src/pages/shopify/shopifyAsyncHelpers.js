@@ -18,6 +18,7 @@ export const getPromotion = async (uuid) => {
 }
 
 export const getAccessControl = async (uuid) => {
+  console.log('asyncHelpers getAccessControl', uuid)
   return await axios
     .post(API_HOST + "/api/shopify/getAccessControl", {
       uuid

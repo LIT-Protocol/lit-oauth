@@ -68,6 +68,29 @@ const ShopifyRedeem = () => {
     }
   }, [selectedVariantMenuOption])
 
+  const callSetUpRedeemDraftOrder = async () => {
+    checkForPromotionAccessControl().then(async (jwt) => {
+      console.log('JWT', jwt)
+      try {
+        const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
+        console.log('--> data in setUpDO', resp.data)
+        setProduct(resp.data.product);
+        setDraftOrderDetails(resp.data.draftOrderDetails);
+        formatSelectMenuOptions(resp.data.product);
+        setAccessVerified(true);
+        setLoading(false);
+      } catch (err) {
+        // ADD_ERROR_HANDLING
+        setLoading(false);
+        console.log('Error creating draft order:', err)
+      }
+    }).catch(err => {
+      // ADD_ERROR_HANDLING
+      setLoading(false);
+      console.log('Error provisioning access:', err);
+    })
+  }
+
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
     await litNodeClient.connect();
@@ -148,29 +171,6 @@ const ShopifyRedeem = () => {
       console.log('Error getting JWT:', err)
       return null;
     }
-  }
-
-  const callSetUpRedeemDraftOrder = async () => {
-    checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('JWT', jwt)
-      try {
-        const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
-        console.log('--> data in setUpDO', resp.data)
-        setProduct(resp.data.product);
-        setDraftOrderDetails(resp.data.draftOrderDetails);
-        formatSelectMenuOptions(resp.data.product);
-        setAccessVerified(true);
-        setLoading(false);
-      } catch (err) {
-        // ADD_ERROR_HANDLING
-        setLoading(false);
-        console.log('Error creating draft order:', err)
-      }
-    }).catch(err => {
-      // ADD_ERROR_HANDLING
-      setLoading(false);
-      console.log('Error provisioning access:', err);
-    })
   }
 
   const formatSelectMenuOptions = (product) => {
