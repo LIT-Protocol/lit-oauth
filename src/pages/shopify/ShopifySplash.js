@@ -48,7 +48,9 @@ export default function ShopifySplash() {
         setPromotionStatus('found');
         console.log('${res.data}', res.data)
         // TODO: comment back in
-        window.location.href = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
+        const link = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
+        console.log('link', link)
+        // window.location.href = link;
       }
     } catch (err) {
       console.log('Error retrieving access control conditions.');
