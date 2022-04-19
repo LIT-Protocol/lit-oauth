@@ -74,8 +74,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       summary,
     } = request.body;
 
-    console.log('start of saveDoodlesDraftOrder', request.body)
-
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
       console.log('saveDoodlesDraftOrder check token', result)
@@ -88,8 +86,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
 
-      console.log('saveDoodlesDraftOrder check shopname', shop)
-
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
         shopName: shop[0].shopName,
@@ -101,8 +97,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
 
       let product;
       let splitTags;
-
-      console.log('saveDoodlesDraftOrder check idOnService', id)
 
       try {
         product = await shopify.product.get(id);
@@ -154,7 +148,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllDoodlesDraftOrders", async (request, reply) => {
-    console.log('start of getAllDoodlesDraftOrders', request.body)
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
       if (!result) {
@@ -165,8 +158,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         .query()
         .where("shop_id", "=", request.body.shopId);
 
-      console.log('getAllDoodlesDraftOrders check draftOrders', draftOrders)
-
       return draftOrders;
     } catch (err) {
       console.error("--> Error getting all draft orders:", err);
@@ -176,7 +167,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/deleteDoodlesDraftOrder", async (request, reply) => {
     const result = await validateDoodlesToken(request.headers.authorization);
-    console.log('start of deleteDoodlesDraftOrder', request.body)
 
     if (!result) {
       return "Unauthorized";
@@ -191,9 +181,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.id);
 
-    console.log('deleteDoodlesDraftOrder shop', shop)
-    console.log('deleteDoodlesDraftOrder draftToDelete', draftToDelete)
-
     const shopify = new Shopify({
       shopName: shop[0].shopName,
       accessToken: shop[0].accessToken,
@@ -206,13 +193,10 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     let splitTags;
     try {
       product = await shopify.product.get(id);
-      console.log('check on product', product)
       splitTags = product.tags.split(',');
     } catch (err) {
       console.error("--> Error getting product on delete DO:", err);
     }
-
-    console.log('check after get product', product)
 
     if (!!product) {
       try {
@@ -237,34 +221,34 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/checkOnDoodlesStores", async (request, reply) => {
-    const name = request.body;
-    const allResults = await fastify.objection.models.shopifyStores
-      .query()
-
-    const specificResults = await fastify.objection.models.shopifyStores
-      .query()
-      .where('shop_name', '=', shortenShopName(name));
-
-    return {
-      allResults,
-      specificResults
-    };
-  });
-
-  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
-    const uuid = request.body;
-    const allResults = await fastify.objection.models.shopifyDraftOrders
-      .query()
-      .delete()
-      .where('id', '=', uuid);
-
-    return allResults;
-  })
-
-  fastify.post("/api/shopify/testDoodlesEndpoint", async (request, reply) => {
-    console.log('toggle testDoodlesEndpoint');
-
-    return 'doodles returned';
-  });
+  // fastify.post("/api/shopify/checkOnDoodlesStores", async (request, reply) => {
+  //   const name = request.body;
+  //   const allResults = await fastify.objection.models.shopifyStores
+  //     .query()
+  //
+  //   const specificResults = await fastify.objection.models.shopifyStores
+  //     .query()
+  //     .where('shop_name', '=', shortenShopName(name));
+  //
+  //   return {
+  //     allResults,
+  //     specificResults
+  //   };
+  // });
+  //
+  // fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+  //   const uuid = request.body;
+  //   const allResults = await fastify.objection.models.shopifyDraftOrders
+  //     .query()
+  //     .delete()
+  //     .where('id', '=', uuid);
+  //
+  //   return allResults;
+  // })
+  //
+  // fastify.post("/api/shopify/testDoodlesEndpoint", async (request, reply) => {
+  //   console.log('toggle testDoodlesEndpoint');
+  //
+  //   return 'doodles returned';
+  // });
 }

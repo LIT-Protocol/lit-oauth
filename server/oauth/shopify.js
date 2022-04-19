@@ -390,6 +390,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(id);
+      console.log('product information on setDraftOrder', product)
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;
