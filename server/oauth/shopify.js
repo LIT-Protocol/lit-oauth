@@ -347,6 +347,9 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.uuid);
 
+    console.log('getAccessControl - request.body', request.body)
+    console.log('getAccessControl - draftOrder', draftOrder)
+
     if (draftOrder[0]) {
       const humanizedAccessControlConditions =
         draftOrder[0].humanizedAccessControlConditions;
