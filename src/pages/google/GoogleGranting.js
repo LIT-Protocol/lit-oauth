@@ -12,7 +12,12 @@ import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 import BackToApps from "../sharedComponents/backToApps/BackToApps";
-import { checkIfUserExists, getUserProfile, makeJwt, signOutUser } from "./googleAsyncHelpers.js";
+import {
+  checkIfUserExists,
+  getUserProfile,
+  makeJwt,
+  signOutUser,
+} from "./googleAsyncHelpers.js";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
@@ -109,26 +114,27 @@ export default function GoogleGranting(props) {
     let client;
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
-      console.log('authSig', authSig)
+      console.log("authSig", authSig);
 
       if (!storedAuthSig || !storedAuthSig["sig"]) {
         console.log("Stop auth if authSig is not yet available");
       }
 
-      console.log('check load')
+      console.log("check load");
       const payload = makeJwt(authSig);
 
       const userExists = await checkIfUserExists(payload);
-      console.log('check frontend userExists', userExists)
+      console.log("check frontend userExists", userExists);
 
       const stringifiedAuthSig = JSON.stringify(authSig);
 
       const client = window.google.accounts.oauth2.initCodeClient({
         client_id: GOOGLE_CLIENT_KEY,
-        scope: "https://www.googleapis.com/auth/drive.file",
-        ux_mode: 'redirect',
+        scope:
+          "https://www.googleapis.com/auth/drive.file openid https://www.googleapis.com/auth/userinfo.email",
+        ux_mode: "redirect",
         redirect_uri: `${API_HOST}/api/oauth/google/callback`,
-        state: stringifiedAuthSig
+        state: stringifiedAuthSig,
       });
 
       setCurrentClient(client);
@@ -146,15 +152,20 @@ export default function GoogleGranting(props) {
     const payload = makeJwt(authSig);
     const userInfo = await getUserProfile(payload);
     // check for google drive scope and sign user out if scope is not present
-    if (userInfo.data['scope'] && userInfo.data['scope'].includes("https://www.googleapis.com/auth/drive.file")) {
+    if (
+      userInfo.data["scope"] &&
+      userInfo.data["scope"].includes(
+        "https://www.googleapis.com/auth/drive.file"
+      )
+    ) {
       try {
         const profileData = JSON.parse(userInfo.data.extraData);
         const userProfile = {
           idOnService: userInfo.data.idOnService,
           email: userInfo.data.email,
           displayName: profileData.displayName,
-          avatar: profileData.photoLink
-        }
+          avatar: profileData.photoLink,
+        };
 
         await getAllShares(authSig, userProfile.idOnService);
         setCurrentUser(userProfile);
@@ -223,7 +234,9 @@ export default function GoogleGranting(props) {
 
   const addToAccessControlConditions = async (r) => {
     setPermanent(r.permanent);
-    const concatAccessControlConditions = accessControlConditions.concat(r.accessControlConditions);
+    const concatAccessControlConditions = accessControlConditions.concat(
+      r.accessControlConditions
+    );
     await setAccessControlConditions(concatAccessControlConditions);
   };
 
@@ -268,7 +281,7 @@ export default function GoogleGranting(props) {
         orgId: "",
         role: role.toString(),
         extraData: "",
-        permanent
+        permanent,
       };
 
       window.litNodeClient.saveSigningCondition({
@@ -311,11 +324,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps/>
+      <BackToApps />
       {(!storedAuthSig["sig"] || accessToken === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress/>
+          <CircularProgress />
           <h3>Waiting for Google Account</h3>
         </div>
       ) : (
@@ -362,19 +375,24 @@ export default function GoogleGranting(props) {
             openProvisionAccessDialog={openProvisionAccessDialog}
             setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
           />
-          <ShareModal onClose={() => setOpenShareModal(false)}
-                      showModal={openShareModal}
-                      onAccessControlConditionsSelected={async (restriction) => {
-                        await addToAccessControlConditions(restriction);
-                        setOpenShareModal(false);
-                        setOpenProvisionAccessDialog(true);
-                      }}/>
+          <ShareModal
+            onClose={() => setOpenShareModal(false)}
+            showModal={openShareModal}
+            onAccessControlConditionsSelected={async (restriction) => {
+              await addToAccessControlConditions(restriction);
+              setOpenShareModal(false);
+              setOpenProvisionAccessDialog(true);
+            }}
+          />
           <LitProtocolConnection
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
           />
           {navigator.brave && navigator.brave.isBrave() && (
-            <span className={'braveNotification'}>If using Brave Browser, popups and redirects will have to be allowed in order for this site to work correctly.</span>
+            <span className={"braveNotification"}>
+              If using Brave Browser, popups and redirects will have to be
+              allowed in order for this site to work correctly.
+            </span>
           )}
         </section>
       )}
