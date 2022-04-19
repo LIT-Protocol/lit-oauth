@@ -18,6 +18,7 @@ export default class ShopifyDraftOrders extends BaseModel {
       'user_id',
       'draft_order_details',
       'extra_data',
+      'used_by',
       'active'
     ];
   }

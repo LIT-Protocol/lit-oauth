@@ -86,6 +86,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
 
+      console.log('saveDoodlesDraftOrder shop', shop)
+
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
         shopName: shop[0].shopName,
@@ -103,22 +105,22 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         splitTags = product.tags.split(',');
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
-        return err;
       }
 
       console.log('saveDoodlesDraftOrder check product', product)
 
-      if (asset_type === 'exclusive') {
-        splitTags.push('lit-exclusive');
-      } else if (asset_type === 'discount') {
-        splitTags.push('lit-discount');
+      if (!!product) {
+        if (asset_type === 'exclusive') {
+          splitTags.push('lit-exclusive');
+        } else if (asset_type === 'discount') {
+          splitTags.push('lit-discount');
+        }
       }
 
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
         console.error("--> Error updating product on save DO:", err);
-        return err;
       }
       // end add exclusive or discount tag to product
 
@@ -157,6 +159,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
+
+      console.log('getAllDoodlesDraftOrders check draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {

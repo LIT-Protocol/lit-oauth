@@ -230,6 +230,7 @@ const ShopifyRedeem = () => {
             <CardContent className={'shopify-service-card-header'}>
             <span className={'shopify-service-card-header-left'}>
               <h1>Token Access Verification</h1>
+              <h2>Is this thing on?</h2>
             </span>
               <span className={'shopify-service-card-header-right'}>
               <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span

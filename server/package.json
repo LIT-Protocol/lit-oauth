@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon --inspect index.js",
-    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js ",
+    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js",
     "migrateProd": "knex migrate:latest --esm --knexfile=./knexfile.js --env production"
   },
   "dependencies": {
@@ -33,7 +33,7 @@
     "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
     "objection": "^2.2.17",
-    "pg": "^8.7.1",
+    "pg": "^8.7.3",
     "shopify-api-node": "^3.8.1"
   }
 }
