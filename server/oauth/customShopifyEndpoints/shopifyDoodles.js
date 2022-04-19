@@ -210,7 +210,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       splitTags = product.tags.split(',');
     } catch (err) {
       console.error("--> Error getting product on delete DO:", err);
-      return err;
     }
 
     console.log('check after get product', product)
