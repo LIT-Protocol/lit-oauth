@@ -214,12 +214,13 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
 
     console.log('check after get product', product)
 
-    try {
-      const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-      product = await shopify.product.update(id, { tags: filteredTags.join(',') });
-    } catch (err) {
-      console.error("--> Error updating product on delete DO:", err);
-      return err;
+    if (!!product) {
+      try {
+        const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
+        product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+      } catch (err) {
+        console.error("--> Error updating product on delete DO:", err);
+      }
     }
     // end delete exclusive or discount tag from deleted draft order
 
