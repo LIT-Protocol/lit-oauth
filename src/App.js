@@ -10,23 +10,24 @@ const litTheme = createTheme(litThemeObject);
 function App() {
   const { globalError } = useAppContext();
 
+
   return (
     <ThemeProvider theme={litTheme}>
       <BrowserRouter>
         <div className="App">
           {globalError ? (
             <div className="GlobalError">
-              <div style={{ height: 24 }} />
+              <div style={{ height: 24 }}/>
               {/*<Informer*/}
               {/*  status="alert"*/}
               {/*  view="filled"*/}
               {/*  title={globalError.title}*/}
               {/*  label={globalError.details}*/}
               {/*/>*/}
-              <div style={{ height: 24 }} />
+              <div style={{ height: 24 }}/>
             </div>
           ) : null}
-          <Routes />
+          <Routes/>
         </div>
       </BrowserRouter>
     </ThemeProvider>
