@@ -380,17 +380,18 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("shop_id", "=", draftOrder[0].shopId);
 
+    // TODO: comment in when redeem limit is ready
     // if offer has a redeem limit, check that use hasn't exceeded it
-    let allowUserToRedeem = true;
-    if (!!draftOrder[0].redeemedBy) {
-      let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
-      console.log('check redeemedBy', redeemedBy)
-      console.log('check payload.sub', payload.sub)
-
-      if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
-        allowUserToRedeem = false;
-      }
-    }
+    // let allowUserToRedeem = true;
+    // if (!!draftOrder[0].redeemedBy) {
+    //   let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
+    //   console.log('check redeemedBy', redeemedBy)
+    //   console.log('check payload.sub', payload.sub)
+    //
+    //   if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
+    //     allowUserToRedeem = false;
+    //   }
+    // }
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -409,7 +410,9 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
 
     try {
-      return { draftOrderDetails, product, allowUserToRedeem };
+      // TODO: comment in when redeem limit is ready
+      // return { draftOrderDetails, product, allowUserToRedeem };
+      return { draftOrderDetails, product };
     } catch (err) {
       console.error("--> Error creating draft order", err);
       return err;
@@ -474,17 +477,18 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
       if (draftOrderRes) {
-        const updatedUsedByList = parseAndUpdateUsedByList(draftOrder[0].redeemedBy, payload.sub)
-        // const updatedUsedByList = 'experiment'
-        console.log('updatedUsedByList', updatedUsedByList)
-        const updatedDraftOrder = await fastify.objection.models.shopifyDraftOrders
-          .query()
-          .where("id", "=", request.body.uuid)
-          .patch({
-            'redeemed_by': updatedUsedByList
-          });
-
-        console.log('updatedDraftOrder', updatedDraftOrder)
+        // TODO: comment in when redeem limit is ready
+        // const updatedUsedByList = parseAndUpdateUsedByList(draftOrder[0].redeemedBy, payload.sub)
+        // // const updatedUsedByList = 'experiment'
+        // console.log('updatedUsedByList', updatedUsedByList)
+        // const updatedDraftOrder = await fastify.objection.models.shopifyDraftOrders
+        //   .query()
+        //   .where("id", "=", request.body.uuid)
+        //   .patch({
+        //     'redeemed_by': updatedUsedByList
+        //   });
+        //
+        // console.log('updatedDraftOrder', updatedDraftOrder)
         return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {
