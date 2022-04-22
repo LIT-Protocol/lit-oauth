@@ -1,6 +1,7 @@
 import {
   shortenShopName,
   validateMerchantToken,
+  parseAndUpdateUsedByList
 } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
@@ -121,6 +122,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   fastify.post(
     "/api/shopify/checkIfProductHasBeenUsed",
     async (request, reply) => {
+      console.log('startOf checkIfProductHasBeenUsed')
       try {
         const result = await validateMerchantToken(
           request.headers.authorization
@@ -128,6 +130,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         if (!result) {
           return "Unauthorized";
         }
+        console.log('checkIfProductHasBeenUsed', request.body.gid)
         const gid = request.body.gid;
 
         const queryForUsedProducts =
@@ -157,6 +160,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       extra_data,
       summary,
     } = request.body;
+
+    const redeemed_by = '{}';
 
     try {
       const result = await validateMerchantToken(request.headers.authorization);
@@ -219,6 +224,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           draft_order_details,
           extra_data,
           summary,
+          redeemed_by
         });
 
       return query.id;
@@ -353,8 +359,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.uuid);
 
-    console.log('getAccessControl - draftOrder', draftOrder)
-
     if (draftOrder[0]) {
       const humanizedAccessControlConditions =
         draftOrder[0].humanizedAccessControlConditions;
@@ -367,7 +371,6 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/setUpDraftOrder", async (request, reply) => {
     const { uuid, jwt } = request.body;
-    console.log('setUpDraftOrderBody', uuid, jwt)
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||
@@ -387,6 +390,18 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("shop_id", "=", draftOrder[0].shopId);
 
+    // if offer has a redeem limit, check that use hasn't exceeded it
+    let allowUserToRedeem = true;
+    if (!!draftOrder[0].redeemedBy) {
+      let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
+      console.log('check redeemedBy', redeemedBy)
+      console.log('check payload.sub', payload.sub)
+
+      if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
+        allowUserToRedeem = false;
+      }
+    }
+
     const shopify = new Shopify({
       shopName: shop[0].shopName,
       accessToken: shop[0].accessToken,
@@ -398,16 +413,13 @@ export default async function shopifyEndpoints(fastify, opts) {
     let product;
     try {
       product = await shopify.product.get(id);
-      console.log('product information on setDraftOrder', product)
     } catch (err) {
       console.error("--> Error getting product:", err);
       return err;
     }
 
-    console.log('check product', product)
-
     try {
-      return { draftOrderDetails, product };
+      return { draftOrderDetails, product, allowUserToRedeem };
     } catch (err) {
       console.error("--> Error creating draft order", err);
       return err;
@@ -472,6 +484,17 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
       if (draftOrderRes) {
+        const updatedUsedByList = parseAndUpdateUsedByList(draftOrder[0].redeemedBy, payload.sub)
+        // const updatedUsedByList = 'experiment'
+        console.log('updatedUsedByList', updatedUsedByList)
+        const updatedDraftOrder = await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("id", "=", request.body.uuid)
+          .patch({
+            'redeemed_by': updatedUsedByList
+          });
+
+        console.log('updatedDraftOrder', updatedDraftOrder)
         return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {

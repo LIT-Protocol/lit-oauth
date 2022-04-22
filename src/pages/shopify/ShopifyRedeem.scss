@@ -55,8 +55,13 @@
   height: 100%;
 }
 
+.splash-spinner {
+  margin-top: 4.5rem;
+}
+
 .redeem-service-card-content {
-  height: 20.5rem;
+  //height: 20.5rem;
+  height: calc(100% - 18rem);
   position: relative;
 }
 
@@ -70,7 +75,7 @@
   //align-items: center;
 
   .product-information-left {
-    width: 25%;
+    width: 30%;
 
     .product-image {
       width: 100%;
@@ -82,9 +87,9 @@
     }
   }
 
-  .product-information-center {
-    width: 30%;
-    padding: 0 3%;
+  .product-information-right {
+    width: 70%;
+    padding: 0 1rem 0 3%;
     font-size: 14px;
     display: flex;
     flex-direction: column;
@@ -93,7 +98,7 @@
     .product-detail {
       display: flex;
       justify-content: start;
-
+      //height: 5rem;
     }
 
     .product-attribute-label {
@@ -103,7 +108,7 @@
       font-weight: bold;
     }
 
-    .product-discount {
+    .product-light {
       text-align: start;
       font-weight: bold;
     }
@@ -111,8 +116,9 @@
     .product-conditions {
       display: flex;
       font-weight: bold;
-      margin-top: 1rem;
-      margin-bottom: 2rem;
+      //margin-top: 1rem;
+      margin-bottom: 1rem;
+      //height: 5rem;
 
       .product-condition {
         text-align: start;
@@ -120,16 +126,20 @@
         word-break: break-word;
       }
     }
-  }
 
-  .product-information-right {
-    width: 33%;
-    text-align: left;
-
-    .product-title {
-
+    .product-variant-select {
+      text-align: start;
     }
   }
+
+  //.product-information-right {
+  //  width: 33%;
+  //  text-align: left;
+  //
+  //  .product-title {
+  //
+  //  }
+  //}
 }
 
 .redeem-card-actions {
@@ -143,8 +153,9 @@
     bottom: 0;
 
     .MuiButton-root {
-      border-radius: 0;
+      //border-radius: 0;
       padding: 1rem 2rem;
+      margin: 0 1rem 1rem 0;
     }
   }
 }
@@ -158,6 +169,9 @@
     width: 100%;
 
   }
+  .redeem-service-card-content {
+    height: auto;
+  }
 
   .shopify-redeem-card-content {
     height: auto;
@@ -169,6 +183,10 @@
 
     .product-information-left {
       width: 100%;
+
+      .product-image {
+        width: 90%;
+      }
     }
 
     .product-information-center {
@@ -180,6 +198,8 @@
       width: 100%;
       flex-direction: column;
       text-align: center;
+      margin: 0;
+      padding: 0;
     }
   }
 
@@ -189,6 +209,8 @@
 
     .redeem-button {
       width: 100%;
+      margin: 0;
+      border-radius: 0;
     }
   }
 }

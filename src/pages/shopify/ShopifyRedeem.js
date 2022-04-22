@@ -27,6 +27,7 @@ const ShopifyRedeem = () => {
 
   const [draftOrderId, setDraftOrderId] = useState(null);
   const [draftOrderDetails, setDraftOrderDetails] = useState(null);
+  const [allowUserToRedeem, setAllowUserToRedeem] = useState(true);
   const [storedAuthSig, setStoredAuthSig] = useState(null);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
@@ -67,29 +68,6 @@ const ShopifyRedeem = () => {
       setSelectedProductVariant(selectedVariant);
     }
   }, [selectedVariantMenuOption])
-
-  const callSetUpRedeemDraftOrder = async () => {
-    checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('JWT', jwt)
-      try {
-        const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
-        console.log('--> data in setUpDO', resp.data)
-        setProduct(resp.data.product);
-        setDraftOrderDetails(resp.data.draftOrderDetails);
-        formatSelectMenuOptions(resp.data.product);
-        setAccessVerified(true);
-        setLoading(false);
-      } catch (err) {
-        // ADD_ERROR_HANDLING
-        setLoading(false);
-        console.log('Error creating draft order:', err)
-      }
-    }).catch(err => {
-      // ADD_ERROR_HANDLING
-      setLoading(false);
-      console.log('Error provisioning access:', err);
-    })
-  }
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -180,6 +158,33 @@ const ShopifyRedeem = () => {
     setVariantMenuOptions(mappedVariantRows);
   }
 
+  const callSetUpRedeemDraftOrder = async () => {
+    checkForPromotionAccessControl().then(async (jwt) => {
+      console.log('JWT', jwt)
+      try {
+        const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
+        console.log('--> data in setUpDO', resp.data)
+        setProduct(resp.data.product);
+        setDraftOrderDetails(resp.data.draftOrderDetails);
+        setAllowUserToRedeem(resp.data.allowUserToRedeem);
+        formatSelectMenuOptions(resp.data.product);
+        console.log('resp.data.product', resp.data.product)
+        setAccessVerified(true);
+        setLoading(false);
+      } catch (err) {
+        // ADD_ERROR_HANDLING
+        setLoading(false);
+        setErrorText('Something went wrong while trying to create the draft order.')
+        console.log('Error creating draft order:', err)
+      }
+    }).catch(err => {
+      // ADD_ERROR_HANDLING
+      setLoading(false);
+      console.log('Error provisioning access:', err);
+    })
+  }
+
+
   const callRedeemDraftOrder = async () => {
     setLoadingDraftOrderLink(true);
     checkForPromotionAccessControl().then(async (jwt) => {
@@ -215,9 +220,12 @@ const ShopifyRedeem = () => {
     if (loadingDraftOrderLink) {
       return 'Loading...'
     } else if (!selectedProductVariant) {
-      return 'Select a Product'
+      return 'Select a product'
+    } else if (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0) {
+      console.log('out of stock')
+      return 'Item is out of stock'
     } else {
-      return 'Redeem Promotion'
+      return 'Redeem promotion'
     }
   }
 
@@ -230,7 +238,6 @@ const ShopifyRedeem = () => {
             <CardContent className={'shopify-service-card-header'}>
             <span className={'shopify-service-card-header-left'}>
               <h1>Token Access Verification</h1>
-              <h2>Is this thing on?</h2>
             </span>
               <span className={'shopify-service-card-header-right'}>
               <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
@@ -239,12 +246,16 @@ const ShopifyRedeem = () => {
             </CardContent>
             <CardContent className={'redeem-service-card-content'}>
               <div className={"center-content"}>
+
+                {/*loader*/}
                 {((!storedAuthSig || !accessVerified) && loading) && (
                   <div>
                     <CircularProgress className={"spinner"}/>
                     <p>Signing in.</p>
                   </div>
                 )}
+
+                {/*something went wrong while connecting*/}
                 {errorText && (
                   <div>
                     <p>There was an error.</p>
@@ -254,15 +265,31 @@ const ShopifyRedeem = () => {
                     <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
                   </div>
                 )}
+
+                {/*error message if access is not verified*/}
                 {(storedAuthSig && !accessVerified && !loading) && (
                   <div>
                     <p>Sorry, you do not qualify for this promotion.</p>
                     <p>The conditions for access were not met.</p>
                     <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
                     <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
+                    <p>If you think this is an error, click the button below to try to reconnect.</p>
+                    <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
                   </div>
                 )}
-                {storedAuthSig && accessVerified && !loading &&
+
+                {/*error message is user is not allowed to redeem*/}
+                {!allowUserToRedeem && (
+                  <div>
+                    <p>It looks like you have hit the limit for number of times to redeem this offer.</p>
+                    <p>If you think this is an error, reload the page to reconnect or contact the creator
+                      of the offer.</p>
+                    {/*<Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>*/}
+                  </div>
+                )}
+
+                {/*show product info*/}
+                {storedAuthSig && accessVerified && !loading && allowUserToRedeem &&
                 !!product && !!draftOrderDetails && (
                   <div className={'product-information-container'}>
                     <div className={'product-information-left'}>
@@ -272,22 +299,33 @@ const ShopifyRedeem = () => {
                         <div className={"no-product-image"}>No image available</div>
                       )}
                     </div>
-                    <div className={'product-information-center'}>
-                      <span className={'product-detail'}>
+                    <div className={'product-information-right'}>
+                      <div className={'product-detail'}>
                         <p
                           className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? `Exclusive Access` : 'Discount'}</p>
                         {draftOrderDetails.value !== 0 && (
-                          <p className={'product-discount'}>{draftOrderDetails.value}% off full price</p>)}
-                      </span>
-                      <span className={'product-conditions'}>
+                          <p className={'product-light'}>{draftOrderDetails.value}% off full price</p>)}
+                      </div>
+                      {product.title && (
+                        <span className={'product-conditions'}>
+                          <p className={'product-attribute-label'}>Title:</p>
+                          <p className={'product-condition'}>{product.title}</p>
+                        </span>
+                      )}
+                      <div className={'product-conditions'}>
                         <p className={'product-attribute-label'}>Requirement:</p>
                         <p className={'product-condition'}>{humanizedAccessControlConditions}</p>
-                      </span>
+                      </div>
                       {!!variantMenuOptions && (
                         <FormControl fullWidth>
                           <InputLabel>Select a product</InputLabel>
-                          <Select value={selectedVariantMenuOption} label={'Select a product'}
-                                  onChange={(e) => setSelectedVariantMenuOption(e.target.value)}
+                          <Select value={selectedVariantMenuOption}
+                                  className={'product-variant-select'}
+                                  label={'Select a product'}
+                                  onChange={(e) => {
+                                    console.log('setSelectedVariantMenuOption', e.target.value);
+                                    setSelectedVariantMenuOption(e.target.value)
+                                  }}
                           >
                             {variantMenuOptions.map((v, i) => (
                               <MenuItem key={i} value={v}>{product.title} - {v}</MenuItem>
@@ -296,24 +334,27 @@ const ShopifyRedeem = () => {
                         </FormControl>
                       )}
                     </div>
-                    <div className={'product-information-right'}>
-                      <p>
-                        {product.vendor} is using wallet verification to provide token-access based discounts.
-                      </p>
-                    </div>
+                    {/*  <div className={'product-information-right'}>*/}
+                    {/*    <p>*/}
+                    {/*      {product.vendor} is using wallet verification to provide token-access based discounts.*/}
+                    {/*    </p>*/}
+                    {/*  </div>*/}
                   </div>
                 )}
               </div>
             </CardContent>
             <CardActions className={'redeem-card-actions'} style={{ padding: '0' }}>
-              {storedAuthSig && accessVerified && !loading && (
+              {storedAuthSig && accessVerified && !loading && allowUserToRedeem && (
                 <Tooltip title={getSubmitTooltip()} placement="top">
                   {/*<span className={"access-service-card-launch-button"} onClick={async () => {*/}
                   <div>
-                    <Button disabled={!selectedProductVariant} variant={"contained"} className={"redeem-button"}
-                            onClick={async () => {
-                              await callRedeemDraftOrder()
-                            }}>
+                    <Button
+                      disabled={!selectedProductVariant || (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0)}
+                      variant={"contained"}
+                      className={"redeem-button"}
+                      onClick={async () => {
+                        await callRedeemDraftOrder()
+                      }}>
                       {getRedeemButtonCondition()}
                       {/*<svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">*/}
                       {/*  <path d="M0.576416 20.9961H212.076L184.076 1.99609" stroke="white" strokeWidth="3"/>*/}
@@ -325,10 +366,10 @@ const ShopifyRedeem = () => {
             </CardActions>
           </Card>
           <span className={'shopify-service-card-mobile'}>
-            <h1>Token Access Verification</h1>
-            <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
-              className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
-          </span>
+                  <h1>Token Access Verification</h1>
+                  <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
+                    className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
+                  </span>
           {/*<Snackbar*/}
           {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}*/}
           {/*  open={openSnackbar}*/}

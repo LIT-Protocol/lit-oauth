@@ -1,5 +1,5 @@
 import {
-  shortenShopName, validateMerchantToken,
+  shortenShopName,
 } from "../shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
@@ -34,11 +34,9 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  fastify.post(
-    "/api/shopify/checkIfDoodlesProductHasBeenUsed",
-    async (request, reply) => {
+  fastify.post("/api/shopify/checkIfDoodlesProductHasBeenUsed", async (request, reply) => {
       try {
-        const result = await validateMerchantToken(
+        const result = await validateDoodlesToken(
           request.headers.authorization
         );
         if (!result) {
@@ -46,12 +44,9 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         }
         const gid = request.body.gid;
 
-        const queryForUsedProducts =
-          await fastify.objection.models.shopifyDraftOrders
-            .query()
-            .where("asset_id_on_service", "=", gid);
-
-        return queryForUsedProducts;
+        return await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("asset_id_on_service", "=", gid);
       } catch (err) {
         return err;
       }
@@ -74,9 +69,10 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       summary,
     } = request.body;
 
+    const redeemed_by = '{}';
+
     try {
       const result = await validateDoodlesToken(request.headers.authorization);
-      console.log('saveDoodlesDraftOrder check token', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -85,8 +81,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
-
-      console.log('saveDoodlesDraftOrder shop', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
@@ -106,8 +100,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
       }
-
-      console.log('saveDoodlesDraftOrder check product', product)
 
       if (!!product) {
         if (asset_type === 'exclusive') {
@@ -138,9 +130,8 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
           draft_order_details,
           extra_data,
           summary,
+          redeemed_by
         });
-
-      console.log('saveDoodlesDraftOrder check draft order query', query)
 
       return query.id;
     } catch (err) {
@@ -159,8 +150,6 @@ export default async function shopifyDoodlesEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
-
-      console.log('getAllDoodlesDraftOrders check draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {

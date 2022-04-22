@@ -42,3 +42,19 @@ export const shortenProductId = (productId) => {
   const splitId = productId.split('/');
   return splitId[splitId.length - 1];
 }
+
+export const parseAndUpdateUsedByList = (redeemedByList, userAddress) => {
+  console.log('redeemedByList', redeemedByList)
+  console.log('userAddress', userAddress)
+  let updatedUsedByList = JSON.parse(redeemedByList);
+
+  if (!updatedUsedByList[userAddress]) {
+    updatedUsedByList[userAddress] = 1;
+  } else {
+    updatedUsedByList[userAddress] += 1;
+  }
+
+  console.log('updatedUsedByList', updatedUsedByList)
+
+  return JSON.stringify(updatedUsedByList);
+}
