@@ -122,7 +122,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   fastify.post(
     "/api/shopify/checkIfProductHasBeenUsed",
     async (request, reply) => {
-      console.log('startOf checkIfProductHasBeenUsed')
       try {
         const result = await validateMerchantToken(
           request.headers.authorization
@@ -130,15 +129,11 @@ export default async function shopifyEndpoints(fastify, opts) {
         if (!result) {
           return "Unauthorized";
         }
-        console.log('checkIfProductHasBeenUsed', request.body.gid)
         const gid = request.body.gid;
 
-        const queryForUsedProducts =
-          await fastify.objection.models.shopifyDraftOrders
-            .query()
-            .where("asset_id_on_service", "=", gid);
-
-        return queryForUsedProducts;
+        return await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("asset_id_on_service", "=", gid);
       } catch (err) {
         return err;
       }
@@ -169,9 +164,6 @@ export default async function shopifyEndpoints(fastify, opts) {
         return "Unauthorized";
       }
 
-      const getAllShops = await fastify.objection.models.shopifyStores
-        .query()
-
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
@@ -188,25 +180,26 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       let product;
       let splitTags;
+
       try {
         product = await shopify.product.get(id);
         splitTags = product.tags.split(',');
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
-        return err;
       }
 
-      if (asset_type === 'exclusive') {
-        splitTags.push('lit-exclusive');
-      } else if (asset_type === 'discount') {
-        splitTags.push('lit-discount');
+      if (!!product) {
+        if (asset_type === 'exclusive') {
+          splitTags.push('lit-exclusive');
+        } else if (asset_type === 'discount') {
+          splitTags.push('lit-discount');
+        }
       }
 
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
         console.error("--> Error updating product on save DO:", err);
-        return err;
       }
       // end add exclusive or discount tag to product
 
@@ -235,7 +228,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
-    console.log('check getAllDraftOrders', request.body)
     try {
       const result = await validateMerchantToken(request.headers.authorization);
       if (!result) {
@@ -300,12 +292,10 @@ export default async function shopifyEndpoints(fastify, opts) {
     // end delete exclusive or discount tag from deleted draft order
 
     try {
-      const draftOrders = await fastify.objection.models.shopifyDraftOrders
+      return await fastify.objection.models.shopifyDraftOrders
         .query()
         .delete()
         .where("id", "=", request.body.id);
-
-      return draftOrders;
     } catch (err) {
       console.error("--> Error deleting draft order");
       return "--> Error deleting draft order";
