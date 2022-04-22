@@ -255,26 +255,28 @@ const ShopifyRedeem = () => {
                   </div>
                 )}
 
-                {/*something went wrong while connecting*/}
-                {errorText && (
-                  <div>
-                    <p>There was an error.</p>
-                    {/* <p>{errorText}</p> */}
-                    <p>Please connect your wallet manually or click below to try again.</p>
-                    <p>If you are on mobile, use the browser in the Metamask app.</p>
-                    <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
-                  </div>
-                )}
-
                 {/*error message if access is not verified*/}
                 {(storedAuthSig && !accessVerified && !loading) && (
                   <div>
-                    <p>Sorry, you do not qualify for this promotion.</p>
-                    <p>The conditions for access were not met.</p>
-                    <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
-                    <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
-                    <p>If you think this is an error, click the button below to try to reconnect.</p>
-                    <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                    {/*something went wrong while connecting*/}
+                    {errorText ? (
+                      <div>
+                        <p>There was an error.</p>
+                        {/* <p>{errorText}</p> */}
+                        <p>Please connect your wallet manually or click below to try again.</p>
+                        <p>If you are on mobile, use the browser in the Metamask app.</p>
+                        <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <p>Sorry, you do not qualify for this promotion.</p>
+                        <p>The conditions for access were not met.</p>
+                        <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
+                        <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
+                        <p>If you think this is an error, click the button below to try to reconnect.</p>
+                        <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                      </div>
+                    )}
                   </div>
                 )}
 
