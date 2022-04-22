@@ -539,4 +539,36 @@ export default async function shopifyEndpoints(fastify, opts) {
       return err;
     }
   })
+
+  // test endpoints
+  fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
+    const name = request.body;
+    const allResults = await fastify.objection.models.shopifyStores
+      .query()
+
+    const specificResults = await fastify.objection.models.shopifyStores
+      .query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    return {
+      allResults,
+      specificResults
+    };
+  });
+
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
+  })
+
+  fastify.post("/api/shopify/testEndpoint", async (request, reply) => {
+    console.log('toggle testDoodlesEndpoint');
+
+    return 'doodles returned';
+  });
 }
