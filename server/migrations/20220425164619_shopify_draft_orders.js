@@ -20,7 +20,6 @@ export const up = (knex) => {
     table.timestamps();
   });
 };
-
 export const down = (knex) => {
   return knex.schema.dropTableIfExists("shopify_draft_orders");
 };
