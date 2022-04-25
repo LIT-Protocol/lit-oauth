@@ -1,6 +1,4 @@
-import {
-  shortenShopName,
-} from "../shopifyHelpers.js";
+import { shortenShopName } from "../shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
