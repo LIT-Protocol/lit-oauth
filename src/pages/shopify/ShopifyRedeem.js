@@ -75,16 +75,16 @@ const ShopifyRedeem = () => {
     setSnackbarInfo(null);
   };
 
-  const handleSetSnackbar = (message, severity) => {
-    setSnackbarInfo({
-      severity,
-      message
-    });
-    console.log('check snackbarInfo', snackbarInfo)
-    console.log('check severity', severity)
-    console.log('check message', message)
-    setOpenSnackbar(true);
-  };
+  // const handleSetSnackbar = (message, severity) => {
+  //   setSnackbarInfo({
+  //     severity,
+  //     message
+  //   });
+  //   console.log('check snackbarInfo', snackbarInfo)
+  //   console.log('check severity', severity)
+  //   console.log('check message', message)
+  //   setOpenSnackbar(true);
+  // };
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -128,7 +128,7 @@ const ShopifyRedeem = () => {
     } catch (err) {
       // ADD_ERROR_HANDLING
       setLoading(false);
-      handleSetSnackbar(err, 'error');
+      // handleSetSnackbar(err, 'error');
       console.log('Share not found:', err)
     }
   }
@@ -161,7 +161,7 @@ const ShopifyRedeem = () => {
       return jwt;
     } catch (err) {
       console.log('Error getting JWT:', err)
-      handleSetSnackbar(err, 'error');
+      // handleSetSnackbar(err, 'error');
       return null;
     }
   }
@@ -188,13 +188,13 @@ const ShopifyRedeem = () => {
         // ADD_ERROR_HANDLING
         setLoading(false);
         setErrorText('Something went wrong while trying to create the draft order.')
-        handleSetSnackbar(err, 'error');
+        // handleSetSnackbar(err, 'error');
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
-      handleSetSnackbar(err, 'error');
+      // handleSetSnackbar(err, 'error');
       console.log('Error provisioning access:', err);
     })
   }
@@ -212,13 +212,13 @@ const ShopifyRedeem = () => {
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
-        handleSetSnackbar(err, 'error');
+        // handleSetSnackbar(err, 'error');
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
-      handleSetSnackbar(err, 'error');
+      // handleSetSnackbar(err, 'error');
       console.log('Error provisioning access:', err);
     })
   }
