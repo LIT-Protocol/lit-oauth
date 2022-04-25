@@ -80,6 +80,9 @@ const ShopifyRedeem = () => {
       severity,
       message
     });
+    console.log('check snackbarInfo', snackbarInfo)
+    console.log('check severity', severity)
+    console.log('check message', message)
     setOpenSnackbar(true);
   };
 
