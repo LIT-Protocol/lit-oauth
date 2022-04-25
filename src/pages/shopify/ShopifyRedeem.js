@@ -24,6 +24,8 @@ const ShopifyRedeem = () => {
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState(null);
   const [errorText, setErrorText] = useState(null);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarInfo, setSnackbarInfo] = useState(null);
 
   const [draftOrderId, setDraftOrderId] = useState(null);
   const [draftOrderDetails, setDraftOrderDetails] = useState(null);
@@ -52,22 +54,34 @@ const ShopifyRedeem = () => {
   }, [connectedToLitNodeClient])
 
   useEffect(() => {
-    console.log('useEffect check storedAuthSig', storedAuthSig)
-    console.log('useEffect check accessVerified', accessVerified)
     if (!!storedAuthSig && !accessVerified) {
-      console.log('useEffect before callSetUpRedeemDraftOrder')
       callSetUpRedeemDraftOrder();
     }
   }, [storedAuthSig])
 
   useEffect(() => {
     if (selectedVariantMenuOption.length) {
-      console.log('Selected Menu Option', selectedVariantMenuOption)
       const selectedVariant = product.variants.find(v => v.title === selectedVariantMenuOption)
-      console.log('SelectedVariant', selectedVariant)
       setSelectedProductVariant(selectedVariant);
     }
   }, [selectedVariantMenuOption])
+
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpenSnackbar(false);
+    setSnackbarInfo(null);
+  };
+
+  const handleSetSnackbar = (message, severity) => {
+    setSnackbarInfo({
+      severity,
+      message
+    });
+    setOpenSnackbar(true);
+  };
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -77,7 +91,6 @@ const ShopifyRedeem = () => {
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
     setDraftOrderId(id);
-    console.log('-----> just before log in to lit')
     signIntoLit();
   }
 
@@ -112,14 +125,13 @@ const ShopifyRedeem = () => {
     } catch (err) {
       // ADD_ERROR_HANDLING
       setLoading(false);
+      handleSetSnackbar(err, 'error');
       console.log('Share not found:', err)
     }
   }
 
   const provisionAccess = async (accessControlConditions) => {
-    console.log('accessControlConditions', accessControlConditions)
     const chain = accessControlConditions?.[0]['chain'] ?? accessControlConditions?.[0][0]['chain'] ?? 'ethereum';
-    console.log('chain', chain)
 
     setChain(chain);
     const resourceId = {
@@ -135,7 +147,6 @@ const ShopifyRedeem = () => {
       authSig: storedAuthSig,
       resourceId: resourceId
     }
-    console.log('------> shopifyRedeem', signedTokenObj)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
         accessControlConditions: accessControlConditions,
@@ -147,6 +158,7 @@ const ShopifyRedeem = () => {
       return jwt;
     } catch (err) {
       console.log('Error getting JWT:', err)
+      handleSetSnackbar(err, 'error');
       return null;
     }
   }
@@ -160,28 +172,26 @@ const ShopifyRedeem = () => {
 
   const callSetUpRedeemDraftOrder = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('JWT', jwt)
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
-        console.log('--> data in setUpDO', resp.data)
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
         // todo: fix with redeem limit
         setAllowUserToRedeem(resp.data.allowUserToRedeem);
-        setAllowUserToRedeem(true);
         formatSelectMenuOptions(resp.data.product);
-        console.log('resp.data.product', resp.data.product)
         setAccessVerified(true);
         setLoading(false);
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
         setErrorText('Something went wrong while trying to create the draft order.')
+        handleSetSnackbar(err, 'error');
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
+      handleSetSnackbar(err, 'error');
       console.log('Error provisioning access:', err);
     })
   }
@@ -199,11 +209,13 @@ const ShopifyRedeem = () => {
       } catch (err) {
         // ADD_ERROR_HANDLING
         setLoading(false);
+        handleSetSnackbar(err, 'error');
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
+      handleSetSnackbar(err, 'error');
       console.log('Error provisioning access:', err);
     })
   }
@@ -224,7 +236,6 @@ const ShopifyRedeem = () => {
     } else if (!selectedProductVariant) {
       return 'Select a product'
     } else if (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0) {
-      console.log('out of stock')
       return 'Item is out of stock'
     } else {
       return 'Redeem promotion'
@@ -374,14 +385,14 @@ const ShopifyRedeem = () => {
                   <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
                     className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
                   </span>
-          {/*<Snackbar*/}
-          {/*  anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}*/}
-          {/*  open={openSnackbar}*/}
-          {/*  autoHideDuration={4000}*/}
-          {/*  onClose={handleCloseSnackbar}*/}
-          {/*>*/}
-          {/*  <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>*/}
-          {/*</Snackbar>*/}
+          <Snackbar
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            open={openSnackbar}
+            autoHideDuration={4000}
+            onClose={handleCloseSnackbar}
+          >
+            <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
+          </Snackbar>
         </section>
       </div>
     </div>
