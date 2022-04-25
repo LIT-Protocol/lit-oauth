@@ -75,17 +75,17 @@ const ShopifyRedeem = () => {
     setSnackbarInfo(null);
   };
 
-  const handleSetSnackbar = (message, severity) => {
-    const snackbarInfoHolder = {
-      message: message,
-      severity: severity
-    }
-    // setSnackbarInfo(snackbarInfoHolder);
-    console.log('check snackbarInfo', snackbarInfoHolder)
-    console.log('check severity', severity)
-    console.log('check message', message)
-    // setOpenSnackbar(true);
-  };
+  // const handleSetSnackbar = (message, severity) => {
+  //   const snackbarInfoHolder = {
+  //     message: message,
+  //     severity: severity
+  //   }
+  //   setSnackbarInfo(snackbarInfoHolder);
+  //   console.log('check snackbarInfo', snackbarInfoHolder)
+  //   console.log('check severity', severity)
+  //   console.log('check message', message)
+  //   setOpenSnackbar(true);
+  // };
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -205,6 +205,8 @@ const ShopifyRedeem = () => {
     setLoadingDraftOrderLink(true);
     checkForPromotionAccessControl().then(async (jwt) => {
       console.log('JWT in redeem draft order', jwt)
+      console.log('variant in redeem draft order', selectedProductVariant)
+      console.log('draftOrderId in redeem draft order', draftOrderId)
       try {
         const resp = await redeemDraftOrder(draftOrderId, selectedProductVariant, jwt);
         console.log('Check redeem draft order', resp.data)
