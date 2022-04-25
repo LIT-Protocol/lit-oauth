@@ -388,14 +388,16 @@ const ShopifyRedeem = () => {
                   <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
                     className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
                   </span>
-          <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            open={openSnackbar}
-            autoHideDuration={4000}
-            onClose={handleCloseSnackbar}
-          >
-            <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
-          </Snackbar>
+          {/*{!!snackbarInfo && (*/}
+          {/*  <Snackbar*/}
+          {/*    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}*/}
+          {/*    open={openSnackbar}*/}
+          {/*    autoHideDuration={4000}*/}
+          {/*    onClose={handleCloseSnackbar}*/}
+          {/*  >*/}
+          {/*    <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>*/}
+          {/*  </Snackbar>*/}
+          {/*)}*/}
         </section>
       </div>
     </div>
