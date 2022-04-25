@@ -167,7 +167,7 @@ const ShopifyRedeem = () => {
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
         // todo: fix with redeem limit
-        // setAllowUserToRedeem(resp.data.allowUserToRedeem);
+        setAllowUserToRedeem(resp.data.allowUserToRedeem);
         setAllowUserToRedeem(true);
         formatSelectMenuOptions(resp.data.product);
         console.log('resp.data.product', resp.data.product)

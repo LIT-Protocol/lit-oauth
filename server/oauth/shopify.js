@@ -378,16 +378,16 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     // TODO: comment in when redeem limit is ready
     // if offer has a redeem limit, check that use hasn't exceeded it
-    // let allowUserToRedeem = true;
-    // if (!!draftOrder[0].redeemedBy) {
-    //   let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
-    //   console.log('check redeemedBy', redeemedBy)
-    //   console.log('check payload.sub', payload.sub)
-    //
-    //   if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
-    //     allowUserToRedeem = false;
-    //   }
-    // }
+    let allowUserToRedeem = true;
+    if (!!draftOrder[0].redeemedBy) {
+      let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
+      console.log('check redeemedBy', redeemedBy)
+      console.log('check payload.sub', payload.sub)
+
+      if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
+        allowUserToRedeem = false;
+      }
+    }
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -407,8 +407,8 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       // TODO: comment in when redeem limit is ready
-      // return { draftOrderDetails, product, allowUserToRedeem };
-      return { draftOrderDetails, product };
+      return { draftOrderDetails, product, allowUserToRedeem };
+      // return { draftOrderDetails, product };
     } catch (err) {
       console.error("--> Error creating draft order", err);
       return err;
