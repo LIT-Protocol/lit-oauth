@@ -75,16 +75,17 @@ const ShopifyRedeem = () => {
     setSnackbarInfo(null);
   };
 
-  // const handleSetSnackbar = (message, severity) => {
-  //   setSnackbarInfo({
-  //     severity,
-  //     message
-  //   });
-  //   console.log('check snackbarInfo', snackbarInfo)
-  //   console.log('check severity', severity)
-  //   console.log('check message', message)
-  //   setOpenSnackbar(true);
-  // };
+  const handleSetSnackbar = (message, severity) => {
+    const snackbarInfoHolder = {
+      message: message,
+      severity: severity
+    }
+    // setSnackbarInfo(snackbarInfoHolder);
+    console.log('check snackbarInfo', snackbarInfoHolder)
+    console.log('check severity', severity)
+    console.log('check message', message)
+    // setOpenSnackbar(true);
+  };
 
   const connectToLitNode = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
