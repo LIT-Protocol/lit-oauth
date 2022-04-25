@@ -213,7 +213,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           draft_order_details,
           extra_data,
           summary,
-          // redeemed_by
+          redeemed_by
         });
 
       return query.id;

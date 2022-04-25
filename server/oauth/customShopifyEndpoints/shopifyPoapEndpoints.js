@@ -130,7 +130,7 @@ export default async function shopifyPoapEndpoints(fastify, opts) {
           draft_order_details,
           extra_data,
           summary,
-          // redeemed_by
+          redeemed_by
         });
 
       console.log('query', query)
