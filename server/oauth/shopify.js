@@ -552,6 +552,21 @@ export default async function shopifyEndpoints(fastify, opts) {
     };
   });
 
+  fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
+    const name = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+
+    // const specificResults = await fastify.objection.models.shopifyStores
+    //   .query()
+    //   .where('shop_name', '=', shortenShopName(name));
+
+    return {
+      keys: Object.keys(allResults[0]),
+      length: allResults.length
+    };
+  });
+
   fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
     const uuid = request.body;
     const allResults = await fastify.objection.models.shopifyDraftOrders
