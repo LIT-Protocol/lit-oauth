@@ -113,10 +113,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  fastify.post("/api/shopify/testEndpoint", async (request, reply) => {
-    return "test endpoint successful";
-  });
-
   // NEW_SECTION: merchant calls
 
   fastify.post(
