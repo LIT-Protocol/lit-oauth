@@ -474,17 +474,17 @@ export default async function shopifyEndpoints(fastify, opts) {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
       if (draftOrderRes) {
         // TODO: comment in when redeem limit is ready
-        // const updatedUsedByList = parseAndUpdateUsedByList(draftOrder[0].redeemedBy, payload.sub)
-        // // const updatedUsedByList = 'experiment'
-        // console.log('updatedUsedByList', updatedUsedByList)
-        // const updatedDraftOrder = await fastify.objection.models.shopifyDraftOrders
-        //   .query()
-        //   .where("id", "=", request.body.uuid)
-        //   .patch({
-        //     'redeemed_by': updatedUsedByList
-        //   });
-        //
-        // console.log('updatedDraftOrder', updatedDraftOrder)
+        const updatedUsedByList = parseAndUpdateUsedByList(draftOrder[0].redeemedBy, payload.sub)
+        // const updatedUsedByList = 'experiment'
+        console.log('updatedUsedByList', updatedUsedByList)
+        const updatedDraftOrder = await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("id", "=", request.body.uuid)
+          .patch({
+            'redeemed_by': updatedUsedByList
+          });
+
+        console.log('updatedDraftOrder', updatedDraftOrder)
         return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {
