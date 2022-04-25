@@ -44,8 +44,8 @@ export const shortenProductId = (productId) => {
 }
 
 export const parseAndUpdateUsedByList = (redeemedBy, userAddress) => {
-  let updatedRedeemedBy
-  if (!redeemedBy) {
+  let updatedRedeemedBy = {};
+  if (redeemedBy) {
     updatedRedeemedBy = JSON.parse(redeemedBy);
   }
 
