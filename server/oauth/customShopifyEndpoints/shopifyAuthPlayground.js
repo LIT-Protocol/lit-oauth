@@ -1,6 +1,4 @@
-import {
-  shortenShopName
-} from "../shopifyHelpers.js";
+import { shortenShopName } from "../shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
@@ -22,7 +20,7 @@ const validateAuthPlaygroundToken = async (token) => {
 
 export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
 
-  // RH ENDPOINTS
+  // REFACTOR ENDPOINTS
   fastify.post("/api/shopify/deleteAuthPlaygroundShopData", async (request, reply) => {
     const result = await validateAuthPlaygroundToken(request.headers.authorization);
     if (!result) {
@@ -34,9 +32,7 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  fastify.post(
-    "/api/shopify/checkIfAuthPlaygroundProductHasBeenUsed",
-    async (request, reply) => {
+  fastify.post("/api/shopify/checkIfAuthPlaygroundProductHasBeenUsed", async (request, reply) => {
       try {
         const result = await validateAuthPlaygroundToken(
           request.headers.authorization
@@ -46,12 +42,9 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
         }
         const gid = request.body.gid;
 
-        const queryForUsedProducts =
-          await fastify.objection.models.shopifyDraftOrders
-            .query()
-            .where("asset_id_on_service", "=", gid);
-
-        return queryForUsedProducts;
+        return await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("asset_id_on_service", "=", gid);
       } catch (err) {
         return err;
       }
@@ -59,39 +52,33 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
   );
 
   fastify.post("/api/shopify/saveAuthPlaygroundDraftOrder", async (request, reply) => {
-    console.log('check saveDraftOrder headers', request.headers)
-    console.log('check saveDraftOrder body', request.body)
+    const {
+      shop_id,
+      shop_name,
+      access_control_conditions,
+      humanized_access_control_conditions,
+      active,
+      title,
+      asset_id_on_service,
+      asset_type,
+      user_id,
+      draft_order_details,
+      extra_data,
+      summary,
+    } = request.body;
+
+    const redeemed_by = '{}';
+
     try {
       const result = await validateAuthPlaygroundToken(request.headers.authorization);
-      console.log('check saveDraftOrder result', result)
       if (!result) {
         return "Unauthorized";
       }
-
-      const {
-        shop_id,
-        shop_name,
-        access_control_conditions,
-        humanized_access_control_conditions,
-        active,
-        title,
-        asset_id_on_service,
-        asset_type,
-        user_id,
-        draft_order_details,
-        extra_data,
-        summary,
-      } = request.body;
-
-      const getAllShops = await fastify.objection.models.shopifyStores
-        .query()
 
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
-
-      console.log('query shop', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
@@ -104,25 +91,26 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
 
       let product;
       let splitTags;
+
       try {
         product = await shopify.product.get(id);
         splitTags = product.tags.split(',');
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
-        return err;
       }
 
-      if (asset_type === 'exclusive') {
-        splitTags.push('lit-exclusive');
-      } else if (asset_type === 'discount') {
-        splitTags.push('lit-discount');
+      if (!!product) {
+        if (asset_type === 'exclusive') {
+          splitTags.push('lit-exclusive');
+        } else if (asset_type === 'discount') {
+          splitTags.push('lit-discount');
+        }
       }
 
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
         console.error("--> Error updating product on save DO:", err);
-        return err;
       }
       // end add exclusive or discount tag to product
 
@@ -140,6 +128,7 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
           draft_order_details,
           extra_data,
           summary,
+          redeemed_by
         });
 
       return query.id;
@@ -150,11 +139,9 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllAuthPlaygroundDraftOrders", async (request, reply) => {
-    // console.log('request.headers.authorization', request.headers)
-    // console.log('request.body', request.body)
+    console.log('getAllAuthPlaygroundDraftOrders', request.body)
     try {
       const result = await validateAuthPlaygroundToken(request.headers.authorization);
-      console.log('validate auth', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -162,7 +149,6 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
         .where("shop_id", "=", request.body.shopId);
-      // console.log('draftOrders', draftOrders)
 
       return draftOrders;
     } catch (err) {
@@ -201,16 +187,16 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
       product = await shopify.product.get(id);
       splitTags = product.tags.split(',');
     } catch (err) {
-      console.error("--> Error getting product on save DO:", err);
-      return err;
+      console.error("--> Error getting product on delete DO:", err);
     }
 
-    try {
-      const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-      product = await shopify.product.update(id, { tags: filteredTags.join(',') });
-    } catch (err) {
-      console.error("--> Error updating product on save DO:", err);
-      return err;
+    if (!!product) {
+      try {
+        const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
+        product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+      } catch (err) {
+        console.error("--> Error updating product on delete DO:", err);
+      }
     }
     // end delete exclusive or discount tag from deleted draft order
 
@@ -226,9 +212,4 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
       return "--> Error deleting draft order";
     }
   });
-
-  fastify.post('/api/shopify/testAuthPlaygroundEndpoint', async (request, reply) => {
-    console.log('rh point tested')
-    return 'AuthPlayground endpoint successful'
-  })
 }
