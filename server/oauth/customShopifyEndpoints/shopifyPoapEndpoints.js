@@ -133,8 +133,6 @@ export default async function shopifyPoapEndpoints(fastify, opts) {
           redeemed_by
         });
 
-      console.log('query', query)
-
       return query.id;
     } catch (err) {
       console.error("--> Error saving draft order:", err);

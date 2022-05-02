@@ -576,15 +576,15 @@ export default async function shopifyEndpoints(fastify, opts) {
   //   return allResults;
   // })
   //
-  // fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
-  //   console.log('toggle get testEndpoint');
-  //
-  //   return 'get returned';
-  // });
-  //
-  // fastify.post("/api/shopify/testEndpoint", async (request, reply) => {
-  //   console.log('toggle post testEndpoint');
-  //
-  //   return 'post returned';
-  // });
+  fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
+    console.log('toggle get testEndpoint');
+
+    return 'get returned';
+  });
+
+  fastify.post("/api/shopify/testEndpoint", async (request, reply) => {
+    console.log('toggle post testEndpoint');
+
+    return 'post returned';
+  });
 }

@@ -137,6 +137,7 @@ const ShopifyRedeem = () => {
   const provisionAccess = async (accessControlConditions) => {
     const chain = accessControlConditions?.[0]['chain'] ?? accessControlConditions?.[0][0]['chain'] ?? 'ethereum';
 
+    console.log('check chain', chain)
     setChain(chain);
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
@@ -145,12 +146,16 @@ const ShopifyRedeem = () => {
       role: "customer",
       extraData: "",
     };
+
+    console.log('check resourceId', resourceId)
     const signedTokenObj = {
       accessControlConditions: accessControlConditions,
       chain: chain,
       authSig: storedAuthSig,
       resourceId: resourceId
     }
+
+    console.log('check signedTokenObj', signedTokenObj)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
         accessControlConditions: accessControlConditions,
