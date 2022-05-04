@@ -17,7 +17,6 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
-    console.log('saveAccessToken start', request.body)
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
@@ -36,8 +35,6 @@ export default async function shopifyEndpoints(fastify, opts) {
 
         shopDetails = await shopify.shop.get([shop, accessToken]);
 
-        console.log('saveAccessToken shopDetails', shopDetails)
-
       } catch (err) {
         console.log('----> Error getting shopify details', err)
       }
@@ -52,7 +49,6 @@ export default async function shopifyEndpoints(fastify, opts) {
         msg: `Shopify account connected ${email}`,
       });
     } else {
-      console.log('saveAccessToken store exists')
       await fastify.objection.models.shopifyStores
         .query()
         .where("shop_name", "=", shortenedShopName)
@@ -131,6 +127,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           .query()
           .where("asset_id_on_service", "=", gid);
       } catch (err) {
+        console.log('----> Error checking if product has been used:', err)
         return err;
       }
     }
@@ -181,7 +178,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         product = await shopify.product.get(id);
         splitTags = product.tags.split(',');
       } catch (err) {
-        console.error("--> Error getting product on save DO:", err);
+        console.error(`----> Error getting product on save DO for ${shop[0].shopName}:`, err);
       }
 
       if (!!product) {
@@ -195,7 +192,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
-        console.error("--> Error updating product on save DO:", err);
+        console.error(`----> Error updating product on save DO for ${shop[0].shopName}:`, err);
       }
       // end add exclusive or discount tag to product
 
@@ -218,7 +215,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return query.id;
     } catch (err) {
-      console.error("--> Error saving draft order:", err);
+      console.error(`----> Error saving draft order for ${shop[0].shopName}:`, err);
       return err;
     }
   });
@@ -236,7 +233,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return draftOrders;
     } catch (err) {
-      console.error("--> Error getting all draft orders:", err);
+      console.error(`----> Error getting all draft orders ${request.body.shopId}:`, err);
       return err;
     }
   });
@@ -274,7 +271,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       product = await shopify.product.get(id);
       splitTags = product.tags.split(',');
     } catch (err) {
-      console.error("--> Error getting product on save DO:", err);
+      console.error(`----> Error getting product on save DO for ${shopName}:`, err);
       return err;
     }
 
@@ -282,7 +279,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
     } catch (err) {
-      console.error("--> Error updating product on save DO:", err);
+      console.error(`----> Error updating product on save DO for ${shopName}:`, err);
       return err;
     }
     // end delete exclusive or discount tag from deleted draft order
@@ -293,8 +290,8 @@ export default async function shopifyEndpoints(fastify, opts) {
         .delete()
         .where("id", "=", request.body.id);
     } catch (err) {
-      console.error("--> Error deleting draft order");
-      return "--> Error deleting draft order";
+      console.error(`----> Error deleting draft order for ${shopName}:`, err);
+      return "----> Error deleting draft order";
     }
   });
 
@@ -302,18 +299,13 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
-    console.log('checkForPromotions request.body', request.body);
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
 
-    console.log('checkForPromotions shop', shop);
-
     const draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("shop_id", "=", shop[0].shopId);
-
-    console.log('checkForPromotions draftOrders', draftOrders);
 
     const shopName = shop[0].shopName;
 
@@ -340,7 +332,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAccessControl", async (request, reply) => {
-    console.log('getAccessControl - request.body', request.body)
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
@@ -401,7 +392,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       product = await shopify.product.get(id);
     } catch (err) {
-      console.error("--> Error getting product:", err);
+      console.error(`--> Error getting product: for ${draftOrder[0].shopId}`, err);
       return err;
     }
 
@@ -410,7 +401,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       return { draftOrderDetails, product, allowUserToRedeem };
       // return { draftOrderDetails, product };
     } catch (err) {
-      console.error("--> Error creating draft order", err);
+      console.error("----> Error creating draft order", err);
       return err;
     }
   });
@@ -448,7 +439,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       product = await shopify.product.get(id);
     } catch (err) {
-      console.error("--> Error getting product:", err);
+      console.error(`----> Error getting product for ${shop[0].shopName}:`, err);
       return err;
     }
 
@@ -488,7 +479,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {
-      console.error("--> Error redeeming draft order", err);
+      console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
       return err;
     }
   });
@@ -524,58 +515,59 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       product = await shopify.product.get(request.body.productId);
     } catch (err) {
-      console.error("--> Error getting product:", err);
+      console.error(`----> Error getting product for ${shop[0].shopName}:`, err);
       return err;
     }
 
     try {
       return { product };
     } catch (err) {
-      console.error("--> Error returning product info", err);
+      console.error(`----> Error returning product info for ${shop[0].shopName}:`, err);
       return err;
     }
   })
 
   // test endpoints
-  // fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
-  //   const name = request.body;
-  //   const allResults = await fastify.objection.models.shopifyStores
-  //     .query()
-  //
-  //   const specificResults = await fastify.objection.models.shopifyStores
-  //     .query()
-  //     .where('shop_name', '=', shortenShopName(name));
-  //
-  //   return {
-  //     allResults,
-  //     specificResults
-  //   };
-  // });
-  //
-  // fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-  //   const name = request.body;
-  //   const allResults = await fastify.objection.models.shopifyDraftOrders
-  //     .query()
-  //
-  //   // const specificResults = await fastify.objection.models.shopifyStores
-  //   //   .query()
-  //   //   .where('shop_name', '=', shortenShopName(name));
-  //
-  //   return {
-  //     list: allResults
-  //   };
-  // });
-  //
-  // fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
-  //   const uuid = request.body;
-  //   const allResults = await fastify.objection.models.shopifyDraftOrders
-  //     .query()
-  //     .delete()
-  //     .where('id', '=', uuid);
-  //
-  //   return allResults;
-  // })
-  //
+  fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
+    const name = request.body;
+    const allResults = await fastify.objection.models.shopifyStores
+      .query()
+
+    const specificResults = await fastify.objection.models.shopifyStores
+      .query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    return {
+      allResults,
+      specificResults
+    };
+  });
+
+  fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
+    const name = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+
+    // const specificResults = await fastify.objection.models.shopifyStores
+    //   .query()
+    //   .where('shop_name', '=', shortenShopName(name));
+
+    return {
+      keys: Object.keys(allResults[0]),
+      length: allResults.length
+    };
+  });
+
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
+  })
+
   fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
     console.log('toggle get testEndpoint');
 
