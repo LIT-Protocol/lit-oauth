@@ -71,8 +71,11 @@ export default async function shopifyPoapEndpoints(fastify, opts) {
 
     const redeemed_by = '{}';
 
+    console.log('check save poap draft order', request.body)
+
     try {
       const result = await validatePoapToken(request.headers.authorization);
+      console.log('check result of validatePoapToken', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -81,6 +84,8 @@ export default async function shopifyPoapEndpoints(fastify, opts) {
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
+
+      console.log('check shopName', shop[0])
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
