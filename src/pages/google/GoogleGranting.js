@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ShareModal } from "lit-share-modal";
+import ShareModal from "lit-share-modal";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
@@ -324,11 +324,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps />
+      <BackToApps/>
       {(!storedAuthSig["sig"] || accessToken === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress />
+          <CircularProgress/>
           <h3>Waiting for Google Account</h3>
         </div>
       ) : (
