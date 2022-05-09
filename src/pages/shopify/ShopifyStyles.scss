@@ -2,13 +2,14 @@
   position: absolute;
   //max-width: 70rem;
   width: 80%;
-  max-width: 1200px;
+  max-width: 900px;
   //height: 80%;
   min-height: 28rem;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, .25));
+  //border: 1px solid red;
+  //filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, .25));
 }
 
 .shopify-service-background {
@@ -16,7 +17,8 @@
   width: 100vw;
   height: 100vh;
   //background-color: rgba(19, 5, 50, .15);
-  background-color: rgb(246, 246, 247);
+  //background-color: rgb(246, 246, 247);
+  background-color: #efecec;
   top: 0;
   left: 0;
 }
@@ -45,7 +47,7 @@
     font-size: 2rem;
     font-weight: 500;
     margin: 1rem 0 0 1rem;
-    color: #2C0C72;
+    color: rgb(38, 38, 38);
   }
 }
 
@@ -60,7 +62,7 @@
 .shopify-service-card-title {
   max-width: 16rem;
   text-align: left;
-  color: #2C0C72;
+  color: rgb(38, 38, 38);
 
   h2 {
     font-size: 1.5rem;
@@ -85,7 +87,7 @@
 
 .shopify-service-card-header-right p {
   margin-top: 1.5rem;
-  color: #2C0C72;
+  color: rgb(38, 38, 38);
   display: flex;
   align-items: center;
 
@@ -120,7 +122,7 @@
 .shopify-service-card-launch-button {
   height: 100%;
   min-width: 25rem;
-  background-color: #5e36b7;
+  background-color: rgb(36, 78, 112);
   display: flex;
   font-size: 1.5rem;
   justify-content: space-evenly;
@@ -137,7 +139,7 @@
 .disabled-shopify-service-card-launch-button {
   height: 100%;
   min-width: 25rem;
-  background-color: #5e36b7;
+  background-color: rgb(36, 78, 112);
   display: flex;
   font-size: 1.5rem;
   justify-content: space-evenly;
@@ -149,6 +151,10 @@
 
 .shopify-service-card-mobile {
   display: none;
+}
+
+.shopify-service-card-loader {
+  width: 100%;
 }
 
 @media only screen and (max-width: 700px) {
@@ -198,4 +204,8 @@
       }
     }
   }
+}
+
+.border-red {
+  border: 1px solid red;
 }

@@ -371,12 +371,15 @@ export default async function shopifyEndpoints(fastify, opts) {
     // TODO: comment in when redeem limit is ready
     // if offer has a redeem limit, check that use hasn't exceeded it
     let allowUserToRedeem = true;
+    console.log('draftOrder', draftOrder)
     if (!!draftOrder[0].redeemedBy) {
       let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
       console.log('check redeemedBy', redeemedBy)
       console.log('check payload.sub', payload.sub)
 
-      if (redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
+      if (!!draftOrderDetails.redeemLimit &&
+        draftOrderDetails.redeemLimit > 0 &&
+        redeemedBy[payload.sub] >= draftOrderDetails.redeemLimit) {
         allowUserToRedeem = false;
       }
     }

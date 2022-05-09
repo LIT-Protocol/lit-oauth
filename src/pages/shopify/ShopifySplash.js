@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { checkForPromotions } from "./shopifyAsyncHelpers";
-import { CircularProgress, Card, CardContent, CardActions, Tooltip } from "@mui/material";
+import { LinearProgress } from "@mui/material";
 
 import './ShopifyStyles.scss';
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
@@ -61,8 +61,8 @@ export default function ShopifySplash() {
     <div>
       <div className={'shopify-service-background'}/>
       <section className={'shopify-service-card-container'}>
-        <Card className={'shopify-service-card'}>
-          <CardContent className={'shopify-service-card-header'}>
+        <div className={'shopify-service-card'}>
+          <div className={'shopify-service-card-header'}>
             <span className={'shopify-service-card-header-left'}>
               <h1>Token Access Verification</h1>
             </span>
@@ -70,21 +70,21 @@ export default function ShopifySplash() {
                 <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
                   className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
             </span>
-          </CardContent>
-          <CardContent className={'shopify-service-card-content'}>
+          </div>
+          <div className={'shopify-service-card-content'}>
             <div className={"center-content splash-spinner"}>
-              {promotionStatus !== 'notFound' && (
-                <CircularProgress className={"spinner"}/>
-              )}
               <p>{promotionStatusObj[promotionStatus]}</p>
+              {promotionStatus !== 'notFound' && (
+                <LinearProgress color={"primary"} className={'.shopify-service-card-loader'}/>
+              )}
             </div>
-          </CardContent>
+          </div>
           <span className={'shopify-service-card-mobile'}>
             <h1>Token Access Verification</h1>
             <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
               className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
           </span>
-        </Card>
+        </div>
       </section>
     </div>
   )
