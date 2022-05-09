@@ -50,7 +50,7 @@ export default function ShopifySplash() {
         // TODO: comment back in
         const link = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
         console.log('link', link)
-        // window.location.href = link;
+        window.location.href = link;
       }
     } catch (err) {
       console.log('Error retrieving access control conditions.');
