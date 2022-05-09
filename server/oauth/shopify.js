@@ -18,6 +18,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
     const { shop, accessToken, email } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
+    console.log('start of saveAccessToken')
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
@@ -528,45 +529,45 @@ export default async function shopifyEndpoints(fastify, opts) {
   })
 
   // test endpoints
-  fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
-    const name = request.body;
-    const allResults = await fastify.objection.models.shopifyStores
-      .query()
-
-    const specificResults = await fastify.objection.models.shopifyStores
-      .query()
-      .where('shop_name', '=', shortenShopName(name));
-
-    return {
-      allResults,
-      specificResults
-    };
-  });
-
-  fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const name = request.body;
-    const allResults = await fastify.objection.models.shopifyDraftOrders
-      .query()
-
-    // const specificResults = await fastify.objection.models.shopifyStores
-    //   .query()
-    //   .where('shop_name', '=', shortenShopName(name));
-
-    return {
-      keys: Object.keys(allResults[0]),
-      length: allResults.length
-    };
-  });
-
-  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
-    const uuid = request.body;
-    const allResults = await fastify.objection.models.shopifyDraftOrders
-      .query()
-      .delete()
-      .where('id', '=', uuid);
-
-    return allResults;
-  })
+  // fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
+  //   const name = request.body;
+  //   const allResults = await fastify.objection.models.shopifyStores
+  //     .query()
+  //
+  //   const specificResults = await fastify.objection.models.shopifyStores
+  //     .query()
+  //     .where('shop_name', '=', shortenShopName(name));
+  //
+  //   return {
+  //     allResults,
+  //     specificResults
+  //   };
+  // });
+  //
+  // fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
+  //   const name = request.body;
+  //   const allResults = await fastify.objection.models.shopifyDraftOrders
+  //     .query()
+  //
+  //   // const specificResults = await fastify.objection.models.shopifyStores
+  //   //   .query()
+  //   //   .where('shop_name', '=', shortenShopName(name));
+  //
+  //   return {
+  //     keys: Object.keys(allResults[0]),
+  //     length: allResults.length
+  //   };
+  // });
+  //
+  // fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+  //   const uuid = request.body;
+  //   const allResults = await fastify.objection.models.shopifyDraftOrders
+  //     .query()
+  //     .delete()
+  //     .where('id', '=', uuid);
+  //
+  //   return allResults;
+  // })
 
   fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
     console.log('toggle get testEndpoint');
