@@ -8,6 +8,7 @@ import GoogleProvisionAccessModal from "./GoogleGrantingComponents/GoogleProvisi
 import { Alert, CircularProgress, Snackbar } from "@mui/material";
 
 import "./GoogleGranting.scss";
+import "../../../node_modules/lit-share-modal/dist/style.css";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
@@ -375,15 +376,6 @@ export default function GoogleGranting(props) {
             openProvisionAccessDialog={openProvisionAccessDialog}
             setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
           />
-          <ShareModal
-            onClose={() => setOpenShareModal(false)}
-            showModal={openShareModal}
-            onAccessControlConditionsSelected={async (restriction) => {
-              await addToAccessControlConditions(restriction);
-              setOpenShareModal(false);
-              setOpenProvisionAccessDialog(true);
-            }}
-          />
           <LitProtocolConnection
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
@@ -395,6 +387,19 @@ export default function GoogleGranting(props) {
             </span>
           )}
         </section>
+      )}
+      {openShareModal && (
+        <ShareModal
+          onClose={() => setOpenShareModal(false)}
+          showModal={openShareModal}
+          injectCSS={false}
+          onAccessControlConditionsSelected={async (restriction) => {
+            console.log('check restriction', restriction)
+            await addToAccessControlConditions(restriction);
+            setOpenShareModal(false);
+            setOpenProvisionAccessDialog(true);
+          }}
+        />
       )}
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
