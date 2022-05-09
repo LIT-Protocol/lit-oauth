@@ -7,64 +7,6 @@
   background-color: #f0eef5;
 }
 
-.shopify-redeem-container {
-  width: 30rem;
-  min-height: 13rem;
-  padding: 1rem;
-  border: 1px solid #2C0C72;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-  filter: drop-shadow(0px 4px 32px rgba(0, 0, 0, .25));
-}
-
-.logo-container {
-  margin-bottom: 1rem;
-}
-
-.shopify-logo {
-  height: 4rem;
-  width: 4rem;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-.logo-plus {
-  padding: 0 0.5rem;
-}
-
-.lit-logo {
-  height: 5rem;
-  width: 4rem;
-  background-size: contain;
-  background-repeat: no-repeat;
-}
-
-.spinner {
-  margin-bottom: 1rem;
-}
-
-.center-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
-}
-
-.splash-spinner {
-  margin-top: 4.5rem;
-}
-
-.redeem-service-card-content {
-  //height: 20.5rem;
-  height: calc(100% - 18rem);
-  position: relative;
-}
-
 .product-information-container {
   display: flex;
   //flex-direction: column;
@@ -163,19 +105,6 @@
 @media only screen and (max-width: 700px) {
   .full-container {
     display: inline-block;
-  }
-
-  .shopify-redeem-container {
-    width: 100%;
-
-  }
-  .redeem-service-card-content {
-    height: auto;
-  }
-
-  .shopify-redeem-card-content {
-    height: auto;
-    position: static;
   }
 
   .product-information-container {

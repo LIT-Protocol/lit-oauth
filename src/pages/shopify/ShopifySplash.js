@@ -50,7 +50,7 @@ export default function ShopifySplash() {
         // TODO: comment back in
         const link = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
         console.log('link', link)
-        window.location.href = link;
+        // window.location.href = link;
       }
     } catch (err) {
       console.log('Error retrieving access control conditions.');
@@ -58,8 +58,8 @@ export default function ShopifySplash() {
   }
 
   return (
-    <div>
-      <div className={'shopify-service-background'}/>
+    <div className={'full-container'}>
+      {/*<div className={'shopify-service-background'}/>*/}
       <section className={'shopify-service-card-container'}>
         <div className={'shopify-service-card'}>
           <div className={'shopify-service-card-header'}>
@@ -67,8 +67,10 @@ export default function ShopifySplash() {
               <h1>Token Access Verification</h1>
             </span>
             <span className={'shopify-service-card-header-right'}>
-                <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
-                  className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
+                <a href={'https://apps.shopify.com/lit-token-access'} target={'_blank'}
+                   rel="noreferrer"><p>Powered by<span
+                  className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon
+                  className={'open-icon'}/></p></a>
             </span>
           </div>
           <div className={'shopify-service-card-content'}>
