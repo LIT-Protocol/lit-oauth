@@ -105,16 +105,18 @@
 @media only screen and (max-width: 700px) {
   .full-container {
     display: inline-block;
+    overflow-y: scroll;
   }
 
   .product-information-container {
     flex-direction: column;
+    justify-content: flex-start;
 
     .product-information-left {
       width: 100%;
 
       .product-image {
-        width: 90%;
+        width: 70%;
       }
     }
 
@@ -124,10 +126,10 @@
     }
 
     .product-information-right {
-      width: 100%;
+      width: 90%;
       flex-direction: column;
       text-align: center;
-      margin: 0;
+      margin: 0 auto;
       padding: 0;
     }
   }
@@ -135,6 +137,9 @@
   .redeem-card-actions div {
     bottom: 2rem;
     width: 100%;
+    position: static;
+    margin-top: 1rem;
+    padding-bottom: 2rem;
 
     .redeem-button {
       width: 100%;

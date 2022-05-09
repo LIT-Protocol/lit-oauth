@@ -264,8 +264,9 @@ const ShopifyRedeem = () => {
                 <h1>Token Access Verification</h1>
               </span>
             <span className={'shopify-service-card-header-right'}>
-                <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
-                  className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon/></p></a>
+                <a href={'https://apps.shopify.com/lit-token-access'} target={'_blank'}
+                   rel="noreferrer"><p>Powered by<span
+                  className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon/></p></a>
               </span>
           </div>
           {/*<div className={"center-content"}>*/}
@@ -388,11 +389,6 @@ const ShopifyRedeem = () => {
             )}
           </CardActions>
         </div>
-        <span className={'shopify-service-card-mobile'}>
-            <h1>Token Access Verification</h1>
-            <a href={'https://apps.shopify.com/lit-token-access'} target={'_blank'} rel="noreferrer"><p>Powered by<span
-              className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon className={'open-icon'}/></p></a>
-            </span>
       </section>
       {!!snackbarInfo && (
         <Snackbar

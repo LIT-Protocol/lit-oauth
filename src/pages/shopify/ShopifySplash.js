@@ -59,7 +59,6 @@ export default function ShopifySplash() {
 
   return (
     <div className={'full-container'}>
-      {/*<div className={'shopify-service-background'}/>*/}
       <section className={'shopify-service-card-container'}>
         <div className={'shopify-service-card'}>
           <div className={'shopify-service-card-header'}>
@@ -74,18 +73,11 @@ export default function ShopifySplash() {
             </span>
           </div>
           <div className={'shopify-service-card-content'}>
-            <div className={"center-content splash-spinner"}>
-              <p>{promotionStatusObj[promotionStatus]}</p>
-              {promotionStatus !== 'notFound' && (
-                <LinearProgress color={"primary"} className={'.shopify-service-card-loader'}/>
-              )}
-            </div>
+            <p>{promotionStatusObj[promotionStatus]}</p>
+            {promotionStatus !== 'notFound' && (
+              <LinearProgress color={"primary"} className={'.shopify-service-card-loader'}/>
+            )}
           </div>
-          <span className={'shopify-service-card-mobile'}>
-            <h1>Token Access Verification</h1>
-            <a href={'https://litprotocol.com/'} target={'_blank'} rel="noreferrer"><p>Powered by<span
-              className={'lit-gateway-title'}>Lit Protocol</span><OpenInNewIcon className={'open-icon'}/></p></a>
-          </span>
         </div>
       </section>
     </div>
