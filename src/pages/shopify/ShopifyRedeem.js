@@ -74,15 +74,20 @@ const ShopifyRedeem = () => {
     setSnackbarInfo(null);
   };
 
-  const handleSetSnackbar = (message, severity) => {
+  const handleUpdateError = (error) => {
+    setErrorText(error.message);
+  }
+
+  const handleSetSnackbar = (error, severity) => {
+    // const hanhandleUpdateError = (error, severity) => {
     const snackbarInfoHolder = {
-      message: message,
+      message: error.message,
       severity: severity
     }
     setSnackbarInfo(snackbarInfoHolder);
     console.log('check snackbarInfo', snackbarInfoHolder)
     console.log('check severity', severity)
-    console.log('check message', message)
+    console.log('      check message', error.message)
     setOpenSnackbar(true);
   };
 
@@ -108,7 +113,8 @@ const ShopifyRedeem = () => {
         setStoredAuthSig(authSig);
       })
     } catch (err) {
-      setErrorText(err);
+      console.log('check metamask message', `${err.message} - make sure you are signed in to Metamask.`)
+      handleUpdateError(`${err.message} - Make sure you are signed in to Metamask.`);
       setLoading(false);
       console.log('Error connecting wallet:', err)
     }
@@ -129,6 +135,8 @@ const ShopifyRedeem = () => {
       // ADD_ERROR_HANDLING
       setLoading(false);
       // handleSetSnackbar(err, 'error');
+      setAccessVerified(false);
+      handleUpdateError(err);
       console.log('Share not found:', err)
     }
   }
@@ -167,6 +175,7 @@ const ShopifyRedeem = () => {
     } catch (err) {
       console.log('Error getting JWT:', err)
       // handleSetSnackbar(err, 'error');
+      handleUpdateError(err);
       return null;
     }
   }
@@ -195,12 +204,14 @@ const ShopifyRedeem = () => {
         setLoading(false);
         setErrorText('Something went wrong while trying to create the draft order.')
         // handleSetSnackbar(err, 'error');
+        handleUpdateError(err);
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
       // handleSetSnackbar(err, 'error');
+      handleUpdateError(err);
       console.log('Error provisioning access:', err);
     })
   }
@@ -221,12 +232,14 @@ const ShopifyRedeem = () => {
         // ADD_ERROR_HANDLING
         setLoading(false);
         // handleSetSnackbar(err, 'error');
+        handleUpdateError(err);
         console.log('Error creating draft order:', err)
       }
     }).catch(err => {
       // ADD_ERROR_HANDLING
       setLoading(false);
       // handleSetSnackbar(err, 'error');
+      handleUpdateError(err);
       console.log('Error provisioning access:', err);
     })
   }
@@ -266,7 +279,7 @@ const ShopifyRedeem = () => {
             <span className={'shopify-service-card-header-right'}>
                 <a href={'https://apps.shopify.com/lit-token-access'} target={'_blank'}
                    rel="noreferrer"><p>Powered by<span
-                  className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon/></p></a>
+                  className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon fontSize={'small'}/></p></a>
               </span>
           </div>
           {/*<div className={"center-content"}>*/}
@@ -283,24 +296,26 @@ const ShopifyRedeem = () => {
           )}
 
           {/*error message if access is not verified*/}
-          {(storedAuthSig && !accessVerified && !loading) && (
-            <div>
+          {/*{(storedAuthSig && !accessVerified && !loading) && (*/}
+          {(!accessVerified && !loading) && (
+            <div className={'redeem-card-error'}>
               {/*something went wrong while connecting*/}
-              {errorText ? (
-                <div>
-                  <p>There was an error.</p>
-                  {/* <p>{errorText}</p> */}
-                  <p>Please connect your wallet manually or click below to try again.</p>
-                  <p>If you are on mobile, use the browser in the Metamask app.</p>
-                  <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
-                </div>
-              ) : (
+              {!!errorText ? (
                 <div>
                   <p>Sorry, you do not qualify for this promotion.</p>
                   <p>The conditions for access were not met.</p>
                   <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
                   <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
-                  <p>If you think this is an error, click the button below to try to reconnect.</p>
+                  <p>If you think this is an error, contact the creator of the offer or click the button below to try to
+                    reconnect.</p>
+                  <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                </div>
+              ) : (
+                <div>
+                  <p>There was an error.</p>
+                  {/* <p>{errorText}</p> */}
+                  <p>Please connect your wallet manually or click below to try again.</p>
+                  <p>If you are on mobile, use the browser in the Metamask app.</p>
                   <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
                 </div>
               )}

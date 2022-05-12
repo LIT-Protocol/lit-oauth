@@ -68,8 +68,8 @@ export default function ShopifySplash() {
             <span className={'shopify-service-card-header-right'}>
                 <a href={'https://apps.shopify.com/lit-token-access'} target={'_blank'}
                    rel="noreferrer"><p>Powered by<span
-                  className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon
-                  className={'open-icon'}/></p></a>
+                  className={'lit-gateway-title'}>Lit Token Access</span>
+                  <OpenInNewIcon fontSize={'small'}/></p></a>
             </span>
           </div>
           <div className={'shopify-service-card-content'}>
