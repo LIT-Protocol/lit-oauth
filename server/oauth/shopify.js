@@ -50,6 +50,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         msg: `Shopify account connected ${email}`,
       });
     } else {
+      console.log('accessToken updated', accessToken, shop)
       await fastify.objection.models.shopifyStores
         .query()
         .where("shop_name", "=", shortenedShopName)
