@@ -570,7 +570,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     //   .query()
     //   .where('shop_name', '=', shortenShopName(name));
 
-    
     return {
       // keys: Object.keys(allResults[0]),
       length: allResults.length
