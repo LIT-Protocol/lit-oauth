@@ -75,6 +75,7 @@ const ShopifyRedeem = () => {
   };
 
   const handleUpdateError = (error) => {
+    console.log('error.message', error.message)
     setErrorText(error.message);
   }
 
