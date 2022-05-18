@@ -123,13 +123,9 @@ const ShopifyRedeem = () => {
 
   const checkForPromotionAccessControl = async () => {
     try {
-      console.log('Check for Promo - start')
       const resp = await getAccessControl(draftOrderId);
-      console.log('Check for promo getAccessControl', resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      console.log('check get Access Control resp', resp.data)
       return provisionAccess(resp.data.parsedAcc).then(jwt => {
-        console.log('provision access jwt', jwt)
         return jwt;
       });
     } catch (err) {
@@ -189,6 +185,7 @@ const ShopifyRedeem = () => {
   }
 
   const callSetUpRedeemDraftOrder = async () => {
+    console.log('start of redeem draft order')
     checkForPromotionAccessControl().then(async (jwt) => {
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
@@ -205,6 +202,7 @@ const ShopifyRedeem = () => {
         setLoading(false);
         setErrorText('Something went wrong while trying to create the draft order.')
         // handleSetSnackbar(err, 'error');
+        console.log('check error', err)
         handleUpdateError(err);
         console.log('Error creating draft order:', err)
       }
@@ -305,7 +303,8 @@ const ShopifyRedeem = () => {
                 <div>
                   <p>Sorry, you do not qualify for this promotion.</p>
                   <p>The conditions for access were not met.</p>
-                  <p>{!errorText ? humanizedAccessControlConditions : errorText}</p>
+                  {/*<p>{!errorText ? humanizedAccessControlConditions : errorText}</p>*/}
+                  <p>{humanizedAccessControlConditions}</p>
                   <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
                   <p>If you think this is an error, contact the creator of the offer or click the button below to try to
                     reconnect.</p>
