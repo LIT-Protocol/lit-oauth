@@ -337,6 +337,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
+    console.log('draftOrder in get access', draftOrder)
 
     if (draftOrder[0]) {
       const humanizedAccessControlConditions =
@@ -357,7 +358,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       verified = jwtData.verified;
       payload = jwtData.payload;
     } catch (err) {
-      console.log('setupdraftordererror', err)
+
       return {
         err,
         allowUserToRedeem: true,
