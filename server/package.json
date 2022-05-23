@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon --inspect index.js",
-    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js",
+    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js --env development",
     "migrateProd": "knex migrate:latest --esm --knexfile=./knexfile.js --env production"
   },
   "dependencies": {
