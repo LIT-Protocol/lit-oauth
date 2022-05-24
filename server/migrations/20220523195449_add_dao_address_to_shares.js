@@ -1,7 +1,7 @@
 export const up = (knex) => {
   return knex.schema.table("shares", (table) => {
     table.string("dao_address").index();
-    table.string("source");
+    table.string("source").index();
   });
 };
 

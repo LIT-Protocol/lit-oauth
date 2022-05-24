@@ -16,7 +16,6 @@ import BackToApps from "../sharedComponents/backToApps/BackToApps";
 import {
   checkIfUserExists,
   getUserProfile,
-  makeJwt,
   signOutUser,
 } from "./googleAsyncHelpers.js";
 
@@ -121,10 +120,7 @@ export default function GoogleGranting(props) {
         console.log("Stop auth if authSig is not yet available");
       }
 
-      console.log("check load");
-      const payload = makeJwt(authSig);
-
-      const userExists = await checkIfUserExists(payload);
+      const userExists = await checkIfUserExists(authSig);
       console.log("check frontend userExists", userExists);
 
       const stringifiedAuthSig = JSON.stringify(authSig);
@@ -150,8 +146,7 @@ export default function GoogleGranting(props) {
   };
 
   const handleLoadCurrentUser = async (authSig) => {
-    const payload = makeJwt(authSig);
-    const userInfo = await getUserProfile(payload);
+    const userInfo = await getUserProfile(authSig);
     // check for google drive scope and sign user out if scope is not present
     if (
       userInfo.data["scope"] &&
@@ -228,8 +223,7 @@ export default function GoogleGranting(props) {
     setAccessToken("");
     setCurrentUser({});
     setConnectedServiceId("");
-    const payload = makeJwt(storedAuthSig);
-    const userInfo = await signOutUser(payload);
+    await signOutUser(storedAuthSig);
     window.location = `https://litgateway.com/apps`;
   };
 
@@ -325,11 +319,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps/>
+      <BackToApps />
       {(!storedAuthSig["sig"] || accessToken === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress/>
+          <CircularProgress />
           <h3>Waiting for Google Account</h3>
         </div>
       ) : (
@@ -394,7 +388,7 @@ export default function GoogleGranting(props) {
           showModal={openShareModal}
           injectCSS={false}
           onAccessControlConditionsSelected={async (restriction) => {
-            console.log('check restriction', restriction)
+            console.log("check restriction", restriction);
             await addToAccessControlConditions(restriction);
             setOpenShareModal(false);
             setOpenProvisionAccessDialog(true);

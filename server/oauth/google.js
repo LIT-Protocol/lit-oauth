@@ -4,7 +4,6 @@ import LitJsSdk from "lit-js-sdk";
 import { authUser } from "../auth.js";
 import { OAuth2Client } from "google-auth-library";
 import { parseJwt, sendSlackMetricsReportMessage } from "../utils.js";
-import { validateJWT } from "./googleHelpers.js";
 
 export default async function (fastify, opts) {
   // store the user's access token
@@ -29,7 +28,7 @@ export default async function (fastify, opts) {
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
     );
 
@@ -103,18 +102,8 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/checkIfUserExists", async (request, response) => {
-    let authSig;
-    const { payload } = request.body;
+    const { authSig } = request.body;
     console.log("start of checkIfUserExists");
-
-    try {
-      authSig = await validateJWT(payload);
-    } catch (err) {
-      console.log("jwt error", err);
-      return;
-    }
-
-    console.log("checkIfUserExists check after validateJWT", authSig);
 
     if (!authUser(authSig)) {
       response.code(400);
@@ -132,7 +121,7 @@ export default async function (fastify, opts) {
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
-      process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
       `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
     );
 
@@ -181,15 +170,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (request, response) => {
-    let authSig;
-    const { payload } = request.body;
-
-    try {
-      authSig = await validateJWT(payload);
-    } catch (err) {
-      console.log("jwt error", err);
-      return;
-    }
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       response.code(400);
@@ -242,7 +223,14 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/share", async (req, res) => {
-    const { authSig, connectedServiceId, token, idOnService } = req.body;
+    const {
+      authSig,
+      connectedServiceId,
+      token,
+      idOnService,
+      accessControlConditions,
+      source,
+    } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
       return { error: "Invalid signature" };
@@ -275,6 +263,17 @@ export default async function (fastify, opts) {
       fileId: req.body.driveId,
     });
 
+    let daoAddress = null;
+    // check if daohaus and dao contract address
+    // looking for standardContractType: 'MolochDAOv2.1',
+    if (
+      source &&
+      source === "daohaus" &&
+      accessControlConditions[0].standardContractType === "MolochDAOv2.1"
+    ) {
+      daoAddress = accessControlConditions[0].contractAddress;
+    }
+
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
@@ -287,6 +286,8 @@ export default async function (fastify, opts) {
         user_id: authSig.address,
         name: fileInfo.data.name,
         asset_type: fileInfo.data.mimeType,
+        source,
+        dao_address: daoAddress,
       });
 
     let uuid = await insertToLinksQuery.id;
@@ -378,15 +379,7 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/signOutUser", async (request, response) => {
-    let authSig;
-    const { payload } = request.body;
-
-    try {
-      authSig = await validateJWT(payload);
-    } catch (err) {
-      console.log("jwt error", err);
-      return;
-    }
+    const { authSig } = request.body;
 
     if (!authUser(authSig)) {
       response.code(400);
@@ -400,6 +393,17 @@ export default async function (fastify, opts) {
       .patch({ access_token: null });
 
     return true;
+  });
+
+  fastify.post("/api/google/getDAOShares", async (req, res) => {
+    const daoAddress = req.body.daoAddress;
+
+    const shares = await fastify.objection.models.shares
+      .query()
+      .where("dao_address", "=", daoAddress)
+      .where("source", "=", "daohaus");
+
+    return shares;
   });
 
   // TODO: remove before
