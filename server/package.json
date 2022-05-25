@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node index.js",
     "startDev": "nodemon --inspect index.js",
-    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js",
+    "migrate": "knex migrate:latest --esm --knexfile=./knexfile.js --env development",
     "migrateProd": "knex migrate:latest --esm --knexfile=./knexfile.js --env production"
   },
   "dependencies": {
@@ -30,7 +30,6 @@
     "google-auth-library": "^7.14.0",
     "googleapis": "^95.0.0",
     "http2": "^3.3.7",
-    "jsonwebtoken": "^8.5.1",
     "knex": "^0.95.14",
     "objection": "^2.2.17",
     "pg": "^8.7.3",
