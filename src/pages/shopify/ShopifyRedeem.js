@@ -17,6 +17,7 @@ import "./ShopifyRedeem.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { updateV1ConditionTypes } from "./shopifyHelpers";
 
 const ShopifyRedeem = () => {
   const { performWithAuthSig } = useAppContext();
@@ -26,14 +27,17 @@ const ShopifyRedeem = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState(null);
 
+  const [accessControlData, setAccessControlData] = useState(null);
   const [draftOrderId, setDraftOrderId] = useState(null);
   const [draftOrderDetails, setDraftOrderDetails] = useState(null);
   const [allowUserToRedeem, setAllowUserToRedeem] = useState(true);
-  const [storedAuthSig, setStoredAuthSig] = useState(null);
+  const [storedEVMAuthSig, setStoredEVMAuthSig] = useState(null);
+  const [storedSolanaAuthSig, setStoredSolanaAuthSig] = useState(null);
+  // const [authSigsObtained, setAuthSigsObtained] = useState(false);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
-  const [chain, setChain] = useState(null);
+  // const [chain, setChain] = useState(null);
 
   const [selectedProductVariant, setSelectedProductVariant] = useState('');
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
@@ -44,26 +48,26 @@ const ShopifyRedeem = () => {
   document.addEventListener('lit-ready', function (e) {
     console.log('lit-ready event listener')
     setConnectedToLitNodeClient(true);
-  }, false)
+  }, false);
 
   useEffect(() => {
     if (!connectedToLitNodeClient) {
       connectToLitNode();
     }
-  }, [connectedToLitNodeClient])
+  }, [connectedToLitNodeClient]);
 
   useEffect(() => {
-    if (!!storedAuthSig && !accessVerified) {
+    if (!accessVerified && (storedSolanaAuthSig || storedEVMAuthSig)) {
       callSetUpRedeemDraftOrder();
     }
-  }, [storedAuthSig])
+  }, [accessVerified, storedSolanaAuthSig, storedEVMAuthSig]);
 
   useEffect(() => {
     if (selectedVariantMenuOption.length) {
       const selectedVariant = product.variants.find(v => v.title === selectedVariantMenuOption)
       setSelectedProductVariant(selectedVariant);
     }
-  }, [selectedVariantMenuOption])
+  }, [selectedVariantMenuOption]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -75,20 +79,16 @@ const ShopifyRedeem = () => {
   };
 
   const handleUpdateError = (error) => {
-    console.log('error.message', error.message)
+    console.log('error.message', error.message);
     setErrorText(error.message);
-  }
+  };
 
   const handleSetSnackbar = (error, severity) => {
-    // const hanhandleUpdateError = (error, severity) => {
     const snackbarInfoHolder = {
       message: error.message,
       severity: severity
-    }
+    };
     setSnackbarInfo(snackbarInfoHolder);
-    console.log('check snackbarInfo', snackbarInfoHolder)
-    console.log('check severity', severity)
-    console.log('      check message', error.message)
     setOpenSnackbar(true);
   };
 
@@ -100,32 +100,59 @@ const ShopifyRedeem = () => {
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
     setDraftOrderId(id);
-    signIntoLit();
+    try {
+      const resp = await getAccessControl(id);
+      setAccessControlData(resp.data);
+      setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
+      getAuthSigs(resp.data.extraData);
+    } catch (err) {
+      console.log('Error getting access control', err);
+      handleUpdateError(err);
+    }
   }
 
-  const signIntoLit = async () => {
+  const getAuthSigs = async (chainString) => {
+    console.log('-----> chain string', chainString)
+    if (!chainString) {
+      await getEVMAuthSig();
+    } else {
+      const chainArray = chainString.split(',');
+      chainArray.forEach(c => {
+        // TODO: will need to update this as some point to describe EVM chains as something better than 'not solRpc'
+        if (c !== 'solRpc') {
+          getEVMAuthSig();
+        } else if (c === 'solRpc') {
+          getSolanaAuthSig();
+        }
+      });
+    }
+  }
+
+  const getEVMAuthSig = async () => {
     try {
       await performWithAuthSig(async (authSig) => {
-        console.log('check authSig', authSig)
-        // if (!storedAuthSig || !storedAuthSig["sig"]) {
-        //   console.log("Stop auth if authSig is not yet available");
-        //   return;
-        // }
-        setStoredAuthSig(authSig);
-      })
+        setStoredEVMAuthSig(authSig);
+      }, { chain: 'ethereum' });
     } catch (err) {
-      console.log('check metamask message', `${err.message} - make sure you are signed in to Metamask.`)
       handleUpdateError(`${err.message} - Make sure you are signed in to Metamask.`);
       setLoading(false);
-      console.log('Error connecting wallet:', err)
+    }
+  }
+
+  const getSolanaAuthSig = async () => {
+    try {
+      await performWithAuthSig(async (authSig) => {
+        setStoredSolanaAuthSig(authSig);
+      }, { chain: 'solana' })
+    } catch (err) {
+      handleUpdateError(`${err.message} - Make sure you are signed in to Phantom.`);
+      setLoading(false);
     }
   }
 
   const checkForPromotionAccessControl = async () => {
     try {
-      const resp = await getAccessControl(draftOrderId);
-      setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      return provisionAccess(resp.data.parsedAcc).then(jwt => {
+      return provisionAccess(accessControlData.parsedAcc).then(jwt => {
         return jwt;
       });
     } catch (err) {
@@ -138,11 +165,23 @@ const ShopifyRedeem = () => {
     }
   }
 
-  const provisionAccess = async (accessControlConditions) => {
-    const chain = accessControlConditions?.[0]['chain'] ?? accessControlConditions?.[0][0]['chain'] ?? 'ethereum';
+  const provisionAccess = async (unifiedAccessControlConditions) => {
+    let chainArray;
+    let authSigs = {};
+    if (!accessControlData['extraData']) {
+      authSigs['ethereum'] = storedEVMAuthSig;
+    } else {
+      chainArray = accessControlData.extraData.split(',');
+      chainArray.forEach(c => {
+        // if (c === 'evmBasic' || c === 'ethereum') {
+        if (c !== 'solRpc') {
+          authSigs['ethereum'] = storedEVMAuthSig;
+        } else if (c === 'solRpc') {
+          authSigs['solana'] = storedSolanaAuthSig;
+        }
+      });
+    }
 
-    console.log('check chain', chain)
-    setChain(chain);
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
       path: "/shopify/l/" + draftOrderId,
@@ -151,27 +190,18 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
 
-    console.log('check resourceId', resourceId)
-    const signedTokenObj = {
-      accessControlConditions: accessControlConditions,
-      chain: chain,
-      authSig: storedAuthSig,
-      resourceId: resourceId
-    }
+    const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
 
-    console.log('check signedTokenObj', signedTokenObj)
     try {
       const jwt = await window.litNodeClient.getSignedToken({
-        accessControlConditions: accessControlConditions,
-        chain: chain,
-        authSig: storedAuthSig,
+        unifiedAccessControlConditions: afterUpdateV1Conditions,
+        authSig: authSigs,
         resourceId: resourceId
       });
 
       return jwt;
     } catch (err) {
       console.log('Error getting JWT:', err)
-      // handleSetSnackbar(err, 'error');
       handleUpdateError(err);
       return null;
     }
@@ -185,7 +215,6 @@ const ShopifyRedeem = () => {
   }
 
   const callSetUpRedeemDraftOrder = async () => {
-    console.log('start of redeem draft order')
     checkForPromotionAccessControl().then(async (jwt) => {
       try {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
@@ -215,16 +244,11 @@ const ShopifyRedeem = () => {
     })
   }
 
-
   const callRedeemDraftOrder = async () => {
     setLoadingDraftOrderLink(true);
     checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('JWT in redeem draft order', jwt)
-      console.log('variant in redeem draft order', selectedProductVariant)
-      console.log('draftOrderId in redeem draft order', draftOrderId)
       try {
         const resp = await redeemDraftOrder(draftOrderId, selectedProductVariant, jwt);
-        console.log('Check redeem draft order', resp.data)
         window.location.href = resp.data.redeemUrl;
         setLoading(false);
       } catch (err) {
@@ -255,20 +279,18 @@ const ShopifyRedeem = () => {
 
   const getRedeemButtonCondition = () => {
     if (loadingDraftOrderLink) {
-      return 'Loading...'
+      return 'Loading...';
     } else if (!selectedProductVariant) {
-      return 'Select a product'
+      return 'Select a product';
     } else if (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0) {
-      return 'Item is out of stock'
+      return 'Item is out of stock';
     } else {
-      return 'Redeem promotion'
+      return 'Redeem promotion';
     }
   }
 
   return (
     <div className={"full-container"}>
-      {/*<div>*/}
-      {/*  <div className={'shopify-service-background'}/>*/}
       <section className={'shopify-service-card-container'}>
         <div className={'shopify-service-card'}>
           <div className={'shopify-service-card-header'}>
@@ -281,21 +303,18 @@ const ShopifyRedeem = () => {
                   className={'lit-gateway-title'}>Lit Token Access</span><OpenInNewIcon fontSize={'small'}/></p></a>
               </span>
           </div>
-          {/*<div className={"center-content"}>*/}
-          {/*</div>*/}
 
           {/*loader*/}
-          {((!storedAuthSig || !accessVerified) && loading) && (
-            // {((!storedAuthSig || !accessVerified) && loading) && (
+          {(((!storedEVMAuthSig && !storedSolanaAuthSig) || !accessVerified) && loading) && (
             <div className={'shopify-service-card-content'}>
-              {/*<CircularProgress className={"spinner"}/>*/}
               <p>Signing in.</p>
+              {/*{`storedEVM ${!!storedEVMAuthSig}, accessVerified ${!accessVerified}, loading ${loading}`}*/}
               <LinearProgress color={"primary"} className={'.shopify-service-card-loader'}/>
+              <p>If this loader doesn't resolve, try signing in to your wallet manually and reloading the page.</p>
             </div>
           )}
 
           {/*error message if access is not verified*/}
-          {/*{(storedAuthSig && !accessVerified && !loading) && (*/}
           {(!accessVerified && !loading) && (
             <div className={'redeem-card-error'}>
               {/*something went wrong while connecting*/}
@@ -303,12 +322,11 @@ const ShopifyRedeem = () => {
                 <div>
                   <p>Sorry, you do not qualify for this promotion.</p>
                   <p>The conditions for access were not met.</p>
-                  {/*<p>{!errorText ? humanizedAccessControlConditions : errorText}</p>*/}
                   <p>{humanizedAccessControlConditions}</p>
-                  <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
+                  {/*<p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>*/}
                   <p>If you think this is an error, contact the creator of the offer or click the button below to try to
                     reconnect.</p>
-                  <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                  <Button onClick={() => getAuthSigs()}>Click to try to reconnect.</Button>
                 </div>
               ) : (
                 <div>
@@ -316,7 +334,7 @@ const ShopifyRedeem = () => {
                   {/* <p>{errorText}</p> */}
                   <p>Please connect your wallet manually or click below to try again.</p>
                   <p>If you are on mobile, use the browser in the Metamask app.</p>
-                  <Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>
+                  <Button onClick={() => getAuthSigs()}>Click to try to reconnect.</Button>
                 </div>
               )}
             </div>
@@ -328,12 +346,12 @@ const ShopifyRedeem = () => {
               <p>It looks like you have hit the limit for number of times to redeem this offer.</p>
               <p>If you think this is an error, reload the page to reconnect or contact the creator
                 of the offer.</p>
-              {/*<Button onClick={() => signIntoLit()}>Click to try to reconnect.</Button>*/}
+              {/*<Button onClick={() => getAuthSigs()}>Click to try to reconnect.</Button>*/}
             </div>
           )}
 
           {/*show product info*/}
-          {storedAuthSig && accessVerified && !loading && allowUserToRedeem &&
+          {(storedEVMAuthSig || storedSolanaAuthSig) && accessVerified && !loading && allowUserToRedeem &&
           !!product && !!draftOrderDetails && (
             <div className={'product-information-container fadeIn'}>
               <div className={'product-information-left'}>
@@ -378,15 +396,10 @@ const ShopifyRedeem = () => {
                   </FormControl>
                 )}
               </div>
-              {/*  <div className={'product-information-right'}>*/}
-              {/*    <p>*/}
-              {/*      {product.vendor} is using wallet verification to provide token-access based discounts.*/}
-              {/*    </p>*/}
-              {/*  </div>*/}
             </div>
           )}
           <CardActions className={'redeem-card-actions'} style={{ padding: '0' }}>
-            {storedAuthSig && accessVerified && !loading && allowUserToRedeem && (
+            {(storedEVMAuthSig || storedSolanaAuthSig) && accessVerified && !loading && allowUserToRedeem && (
               <Tooltip title={getSubmitTooltip()} placement="top">
                 {/*<span className={"access-service-card-launch-button"} onClick={async () => {*/}
                 <div>
@@ -415,7 +428,6 @@ const ShopifyRedeem = () => {
           <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
         </Snackbar>
       )}
-      {/*</div>*/}
     </div>
 
   )

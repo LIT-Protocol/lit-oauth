@@ -35,12 +35,12 @@ export default function ZoomAccess() {
   }, [meetingId]);
 
   useEffect(() => {
-    const getMeetingInfo = async() => {
+    const getMeetingInfo = async () => {
       const meetingData = await getSingleShare(meetingId);
       setMeeting(meetingData.data[0]);
     }
 
-    if(!meeting) {
+    if (!meeting) {
       getMeetingInfo();
     }
 
@@ -69,7 +69,7 @@ export default function ZoomAccess() {
       console.log("humanizing share", share);
       humanized.push(
         await LitJsSdk.humanizeAccessControlConditions({
-          accessControlConditions: share.accessControlConditions,
+          unifiedAccessControlConditions: share.accessControlConditions,
           tokenList,
         })
       );
@@ -178,7 +178,7 @@ export default function ZoomAccess() {
       <Card className={'access-service-card'}>
         <CardContent className={'access-service-card-header'}>
           <span className={'access-service-card-header-left'}>
-            <div style={{ backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
+            <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
             <div className={'access-service-card-title'}>
               <h2>Lit Apps</h2>
               <p>The power of blockchain-defined access combine with your current tool suite.</p>
@@ -194,7 +194,7 @@ export default function ZoomAccess() {
           <p>You have been invited to join the Zoom meeting <strong>{meeting.name}</strong></p>
           {/*<p>The scheduled start time is <strong>{}</strong></p>*/}
         </CardContent>
-        <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
+        <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
           <span className={'access-service-card-launch-button'} onClick={handleConnectAndJoin}>
             Connect Wallet
             <svg width="110" height="23" viewBox="0 0 217 23" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -204,7 +204,7 @@ export default function ZoomAccess() {
         </CardActions>
       </Card>
       <Snackbar
-        anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}

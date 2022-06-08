@@ -343,7 +343,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       const humanizedAccessControlConditions =
         draftOrder[0].humanizedAccessControlConditions;
       const parsedAcc = JSON.parse(draftOrder[0].accessControlConditions);
-      return { parsedAcc, humanizedAccessControlConditions };
+      return { parsedAcc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData };
     } else {
       return null;
     }

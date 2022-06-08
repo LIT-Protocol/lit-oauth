@@ -285,10 +285,10 @@ export default function ZoomGranting() {
 
   return (
     <div>
-      <BackToApps />
+      <BackToApps/>
       {!storedAuthSig["sig"] || !currentServiceInfo ? (
         <div className={"service-loader"}>
-          <CircularProgress />
+          <CircularProgress/>
           <h3>Waiting for Zoom - Ensure Pop-ups are enabled</h3>
         </div>
       ) : (
