@@ -319,11 +319,11 @@ export default function GoogleGranting(props) {
 
   return (
     <div>
-      <BackToApps />
+      <BackToApps/>
       {(!storedAuthSig["sig"] || accessToken === "") &&
       !currentUser["idOnService"] ? (
         <div className={"service-loader"}>
-          <CircularProgress />
+          <CircularProgress/>
           <h3>Waiting for Google Account</h3>
         </div>
       ) : (
