@@ -17,6 +17,7 @@ import "./ShopifyRedeem.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import { updateV1ConditionTypes } from "./shopifyHelpers";
 
 const ShopifyRedeem = () => {
   const { performWithAuthSig } = useAppContext();
@@ -32,11 +33,11 @@ const ShopifyRedeem = () => {
   const [allowUserToRedeem, setAllowUserToRedeem] = useState(true);
   const [storedEVMAuthSig, setStoredEVMAuthSig] = useState(null);
   const [storedSolanaAuthSig, setStoredSolanaAuthSig] = useState(null);
-  const [authSigsObtained, setAuthSigsObtained] = useState(false);
+  // const [authSigsObtained, setAuthSigsObtained] = useState(false);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
-  const [chain, setChain] = useState(null);
+  // const [chain, setChain] = useState(null);
 
   const [selectedProductVariant, setSelectedProductVariant] = useState('');
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
@@ -111,12 +112,14 @@ const ShopifyRedeem = () => {
   }
 
   const getAuthSigs = async (chainString) => {
+    console.log('-----> chain string', chainString)
     if (!chainString) {
-      getEVMAuthSig();
+      await getEVMAuthSig();
     } else {
       const chainArray = chainString.split(',');
       chainArray.forEach(c => {
-        if (c === 'evmBasic' || c === 'ethereum') {
+        // TODO: will need to update this as some point to describe EVM chains as something better than 'not solRpc'
+        if (c !== 'solRpc') {
           getEVMAuthSig();
         } else if (c === 'solRpc') {
           getSolanaAuthSig();
@@ -170,7 +173,8 @@ const ShopifyRedeem = () => {
     } else {
       chainArray = accessControlData.extraData.split(',');
       chainArray.forEach(c => {
-        if (c === 'evmBasic' || c === 'ethereum') {
+        // if (c === 'evmBasic' || c === 'ethereum') {
+        if (c !== 'solRpc') {
           authSigs['ethereum'] = storedEVMAuthSig;
         } else if (c === 'solRpc') {
           authSigs['solana'] = storedSolanaAuthSig;
@@ -186,9 +190,11 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
 
+    const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
+
     try {
       const jwt = await window.litNodeClient.getSignedToken({
-        unifiedAccessControlConditions: unifiedAccessControlConditions,
+        unifiedAccessControlConditions: afterUpdateV1Conditions,
         authSig: authSigs,
         resourceId: resourceId
       });
@@ -302,7 +308,9 @@ const ShopifyRedeem = () => {
           {(((!storedEVMAuthSig && !storedSolanaAuthSig) || !accessVerified) && loading) && (
             <div className={'shopify-service-card-content'}>
               <p>Signing in.</p>
+              {/*{`storedEVM ${!!storedEVMAuthSig}, accessVerified ${!accessVerified}, loading ${loading}`}*/}
               <LinearProgress color={"primary"} className={'.shopify-service-card-loader'}/>
+              <p>If this loader doesn't resolve, try signing in to your wallet manually and reloading the page.</p>
             </div>
           )}
 
@@ -315,7 +323,7 @@ const ShopifyRedeem = () => {
                   <p>Sorry, you do not qualify for this promotion.</p>
                   <p>The conditions for access were not met.</p>
                   <p>{humanizedAccessControlConditions}</p>
-                  <p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>
+                  {/*<p>{chain ? `On chain: ${chain[0].toUpperCase()}${chain.slice(1)}` : ''}</p>*/}
                   <p>If you think this is an error, contact the creator of the offer or click the button below to try to
                     reconnect.</p>
                   <Button onClick={() => getAuthSigs()}>Click to try to reconnect.</Button>
