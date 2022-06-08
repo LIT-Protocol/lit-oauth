@@ -564,15 +564,21 @@ export default async function shopifyEndpoints(fastify, opts) {
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
     const name = request.body;
+
+    const specificStore = await fastify.objection.models.shopifyStores
+      .query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    const draftOrders = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("shop_id", "=", specificStore[0].shopId);
+
     const allResults = await fastify.objection.models.shopifyDraftOrders
       .query()
 
-    // const specificResults = await fastify.objection.models.shopifyStores
-    //   .query()
-    //   .where('shop_name', '=', shortenShopName(name));
-
     return {
-      // keys: Object.keys(allResults[0]),
+      specificStore: specificStore,
+      storeDraftOrders: draftOrders,
       length: allResults.length
     };
   });
