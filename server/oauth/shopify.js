@@ -16,18 +16,17 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
-    const { shop, accessToken, email } = JSON.parse(request.body);
+    const { shop, accessToken } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
-    console.log('start of saveAccessToken', accessToken, shop)
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
 
-    console.log('check queryforexisting', queryForExistingShop)
+    let shopDetails;
 
+    // if shop does not currently exist in our database
     if (!queryForExistingShop.length) {
-      let shopDetails = {};
-
+      console.log('saveAccessToken: shop doesnt yet exist', shop)
       try {
         const shopify = new Shopify({
           shopName: shop,
@@ -38,46 +37,56 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       } catch (err) {
         console.log('----> Error getting shopify details', err)
+        reply.code(401);
+        return false;
       }
 
       await fastify.objection.models.shopifyStores.query().insert({
         shop_name: shortenedShopName,
         access_token: accessToken,
-        email: email,
+        email: shopDetails.email,
         shop_id: shopDetails.id
       });
       await sendSlackMetricsReportMessage({
-        msg: `Shopify account connected ${email}`,
+        msg: `Shopify account connected ${shopDetails.email}`,
       });
+
     } else {
+      console.log('saveAccessToken: shop does exist', shop)
+      // shop does exist in database
 
       try {
+        // check to see if token is valid
         const shopify = new Shopify({
           shopName: shop,
-          accessToken: queryForExistingShop[0].accessToken,
+          accessToken: accessToken,
         });
 
-        await fastify.objection.models.shopifyStores
-            .query()
-            .where("shop_name", "=", shortenedShopName)
-            .patch({
-              email: email,
-            });
+        shopDetails = await shopify.shop.get([shop, accessToken]);
 
+        // patch shop to update email in case it's changed
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            email: shopDetails.email,
+           });
       } catch (err) {
+        // if token is invalid, update it with new access token
+        console.log('saveAccessToken: token is invalid, update', shop)
         console.log('----> Error with Shopify: token is probably invalid', err);
         await fastify.objection.models.shopifyStores
             .query()
             .where("shop_name", "=", shortenedShopName)
             .patch({
               access_token: accessToken,
-              email: email,
+              email: shopDetails.email,
             });
       }
     }
 
-    reply.code(200);
-    return true;
+    const shopInfo = { shopId: shopDetails.id, name: shopDetails.domain };
+    reply.code(200).send(shopInfo);
   });
 
   // NEW_SECTION: required GDPR shopify endpoints
