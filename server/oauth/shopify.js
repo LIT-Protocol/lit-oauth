@@ -23,10 +23,10 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("shop_name", "=", shortenedShopName);
 
+    console.log('check queryforexisting', queryForExistingShop)
 
-    let typeOfAuth = "newCustomer";
     if (!queryForExistingShop.length) {
-      let shopDetails;
+      let shopDetails = {};
 
       try {
         const shopify = new Shopify({
@@ -50,14 +50,30 @@ export default async function shopifyEndpoints(fastify, opts) {
         msg: `Shopify account connected ${email}`,
       });
     } else {
-      console.log('accessToken updated', accessToken, shop)
-      await fastify.objection.models.shopifyStores
-        .query()
-        .where("shop_name", "=", shortenedShopName)
-        .patch({
-          access_token: accessToken,
-          email: email,
+
+      try {
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: queryForExistingShop[0].accessToken,
         });
+
+        await fastify.objection.models.shopifyStores
+            .query()
+            .where("shop_name", "=", shortenedShopName)
+            .patch({
+              email: email,
+            });
+
+      } catch (err) {
+        console.log('----> Error with Shopify: token is probably invalid', err);
+        await fastify.objection.models.shopifyStores
+            .query()
+            .where("shop_name", "=", shortenedShopName)
+            .patch({
+              access_token: accessToken,
+              email: email,
+            });
+      }
     }
 
     reply.code(200);
@@ -194,7 +210,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
-        console.error(`----> Error updating product on save DO for ${shop[0].shopName}:`, err);
+        console.error(`----> Error updating product on save DO for ${shop_name}:`, err);
       }
       // end add exclusive or discount tag to product
 
@@ -217,7 +233,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return query.id;
     } catch (err) {
-      console.error(`----> Error saving draft order for ${shop[0].shopName}:`, err);
+      console.error(`----> Error saving draft order for ${shop_name}:`, err);
       return err;
     }
   });
@@ -301,6 +317,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
+    console.log('request.body', request.body)
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
