@@ -70,6 +70,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           .where("shop_name", "=", shortenedShopName)
           .patch({
             email: shopDetails.email,
+            access_token: accessToken,
            });
       } catch (err) {
         // if token is invalid, update it with new access token
