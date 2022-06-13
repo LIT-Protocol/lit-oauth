@@ -17,7 +17,7 @@
     "@bugsnag/js": "^7.11.0",
     "@shopify/shopify-api": "^2.0.0",
     "atob": "^2.1.2",
-    "axios": "^0.21.4",
+    "axios": "^0.27.2",
     "crypto-js": "^4.1.1",
     "dotenv": "^10.0.0",
     "eth-sig-util": "^3.0.1",
@@ -30,7 +30,7 @@
     "google-auth-library": "^7.14.0",
     "googleapis": "^95.0.0",
     "http2": "^3.3.7",
-    "knex": "^0.95.14",
+    "knex": "^2.1.0",
     "objection": "^2.2.17",
     "pg": "^8.7.3",
     "shopify-api-node": "^3.8.1"

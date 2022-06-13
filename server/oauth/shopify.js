@@ -16,18 +16,17 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
-    const { shop, accessToken, email } = JSON.parse(request.body);
+    const { shop, accessToken } = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
-    console.log('start of saveAccessToken', accessToken, shop)
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
 
+    let shopDetails;
 
-    let typeOfAuth = "newCustomer";
+    // if shop does not currently exist in our database
     if (!queryForExistingShop.length) {
-      let shopDetails;
-
+      console.log('saveAccessToken: shop doesnt yet exist', shop)
       try {
         const shopify = new Shopify({
           shopName: shop,
@@ -38,30 +37,57 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       } catch (err) {
         console.log('----> Error getting shopify details', err)
+        reply.code(401);
+        return false;
       }
 
       await fastify.objection.models.shopifyStores.query().insert({
         shop_name: shortenedShopName,
         access_token: accessToken,
-        email: email,
+        email: shopDetails.email,
         shop_id: shopDetails.id
       });
       await sendSlackMetricsReportMessage({
-        msg: `Shopify account connected ${email}`,
+        msg: `Shopify account connected ${shopDetails.email}`,
       });
+
     } else {
-      console.log('accessToken updated', accessToken, shop)
-      await fastify.objection.models.shopifyStores
-        .query()
-        .where("shop_name", "=", shortenedShopName)
-        .patch({
-          access_token: accessToken,
-          email: email,
+      console.log('saveAccessToken: shop does exist', shop)
+      // shop does exist in database
+
+      try {
+        // check to see if token is valid
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
         });
+
+        shopDetails = await shopify.shop.get([shop, accessToken]);
+
+        // patch shop to update email in case it's changed
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            email: shopDetails.email,
+            access_token: accessToken,
+           });
+      } catch (err) {
+        // if token is invalid, update it with new access token
+        console.log('saveAccessToken: token is invalid, update', shop)
+        console.log('----> Error with Shopify: token is probably invalid', err);
+        await fastify.objection.models.shopifyStores
+            .query()
+            .where("shop_name", "=", shortenedShopName)
+            .patch({
+              access_token: accessToken,
+              email: shopDetails.email,
+            });
+      }
     }
 
-    reply.code(200);
-    return true;
+    const shopInfo = { shopId: shopDetails.id, name: shopDetails.domain };
+    reply.code(200).send(shopInfo);
   });
 
   // NEW_SECTION: required GDPR shopify endpoints
@@ -194,7 +220,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       try {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
-        console.error(`----> Error updating product on save DO for ${shop[0].shopName}:`, err);
+        console.error(`----> Error updating product on save DO for ${shop_name}:`, err);
       }
       // end add exclusive or discount tag to product
 
@@ -217,7 +243,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return query.id;
     } catch (err) {
-      console.error(`----> Error saving draft order for ${shop[0].shopName}:`, err);
+      console.error(`----> Error saving draft order for ${shop_name}:`, err);
       return err;
     }
   });
@@ -301,6 +327,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
+    console.log('request.body', request.body)
     const shop = await fastify.objection.models.shopifyStores
       .query()
       .where("shop_name", "=", shortenedShopName);
