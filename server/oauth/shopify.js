@@ -86,7 +86,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       }
     }
 
-    const shopInfo = { shopId: shopDetails.id, name: shopDetails.domain };
+    const shopInfo = { shopId: shopDetails.id, name: shopDetails.myshopify_domain };
     reply.code(200).send(shopInfo);
   });
 
