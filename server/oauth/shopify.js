@@ -264,7 +264,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return draftOrders;
     } catch (err) {
-      console.error(`----> Error getting all draft orders ${request.body.shopName}:`, err);
+      console.error(`----> Error getting all draft orders ${request.body.shopId}:`, err);
       return err;
     }
   });
