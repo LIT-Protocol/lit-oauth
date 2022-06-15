@@ -599,21 +599,31 @@ export default async function shopifyEndpoints(fastify, opts) {
       return 'nope';
     }
 
-    const specificStore = await fastify.objection.models.shopifyStores
-      .query()
-      .where('shop_name', '=', shortenShopName(name));
+    let specificStore = null;
+    let draftOrders = null;
+    let allDraftOrders;
+    let allStores = {};
+    if (name === 'all') {
+      allStores = await fastify.objection.models.shopifyStores
+        .query()
+    } else if (!!name) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_name', '=', shortenShopName(name));
 
-    const draftOrders = await fastify.objection.models.shopifyDraftOrders
-      .query()
-      .where("shop_id", "=", specificStore[0].shopId);
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
+    }
 
-    const allResults = await fastify.objection.models.shopifyDraftOrders
+    allDraftOrders = await fastify.objection.models.shopifyDraftOrders
       .query()
 
     return {
       specificStore: specificStore,
       storeDraftOrders: draftOrders,
-      length: allResults.length
+      allStores: allStores,
+      length: allDraftOrders.length
     };
   });
   //
