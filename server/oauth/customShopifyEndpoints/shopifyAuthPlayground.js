@@ -69,6 +69,8 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
 
     const redeemed_by = '{}';
 
+    console.log('SAVE DRAFT ORDER BODY', request.body)
+
     try {
       const result = await validateAuthPlaygroundToken(request.headers.authorization);
       if (!result) {
@@ -79,8 +81,6 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
         .query()
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
-
-      console.log('shop', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
