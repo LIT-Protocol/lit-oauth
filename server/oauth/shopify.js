@@ -190,6 +190,8 @@ export default async function shopifyEndpoints(fastify, opts) {
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
 
+      console.log('----> Save Draft order retrieved shop', shop)
+
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
         shopName: shop[0].shopName,
@@ -221,6 +223,7 @@ export default async function shopifyEndpoints(fastify, opts) {
         product = await shopify.product.update(id, { tags: splitTags.join(',') });
       } catch (err) {
         console.error(`----> Error updating product on save DO for ${shop_name}:`, err);
+        console.log('----> Body for failed save draft order:', request.body);
       }
       // end add exclusive or discount tag to product
 
@@ -453,7 +456,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
-    const { uuid, selectedProductVariant, jwt } = request.body;
+    const { uuid, selectedProductVariant, jwt, authSigs } = request.body;
     const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     if (
       !verified ||
@@ -590,7 +593,11 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const name = request.body;
+    const { name, pass } = request.body;
+
+    if (pass !== '5P8+Ep!mCNzmtxuV') {
+      return 'nope';
+    }
 
     const specificStore = await fastify.objection.models.shopifyStores
       .query()
