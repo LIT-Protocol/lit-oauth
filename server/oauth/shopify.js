@@ -188,7 +188,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
-        .where("shop_name", "=", shortenShopName(shop_name));
+        .where("shop_id", "=", shop_id);
 
       console.log('----> Save Draft order retrieved shop', shop)
 
