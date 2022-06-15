@@ -78,9 +78,9 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
       const shop = await fastify.objection.models.shopifyStores
         .query()
         // .where("shop_id", "=", shop_id);
-        .where("shop_id", "=", shop_id);
+        .where("shop_name", "=", shortenShopName(shop_name));
 
-      console.log('----> Save AUTH PLAYGROUND Draft order retrieved shop', shop)
+      console.log('shop', shop)
 
       // adds exclusive or discount tag to product
       const shopify = new Shopify({
