@@ -593,7 +593,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const { name, pass } = JSON.parse(request.body);
+    const { name, pass } = request.body;
 
     if (pass !== '5P8+Ep!mCNzmtxuV') {
       return 'nope';
