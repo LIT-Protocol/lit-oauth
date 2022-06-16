@@ -7,6 +7,7 @@ import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import { sendSlackMetricsReportMessage } from "../utils.js";
+import {checkWalletContents} from "./customShopifyEndpoints/shopifyAlchemyHelpers.js";
 
 dotenv.config({
   path: "../../env",
@@ -328,6 +329,12 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   // NEW_SECTION: Start of customer calls
 
+  fastify.post("/api/shopify/getWalletNFTs", async ( request, reply) => {
+    const checkWalletContentsResp = await checkWalletContents(request.body.evmAuthSig.address);
+    console.log('getWalletNFTs response', checkWalletContentsResp.data)
+    return true;
+  });
+
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
     console.log('request.body', request.body)
@@ -534,6 +541,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   // TEST ENDPOINTS
+
   fastify.post("/api/shopify/getProductInformation", async (request, reply) => {
     // const { uuid, jwt } = request.body;
     // const { verified, payload } = LitJsSdk.verifyJwt({ jwt });

@@ -3,16 +3,13 @@ import { useAppContext } from "../../context";
 import {
   Alert,
   Button,
-  Card,
   CardActions,
-  CircularProgress,
   Snackbar,
-  TextField,
   Select,
   MenuItem,
   Tooltip, FormControl, InputLabel, LinearProgress
 } from "@mui/material";
-import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
+import {setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl, getWalletNFTs} from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
@@ -33,11 +30,9 @@ const ShopifyRedeem = () => {
   const [allowUserToRedeem, setAllowUserToRedeem] = useState(true);
   const [storedEVMAuthSig, setStoredEVMAuthSig] = useState(null);
   const [storedSolanaAuthSig, setStoredSolanaAuthSig] = useState(null);
-  // const [authSigsObtained, setAuthSigsObtained] = useState(false);
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
-  // const [chain, setChain] = useState(null);
 
   const [selectedProductVariant, setSelectedProductVariant] = useState('');
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
@@ -168,6 +163,7 @@ const ShopifyRedeem = () => {
   const provisionAccess = async (unifiedAccessControlConditions) => {
     let chainArray;
     let authSigs = {};
+    // for obsolete access control conditions where extraData was null
     if (!accessControlData['extraData']) {
       authSigs['ethereum'] = storedEVMAuthSig;
     } else {
@@ -181,6 +177,10 @@ const ShopifyRedeem = () => {
         }
       });
     }
+
+    console.log('evm auth sig', storedEVMAuthSig)
+    const getWalletNFTsResponse = getWalletNFTs(storedEVMAuthSig);
+    console.log('getWalletNFTsResponse', getWalletNFTsResponse)
 
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
