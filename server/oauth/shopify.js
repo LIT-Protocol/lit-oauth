@@ -508,6 +508,13 @@ export default async function shopifyEndpoints(fastify, opts) {
           },
         },
       ],
+      metafield: {
+        namespace: 'web_3',
+        key: 'gated_wallet_line_items',
+        value: [
+          product.id
+        ]
+      }
     };
 
     try {
