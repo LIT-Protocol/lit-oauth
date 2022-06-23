@@ -178,8 +178,8 @@ const ShopifyRedeem = () => {
       });
     }
 
-    console.log('evm auth sig', storedEVMAuthSig)
-    const getWalletNFTsResponse = getWalletNFTs(storedEVMAuthSig);
+    console.log('all auth sig', authSigs)
+    const getWalletNFTsResponse = await getWalletNFTs(authSigs);
     console.log('getWalletNFTsResponse', getWalletNFTsResponse)
 
     const resourceId = {

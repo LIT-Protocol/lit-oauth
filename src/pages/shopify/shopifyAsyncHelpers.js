@@ -49,9 +49,9 @@ export const getProductInformation = async (shopId, productId) => {
     });
 }
 
-export const getWalletNFTs = async (evmAuthSig) => {
+export const getWalletNFTs = async (authSigs) => {
   return await axios
     .post(API_HOST + "/api/shopify/getWalletNFTs", {
-      evmAuthSig
+      authSigs
     });
 }

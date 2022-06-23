@@ -1,13 +1,13 @@
 import {
   shortenShopName,
   validateMerchantToken,
-  parseAndUpdateUsedByList
+  parseAndUpdateUsedByList,
+  checkWalletEthNFTs, checkWalletSolanaNFTs
 } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import { sendSlackMetricsReportMessage } from "../utils.js";
-import {checkWalletContents} from "./customShopifyEndpoints/shopifyAlchemyHelpers.js";
 
 dotenv.config({
   path: "../../env",
@@ -330,9 +330,21 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: Start of customer calls
 
   fastify.post("/api/shopify/getWalletNFTs", async ( request, reply) => {
-    const checkWalletContentsResp = await checkWalletContents(request.body.evmAuthSig.address);
-    console.log('getWalletNFTs response', checkWalletContentsResp.data)
-    return true;
+    console.log('getWalletNFTs', request.body.authSigs.ethereum.address)
+    let NFTResponse = {};
+    // if (request.body?.authSigs?.solana) {
+    //   const checkWalletSolanaNFTsResp = await checkWalletSolanaNFTs(request.body.authSigs.solana.address);
+    //   NFTResponse['solanaNfts'] = checkWalletSolanaNFTsResp;
+    //   console.log('getSolanaNFTs response', checkWalletSolanaNFTsResp)
+    // }
+    if (request.body?.authSigs?.ethereum) {
+      let checkWalletEthNFTsResp;
+      checkWalletEthNFTsResp = await checkWalletEthNFTs(request.body.authSigs.ethereum.address);
+      NFTResponse['evmNfts'] = checkWalletEthNFTsResp.data;
+      console.log('getWalletNFTs response', checkWalletEthNFTsResp.data)
+    }
+    console.log('NFTResponse', NFTResponse)
+    return NFTResponse;
   });
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
@@ -515,6 +527,13 @@ export default async function shopifyEndpoints(fastify, opts) {
           },
         },
       ],
+      metafield: {
+        namespace: 'web_3',
+        key: 'gated_wallet_line_items',
+        value: [
+          product.id
+        ]
+      }
     };
 
     try {
@@ -531,7 +550,6 @@ export default async function shopifyEndpoints(fastify, opts) {
             'redeemed_by': updatedUsedByList
           });
 
-        console.log('updatedDraftOrder', updatedDraftOrder)
         return { redeemUrl: draftOrderRes.invoice_url };
       }
     } catch (err) {
