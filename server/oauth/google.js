@@ -119,6 +119,10 @@ export default async function (fastify, opts) {
 
     console.log("checkExistingRows", existingRows);
 
+    if (existingRows.length > 0) {
+      userExists = true;
+    }
+
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
@@ -127,12 +131,11 @@ export default async function (fastify, opts) {
 
     // let tokenExpiresSoon = await oauth_client.isTokenExpiring();
 
-    if (existingRows.length && !!existingRows[0].accessToken) {
+    if (userExists && !!existingRows[0].accessToken) {
       oauth_client.setCredentials({
         refresh_token: existingRows[0].refreshToken,
       });
 
-      userExists = true;
       const newTokens = await oauth_client.refreshAccessToken();
 
       const drive = google.drive({
