@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import ShareModal from "lit-share-modal";
+import ShareModal from "lit-share-modal-v3-react-17";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
 import ServiceHeader from "../sharedComponents/serviceHeader/ServiceHeader.js";
@@ -8,7 +8,6 @@ import GoogleProvisionAccessModal from "./GoogleGrantingComponents/GoogleProvisi
 import { Alert, CircularProgress, Snackbar } from "@mui/material";
 
 import "./GoogleGranting.scss";
-import "../../../node_modules/lit-share-modal/dist/style.css";
 import * as asyncHelpers from "./googleAsyncHelpers.js";
 import { useAppContext } from "../../context";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
@@ -228,9 +227,10 @@ export default function GoogleGranting(props) {
   };
 
   const addToAccessControlConditions = async (r) => {
+    console.log('----> share modal output')
     setPermanent(r.permanent);
     const concatAccessControlConditions = accessControlConditions.concat(
-      r.accessControlConditions
+      r.unifiedAccessControlConditions
     );
     await setAccessControlConditions(concatAccessControlConditions);
   };
@@ -280,8 +280,7 @@ export default function GoogleGranting(props) {
       };
 
       window.litNodeClient.saveSigningCondition({
-        accessControlConditions,
-        chain,
+        unifiedAccessControlConditions: accessControlConditions,
         authSig,
         resourceId,
       });
@@ -383,17 +382,17 @@ export default function GoogleGranting(props) {
         </section>
       )}
       {openShareModal && (
-        <ShareModal
-          onClose={() => setOpenShareModal(false)}
-          showModal={openShareModal}
-          injectCSS={false}
-          onAccessControlConditionsSelected={async (restriction) => {
-            console.log("check restriction", restriction);
-            await addToAccessControlConditions(restriction);
-            setOpenShareModal(false);
-            setOpenProvisionAccessDialog(true);
-          }}
-        />
+        <div className={'share-modal-container'}>
+          <ShareModal
+            onClose={() => setOpenShareModal(false)}
+            onUnifiedAccessControlConditionsSelected={async (restriction) => {
+              console.log("check restriction", restriction);
+              await addToAccessControlConditions(restriction);
+              setOpenShareModal(false);
+              setOpenProvisionAccessDialog(true);
+            }}
+          />
+        </div>
       )}
       <Snackbar
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}

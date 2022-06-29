@@ -2,7 +2,7 @@ import {
   shortenShopName,
   validateMerchantToken,
   parseAndUpdateUsedByList,
-  checkWalletEthNFTs, checkWalletSolanaNFTs
+  checkWalletEthNFTsOnAlchemy, checkWalletSolanaNFTs
 } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
@@ -330,16 +330,12 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: Start of customer calls
 
   fastify.post("/api/shopify/getWalletNFTs", async ( request, reply) => {
-    console.log('getWalletNFTs', request.body.authSigs.ethereum.address)
+    console.log('getWalletNFTs address', request.body.authSigs.ethereum.address)
+    console.log('getWalletNFTs unifiedAccessControlConditions', request.body)
     let NFTResponse = {};
-    // if (request.body?.authSigs?.solana) {
-    //   const checkWalletSolanaNFTsResp = await checkWalletSolanaNFTs(request.body.authSigs.solana.address);
-    //   NFTResponse['solanaNfts'] = checkWalletSolanaNFTsResp;
-    //   console.log('getSolanaNFTs response', checkWalletSolanaNFTsResp)
-    // }
     if (request.body?.authSigs?.ethereum) {
       let checkWalletEthNFTsResp;
-      checkWalletEthNFTsResp = await checkWalletEthNFTs(request.body.authSigs.ethereum.address);
+      checkWalletEthNFTsResp = await checkWalletEthNFTsOnAlchemy(request.body.authSigs.ethereum.address);
       NFTResponse['evmNfts'] = checkWalletEthNFTsResp.data;
       console.log('getWalletNFTs response', checkWalletEthNFTsResp.data)
     }
@@ -359,12 +355,14 @@ export default async function shopifyEndpoints(fastify, opts) {
       .where("shop_id", "=", shop[0].shopId);
 
     const shopName = shop[0].shopName;
+    console.log('--> draft oreders', draftOrders)
 
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
         return request.body.productGid === d.assetIdOnService;
       });
-      return filteredDraftOrders[0].id;
+      console.log('---> filteredDraftOrders: ', filteredDraftOrders)
+      return filteredDraftOrders[0]?.id;
     } else {
       return [];
     }
@@ -386,7 +384,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
-    console.log('draftOrder in get access', draftOrder)
 
     if (draftOrder[0]) {
       const humanizedAccessControlConditions =
@@ -435,7 +432,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     // TODO: comment in when redeem limit is ready
     // if offer has a redeem limit, check that use hasn't exceeded it
     let allowUserToRedeem = true;
-    console.log('draftOrder', draftOrder)
     if (!!draftOrder[0].redeemedBy) {
       let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
       console.log('check redeemedBy', redeemedBy)

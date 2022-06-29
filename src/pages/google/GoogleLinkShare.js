@@ -75,8 +75,7 @@ function GoogleLinkShare() {
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
 
     const jwt = await litNodeClient.getSignedToken({
-      accessControlConditions: accessControlConditions,
-      chain,
+      unifiedAccessControlConditions: accessControlConditions,
       authSig: authSig,
       resourceId: resourceId,
     });

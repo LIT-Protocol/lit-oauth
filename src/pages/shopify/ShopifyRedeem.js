@@ -107,13 +107,13 @@ const ShopifyRedeem = () => {
   }
 
   const getAuthSigs = async (chainString) => {
-    console.log('-----> chain string', chainString)
+    // todo: remove eventually. this loads the EVM signature for obsolete condition types that don't have a chain string
     if (!chainString) {
       await getEVMAuthSig();
     } else {
       const chainArray = chainString.split(',');
       chainArray.forEach(c => {
-        // TODO: will need to update this as some point to describe EVM chains as something better than 'not solRpc'
+        // todo: will need to update this as some point to describe EVM chains as something better than 'not solRpc'
         if (c !== 'solRpc') {
           getEVMAuthSig();
         } else if (c === 'solRpc') {
@@ -177,10 +177,9 @@ const ShopifyRedeem = () => {
         }
       });
     }
+    console.log('unifiedAccessControlConditions', unifiedAccessControlConditions)
 
-    console.log('all auth sig', authSigs)
-    const getWalletNFTsResponse = await getWalletNFTs(authSigs);
-    console.log('getWalletNFTsResponse', getWalletNFTsResponse)
+    const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
 
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,

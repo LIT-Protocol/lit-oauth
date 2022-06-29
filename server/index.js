@@ -7,11 +7,11 @@ import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
+import shopifyDevEndpoints from "./oauth/shopifyDev.js";
 import shopifyDoodlesEndpoints from "./oauth/customShopifyEndpoints/shopifyDoodles.js";
 import shopifyMetarelicEndpoints from "./oauth/customShopifyEndpoints/shopifyMetarelic.js";
 import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh.js";
 import shopifyMetafactoryEndpoints from "./oauth/customShopifyEndpoints/shopifyMetafactory.js";
-import shopifyAuthPlaygroundEndpoints from "./oauth/customShopifyEndpoints/shopifyAuthPlayground.js";
 import shopifyPoapEndpoints from "./oauth/customShopifyEndpoints/shopifyPoapEndpoints.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
@@ -96,7 +96,7 @@ fastify.register(shopifyDoodlesEndpoints);
 fastify.register(shopifyMetarelicEndpoints);
 fastify.register(shopifyRhEndpoints);
 fastify.register(shopifyMetafactoryEndpoints);
-fastify.register(shopifyAuthPlaygroundEndpoints);
+fastify.register(shopifyDevEndpoints);
 fastify.register(shopifyPoapEndpoints);
 
 // http to https redirect

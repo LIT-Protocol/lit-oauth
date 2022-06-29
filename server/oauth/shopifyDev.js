@@ -1,4 +1,4 @@
-import { shortenShopName } from "../shopifyHelpers.js";
+import { shortenShopName } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
@@ -7,7 +7,7 @@ dotenv.config({
   path: "../../env",
 });
 
-const validateAuthPlaygroundToken = async (token) => {
+const validateDevToken = async (token) => {
   const removeBearer = token.split(' ');
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
@@ -18,11 +18,11 @@ const validateAuthPlaygroundToken = async (token) => {
   })
 }
 
-export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
+export default async function shopifyDevEndpoints(fastify, opts) {
 
   // REFACTOR ENDPOINTS
-  fastify.post("/api/shopify/deleteAuthPlaygroundShopData", async (request, reply) => {
-    const result = await validateAuthPlaygroundToken(request.headers.authorization);
+  fastify.post("/api/shopify/deleteDevShopData", async (request, reply) => {
+    const result = await validateDevToken(request.headers.authorization);
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -32,9 +32,9 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  fastify.post("/api/shopify/checkIfAuthPlaygroundProductHasBeenUsed", async (request, reply) => {
+  fastify.post("/api/shopify/checkIfDevProductHasBeenUsed", async (request, reply) => {
       try {
-        const result = await validateAuthPlaygroundToken(
+        const result = await validateDevToken(
           request.headers.authorization
         );
         if (!result) {
@@ -51,7 +51,7 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
     }
   );
 
-  fastify.post("/api/shopify/saveAuthPlaygroundDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
     const {
       shop_id,
       shop_name,
@@ -69,10 +69,10 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
 
     const redeemed_by = '{}';
 
-    console.log('SAVE DRAFT ORDER BODY', request.body)
+    console.log('ITS IDS AND WHATEVER', asset_id_on_service)
 
     try {
-      const result = await validateAuthPlaygroundToken(request.headers.authorization);
+      const result = await validateDevToken(request.headers.authorization);
       if (!result) {
         return "Unauthorized";
       }
@@ -88,32 +88,37 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
         accessToken: shop[0].accessToken,
       });
 
-      let id = asset_id_on_service;
-      id = id.split("/").pop();
+      let ids = JSON.parse(asset_id_on_service).map(id => {
+        return id.split("/").pop();
+      })
 
-      let product;
       let splitTags;
+      let resolvedProducts;
 
       try {
-        product = await shopify.product.get(id);
-        splitTags = product.tags.split(',');
+        const products = await ids.map(async id => {
+          return await shopify.product.get(id);
+        })
+        resolvedProducts = await Promise.all(products);
+        console.log('resolvedProducts', resolvedProducts);
+        splitTags = resolvedProducts.map(p => {
+          return p.tags.split(',');
+        });
+        console.log('splitTags', splitTags);
       } catch (err) {
         console.error("--> Error getting product on save DO:", err);
       }
 
-      if (!!product) {
-        if (asset_type === 'exclusive') {
-          splitTags.push('lit-exclusive');
-        } else if (asset_type === 'discount') {
-          splitTags.push('lit-discount');
+      const updatedSplitTags = splitTags.map(s => {
+        let updatedTag = s;
+        console.log('check split tags', updatedTag)
+        if (asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
+          updatedTag.push('lit-exclusive');
+        } else if (asset_type === 'discount' && updatedTag.indexOf('lit-discount') === -1) {
+          updatedTag.push('lit-discount');
         }
-      }
-
-      try {
-        product = await shopify.product.update(id, { tags: splitTags.join(',') });
-      } catch (err) {
-        console.error("--> Error updating product on save DO:", err);
-      }
+        return updatedTag;
+      });
       // end add exclusive or discount tag to product
 
       const query = await fastify.objection.models.shopifyDraftOrders
@@ -133,6 +138,19 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
           redeemed_by
         });
 
+      console.log('@@@ post insert query res', query)
+
+      try {
+        const updatedProductPromises = resolvedProducts.map(async (p, i) => {
+          console.log('UPDATED PRODUCT PROMISES', p)
+          return await shopify.product.update(p.id, { tags: updatedSplitTags[i].join(',') });
+        })
+        const updatedProductsResolved = await Promise.all(updatedProductPromises);
+        console.log('UPDATED PRODUCT RESOLVED', updatedProductsResolved)
+      } catch (err) {
+        console.error("--> Error updating product on save DO:", err);
+      };
+
       return query.id;
     } catch (err) {
       console.error("--> Error saving draft order:", err);
@@ -140,10 +158,10 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllAuthPlaygroundDraftOrders", async (request, reply) => {
-    console.log('getAllAuthPlaygroundDraftOrders', request.body)
+  fastify.post("/api/shopify/getAllDevDraftOrders", async (request, reply) => {
+    console.log('getAllDevDraftOrders', request.body)
     try {
-      const result = await validateAuthPlaygroundToken(request.headers.authorization);
+      const result = await validateDevToken(request.headers.authorization);
       if (!result) {
         return "Unauthorized";
       }
@@ -159,8 +177,8 @@ export default async function shopifyAuthPlaygroundEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteAuthPlaygroundDraftOrder", async (request, reply) => {
-    const result = await validateAuthPlaygroundToken(request.headers.authorization);
+  fastify.post("/api/shopify/deleteDevDraftOrder", async (request, reply) => {
+    const result = await validateDevToken(request.headers.authorization);
 
     if (!result) {
       return "Unauthorized";

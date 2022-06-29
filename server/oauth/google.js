@@ -24,7 +24,8 @@ export default async function (fastify, opts) {
       return { error: "Invalid signature" };
     }
 
-    console.log("middle of google callback");
+    console.log("middle of google callback",
+      process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET)
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,

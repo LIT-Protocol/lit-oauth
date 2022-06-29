@@ -33,18 +33,28 @@ export const parseAndUpdateUsedByList = (redeemedBy, userAddress) => {
   return JSON.stringify(updatedRedeemedBy);
 }
 
-export const checkWalletEthNFTs = async (walletAddress) => {
-  console.log('process.env', process.env.ALCHEMY_API_KEY)
+export const checkWalletEthNFTsOnAlchemy = async (walletAddress) => {
   let ethNFTs = null;
   try {
     ethNFTs = await axios.get(`https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_API_KEY}/getNFTs/?owner=${walletAddress}`);
-    console.log('check eth nfts', ethNFTs.data)
   } catch(err) {
-    console.log('BIG OLE ERROR')
+    console.log('BIG OLE ERROR', err)
   }
   return ethNFTs;
 }
 
 export const checkWalletSolanaNFTs = async (walletAddress) => {
   return true;
+}
+
+export const checkWalletEthNFTsOnOpenSea = async (walletAddress) => {
+  // const options = {method: 'GET', headers: {Accept: 'application/json'}};
+  //
+  // fetch('https://api.opensea.io/api/v1/assets?order_direction=desc&limit=20&include_orders=false', options)
+  //   .then(response => response.json())
+  //   .then(response => console.log(response))
+  //   .catch(err => console.error(err));
+
+  const openSeaAssets = await axios.get(`https://api.opensea.io/api/v1/assets?owner=${walletAddress}`);
+  console.log('openSeaAssets', openSeaAssets)
 }
