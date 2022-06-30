@@ -301,18 +301,12 @@ export default async function shopifyEndpoints(fastify, opts) {
     try {
       product = await shopify.product.get(id);
       splitTags = product.tags.split(',');
-    } catch (err) {
-      console.error(`----> Error getting product on save DO for ${shopName}:`, err);
-      return err;
-    }
-
-    try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
       product = await shopify.product.update(id, { tags: filteredTags.join(',') });
     } catch (err) {
-      console.error(`----> Error updating product on save DO for ${shopName}:`, err);
-      return err;
+      console.error(`----> Error getting product on save DO for ${shopName}:`, err);
     }
+  
     // end delete exclusive or discount tag from deleted draft order
 
     try {
