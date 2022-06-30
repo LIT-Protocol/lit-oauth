@@ -58,10 +58,34 @@ function GoogleLinkShare() {
     }
   }, []);
 
+  const getAuthSigs = async (authSigTypes) => {
+    const authSigPromises = {}
+    authSigTypes.forEach(a => {
+      if (a === 'ethereum') {
+        authSigPromises['ethereum'] = LitJsSdk.checkAndSignAuthMessage({
+          chain: "ethereum",
+        });
+      } else if (a === 'solana') {
+        authSigPromises['solana'] = LitJsSdk.checkAndSignAuthMessage({
+          chain: 'solana'
+        })
+      }
+    })
+    const authSigs = {};
+    for (let i = 0; i < Object.keys(authSigPromises).length; i++) {
+      authSigs[Object.keys(authSigPromises)[i]] = await Object.values(authSigPromises)[i]
+    }
+    return authSigs;
+  };
+
   const provisionAccess = async () => {
     const accessControlConditions = JSON.parse(
       linkData.accessControlConditions
     );
+
+    const extraData = JSON.parse(linkData.extraData);
+
+    const authSigs = await getAuthSigs(extraData.authSigTypes);
 
     const chain = accessControlConditions[0].chain;
     const resourceId = {
@@ -70,14 +94,14 @@ function GoogleLinkShare() {
       orgId: "",
       role: linkData["role"].toString(),
       extraData: "",
+      permanent: extraData.permanent
     };
 
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
 
     const jwt = await litNodeClient.getSignedToken({
-      accessControlConditions: accessControlConditions,
-      chain,
-      authSig: authSig,
+      unifiedAccessControlConditions: accessControlConditions,
+      authSig: authSigs,
       resourceId: resourceId,
     });
 

@@ -29,7 +29,7 @@
     "lit-access-control-conditions-modal": "^1.1.28",
     "lit-fastify-bugsnag": "^0.3.1",
     "lit-js-sdk": "^1.1.177",
-    "lit-share-modal": "^0.1.89",
+    "lit-share-modal-v3-react-17": "^0.0.81",
     "luxon": "^2.0.2",
     "mui-datatables": "^3.7.8",
     "node-sass": "^6.0.1",
