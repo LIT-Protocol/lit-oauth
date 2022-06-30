@@ -639,7 +639,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       return 'nope';
     }
 
-    const uuid = request.body;
+    const uuid = request.body.uuid;
     const allResults = await fastify.objection.models.shopifyDraftOrders
       .query()
       .delete()
