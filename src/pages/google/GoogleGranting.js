@@ -43,14 +43,33 @@ export default function GoogleGranting(props) {
   const [currentUser, setCurrentUser] = useState({});
   const [storedAuthSig, setStoredAuthSig] = useState({});
   const [permanent, setPermanent] = useState(true);
+  const [authSigTypes, setAuthSigTypes] = useState([]);
   const [humanizedAccessControlArray, setHumanizedAccessControlArray] =
     useState([]);
 
   const [openShareModal, setOpenShareModal] = useState(false);
   const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
     useState(false);
+  const [injectInitialState, setInjectInitialState] = useState(false);
+  const [initialState, setInitialState] = useState(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarInfo, setSnackbarInfo] = useState({});
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    let paramsObject = {};
+    for (const param of params) {
+      paramsObject[param[0]] = param[1];
+    }
+    if (paramsObject['source'] && paramsObject['source'].toLowerCase() === 'daohaus') {
+      console.log('check params obj')
+      setInjectInitialState(true);
+      setInitialState({
+        DAOAddress: paramsObject['dao_address'],
+        DAOName: paramsObject['dao_name']
+      })
+    }
+  }, [])
 
   useEffect(() => {
     if (!!performWithAuthSig) {
@@ -113,14 +132,12 @@ export default function GoogleGranting(props) {
     let client;
     await performWithAuthSig(async (authSig) => {
       await setStoredAuthSig(authSig);
-      console.log("authSig", authSig);
 
       if (!storedAuthSig || !storedAuthSig["sig"]) {
         console.log("Stop auth if authSig is not yet available");
       }
 
       const userExists = await checkIfUserExists(authSig);
-      console.log("check frontend userExists", userExists);
 
       const stringifiedAuthSig = JSON.stringify(authSig);
 
@@ -186,10 +203,24 @@ export default function GoogleGranting(props) {
     console.log("Google Picker Loaded");
   };
 
-  const getAuthSig = async () => {
-    return await LitJsSdk.checkAndSignAuthMessage({
-      chain: "ethereum",
-    });
+  const getAuthSigs = async () => {
+    const authSigPromises = {}
+    authSigTypes.forEach(a => {
+      if (a === 'ethereum') {
+        authSigPromises['ethereum'] = LitJsSdk.checkAndSignAuthMessage({
+          chain: "ethereum",
+        });
+      } else if (a === 'solana') {
+        authSigPromises['solana'] = LitJsSdk.checkAndSignAuthMessage({
+          chain: 'solana'
+        })
+      }
+    })
+    const authSigs = {};
+    for (let i = 0; i < Object.keys(authSigPromises).length; i++) {
+      authSigs[Object.keys(authSigPromises)[i]] = await Object.values(authSigPromises)[i]
+    }
+    return authSigs;
   };
 
   const getAllShares = async (authSig, idOnService) => {
@@ -227,8 +258,8 @@ export default function GoogleGranting(props) {
   };
 
   const addToAccessControlConditions = async (r) => {
-    console.log('----> share modal output')
     setPermanent(r.permanent);
+    setAuthSigTypes(r.authSigTypes);
     const concatAccessControlConditions = accessControlConditions.concat(
       r.unifiedAccessControlConditions
     );
@@ -260,6 +291,7 @@ export default function GoogleGranting(props) {
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
+      extraData: JSON.stringify({ permanent, authSigTypes }),
       idOnService: currentUser.idOnService,
     };
 
@@ -269,7 +301,7 @@ export default function GoogleGranting(props) {
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
-      const authSig = await getAuthSig();
+      const authSigs = await getAuthSigs();
       const resourceId = {
         baseUrl: API_HOST,
         path: "/google/l/" + uuid,
@@ -281,7 +313,7 @@ export default function GoogleGranting(props) {
 
       window.litNodeClient.saveSigningCondition({
         unifiedAccessControlConditions: accessControlConditions,
-        authSig,
+        authSig: authSigs,
         resourceId,
       });
 
@@ -386,11 +418,12 @@ export default function GoogleGranting(props) {
           <ShareModal
             onClose={() => setOpenShareModal(false)}
             onUnifiedAccessControlConditionsSelected={async (restriction) => {
-              console.log("check restriction", restriction);
               await addToAccessControlConditions(restriction);
               setOpenShareModal(false);
               setOpenProvisionAccessDialog(true);
             }}
+            injectInitialState={injectInitialState}
+            initialState={initialState}
           />
         </div>
       )}

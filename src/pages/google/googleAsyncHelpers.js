@@ -23,6 +23,7 @@ export const share = async (requestData, requestOptions) => {
     accessControlConditions,
     authSig,
     idOnService,
+    extraData
   } = requestData;
   return await axios.post(
     API_HOST + "/api/google/share",
@@ -34,6 +35,7 @@ export const share = async (requestData, requestOptions) => {
       accessControlConditions,
       authSig,
       idOnService,
+      extraData
     },
     requestOptions
   );

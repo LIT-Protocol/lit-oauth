@@ -9363,10 +9363,10 @@ lit-js-sdk@^1.1.180:
     uint8arrays "^3.0.0"
     utf-8-validate "^5.0.8"
 
-lit-share-modal-v3-react-17@^0.0.78:
-  version "0.0.78"
-  resolved "https://registry.yarnpkg.com/lit-share-modal-v3-react-17/-/lit-share-modal-v3-react-17-0.0.78.tgz#5c66234bc3e139d8c665178c011349202933365c"
-  integrity sha512-Tyur1fsR4KTL4dPyLCn5ZQsomcwi7Hbv+ZC0tNZkbf/ZGjPAXdIOB+47ZuOwdCuzJZUPxFkYCBVVy1nXK6YyIg==
+lit-share-modal-v3-react-17@^0.0.81:
+  version "0.0.81"
+  resolved "https://registry.yarnpkg.com/lit-share-modal-v3-react-17/-/lit-share-modal-v3-react-17-0.0.81.tgz#4fb6de63b83546971a8f79ad29460feb69d1fb84"
+  integrity sha512-XDtJPdXNwQaup0fL9Jflrs7jE4RTqyOM3IpH8bLOkMfyAicWAgDXjXVHukxuNkXfMxmrAS8LP997WmaqOc/RpA==
   dependencies:
     ethers "^5.5.4"
     events "^3.3.0"

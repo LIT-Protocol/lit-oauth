@@ -87,7 +87,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       }
     }
 
-    const shopInfo = { shopId: shopDetails.id, name: shopDetails.domain };
+    const shopInfo = { shopId: shopDetails.id, name: shopDetails.myshopify_domain };
     reply.code(200).send(shopInfo);
   });
 
@@ -617,7 +617,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
     const { name, pass } = request.body;
 
-    if (pass !== '5P8+Ep!mCNzmtxuV') {
+    if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
     }
 
@@ -648,16 +648,20 @@ export default async function shopifyEndpoints(fastify, opts) {
       length: allDraftOrders.length
     };
   });
-  //
-  // fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
-  //   const uuid = request.body;
-  //   const allResults = await fastify.objection.models.shopifyDraftOrders
-  //     .query()
-  //     .delete()
-  //     .where('id', '=', uuid);
-  //
-  //   return allResults;
-  // })
+
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
+  })
 
   fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
     console.log('toggle get testEndpoint');

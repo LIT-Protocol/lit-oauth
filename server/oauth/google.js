@@ -120,6 +120,10 @@ export default async function (fastify, opts) {
 
     console.log("checkExistingRows", existingRows);
 
+    if (existingRows.length > 0) {
+      userExists = true;
+    }
+
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
       process.env.LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_SECRET,
@@ -128,12 +132,11 @@ export default async function (fastify, opts) {
 
     // let tokenExpiresSoon = await oauth_client.isTokenExpiring();
 
-    if (existingRows.length && !!existingRows[0].accessToken) {
+    if (userExists && !!existingRows[0].accessToken) {
       oauth_client.setCredentials({
         refresh_token: existingRows[0].refreshToken,
       });
 
-      userExists = true;
       const newTokens = await oauth_client.refreshAccessToken();
 
       const drive = google.drive({
@@ -275,6 +278,8 @@ export default async function (fastify, opts) {
       daoAddress = accessControlConditions[0].contractAddress;
     }
 
+    console.log('request.body', req.body)
+
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
@@ -287,6 +292,7 @@ export default async function (fastify, opts) {
         user_id: authSig.address,
         name: fileInfo.data.name,
         asset_type: fileInfo.data.mimeType,
+        extra_data: req.body.extraData,
         source,
         dao_address: daoAddress,
       });
