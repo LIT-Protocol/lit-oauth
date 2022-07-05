@@ -33,6 +33,7 @@
     "luxon": "^2.0.2",
     "mui-datatables": "^3.7.8",
     "node-sass": "^6.0.1",
+    "nodemailer": "^6.7.6",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.3.0",
