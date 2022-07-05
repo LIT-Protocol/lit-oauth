@@ -8,11 +8,6 @@ import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import shopifyDevEndpoints from "./oauth/shopifyDev.js";
-import shopifyDoodlesEndpoints from "./oauth/customShopifyEndpoints/shopifyDoodles.js";
-import shopifyMetarelicEndpoints from "./oauth/customShopifyEndpoints/shopifyMetarelic.js";
-import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh.js";
-import shopifyMetafactoryEndpoints from "./oauth/customShopifyEndpoints/shopifyMetafactory.js";
-import shopifyPoapEndpoints from "./oauth/customShopifyEndpoints/shopifyPoapEndpoints.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
@@ -91,13 +86,7 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 fastify.register(shopifyEndpoints);
-// TODO: erase custom shop endpoints once public Shopify store is active
-fastify.register(shopifyDoodlesEndpoints);
-fastify.register(shopifyMetarelicEndpoints);
-fastify.register(shopifyRhEndpoints);
-fastify.register(shopifyMetafactoryEndpoints);
 fastify.register(shopifyDevEndpoints);
-fastify.register(shopifyPoapEndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
