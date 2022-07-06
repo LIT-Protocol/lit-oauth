@@ -9,7 +9,7 @@ import {
   MenuItem,
   Tooltip, FormControl, InputLabel, LinearProgress
 } from "@mui/material";
-import {setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl, getWalletNFTs} from "./shopifyAsyncHelpers";
+import {setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl} from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
@@ -181,7 +181,7 @@ const ShopifyRedeem = () => {
     }
     console.log('unifiedAccessControlConditions', unifiedAccessControlConditions)
 
-    const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
+    // const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
 
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
