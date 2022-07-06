@@ -33,7 +33,7 @@ export default function ShopifySplash() {
       } else {
         setShopName(shop);
         console.log('Check for shop promotions args:', productId)
-        // checkForShopPromotions(shop, productId);
+        checkForShopPromotions(shop, productId);
       }
     }
   }, [shopName])
@@ -41,6 +41,7 @@ export default function ShopifySplash() {
   // todo: this will be deprecate for old versions.  should split obsolete code into a different file
   const checkForShopPromotions = async (shop, productId) => {
     try {
+      console.log('CHECK FOR PROMOTIONS')
       const res = await checkForPromotions(shop, productId);
       console.log('RES', res)
       if (!res.data) {

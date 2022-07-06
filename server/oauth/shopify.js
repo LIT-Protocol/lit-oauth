@@ -315,7 +315,8 @@ export default async function shopifyEndpoints(fastify, opts) {
         return request.body.productGid === d.assetIdOnService;
       });
       console.log('---> filteredDraftOrders: ', filteredDraftOrders)
-      return filteredDraftOrders[0]?.id;
+      // return filteredDraftOrders[0]?.id;
+      return draftOrders[1]?.id;
     } else {
       return [];
     }
@@ -402,7 +403,10 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    let id = draftOrderDetails.id;
+    console.log('draftOrderDetails', draftOrderDetails)
+
+    // let id = draftOrderDetails.id;
+    let id = draftOrderDetails.id[0];
     id = id.split("/").pop();
 
     let product;
@@ -449,7 +453,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    let id = draftOrderDetails.id;
+    // let id = draftOrderDetails.id;
+    let id = draftOrderDetails.id[0];
     id = id.split("/").pop();
 
     let product;

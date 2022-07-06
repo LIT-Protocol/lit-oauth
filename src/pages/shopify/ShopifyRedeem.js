@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { useAppContext } from "../../context";
 import {
   Alert,
@@ -33,6 +33,8 @@ const ShopifyRedeem = () => {
   const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
   const [accessVerified, setAccessVerified] = useState(false);
   const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
+  const [redemptionURL, setRedemptionURL] = useState(null);
+  const [linkCopied, setLinkCopied] = useState(false);
 
   const [selectedProductVariant, setSelectedProductVariant] = useState('');
   const [variantMenuOptions, setVariantMenuOptions] = useState('');
@@ -219,6 +221,7 @@ const ShopifyRedeem = () => {
         const resp = await setUpRedeemDraftOrder(draftOrderId, jwt);
         setProduct(resp.data.product);
         setDraftOrderDetails(resp.data.draftOrderDetails);
+        console.log('draft order details', resp.data)
         // todo: fix with redeem limit
         setAllowUserToRedeem(resp.data.allowUserToRedeem);
         formatSelectMenuOptions(resp.data.product);
@@ -248,7 +251,11 @@ const ShopifyRedeem = () => {
     checkForPromotionAccessControl().then(async (jwt) => {
       try {
         const resp = await redeemDraftOrder(draftOrderId, selectedProductVariant, jwt);
-        window.location.href = resp.data.redeemUrl;
+        if (!draftOrderDetails.redeemLimit || draftOrderDetails.redeemLimit == 0) {
+          window.location.href = resp.data.redeemUrl;
+        } else {
+          setRedemptionURL(resp.data.redeemUrl);
+        }
         setLoading(false);
       } catch (err) {
         // ADD_ERROR_HANDLING
@@ -399,20 +406,37 @@ const ShopifyRedeem = () => {
           )}
           <CardActions className={'redeem-card-actions'} style={{ padding: '0' }}>
             {(storedEVMAuthSig || storedSolanaAuthSig) && accessVerified && !loading && allowUserToRedeem && (
-              <Tooltip title={getSubmitTooltip()} placement="top">
-                {/*<span className={"access-service-card-launch-button"} onClick={async () => {*/}
-                <div>
-                  <Button
-                    disabled={!selectedProductVariant || (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0)}
-                    variant={"contained"}
-                    className={"redeem-button"}
-                    onClick={async () => {
-                      await callRedeemDraftOrder()
+              <Fragment>
+                {!redemptionURL ? (
+                  <Tooltip title={getSubmitTooltip()} placement="top">
+                    {/*<span className={"access-service-card-launch-button"} onClick={async () => {*/}
+                    <div>
+                      <Button
+                        disabled={!selectedProductVariant || (selectedProductVariant.inventory_management === 'shopify' && selectedProductVariant.inventory_quantity === 0)}
+                        variant={"contained"}
+                        className={"redeem-button"}
+                        onClick={async () => {
+                          await callRedeemDraftOrder()
+                        }}>
+                        {getRedeemButtonCondition()}
+                      </Button>
+                    </div>
+                  </Tooltip>
+                ) : (
+                  <span>
+                    <p className={'redemptionUrl-prompt'}><strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed.  Make sure to save the checkout link, as you might not be able to recreate it and claim the product if you don't.</p>
+                    <Button className={"redeem-button"}
+                            variant={"contained"}
+                            onClick={async () => {
+                              navigator.clipboard.writeText(redemptionURL);
+                              setLinkCopied(true);
+                              // window.location.href = redemptionURL;
                     }}>
-                    {getRedeemButtonCondition()}
-                  </Button>
-                </div>
-              </Tooltip>
+                      {!linkCopied ? 'Click to copy checkout link' : 'Copied!'}
+                    </Button>
+                  </span>
+                )}
+              </Fragment>
             )}
           </CardActions>
         </div>
