@@ -8,6 +8,7 @@ import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
 import shopifyEndpoints from "./oauth/shopify.js";
 import shopifyDevEndpoints from "./oauth/shopifyDev.js";
+import shopifyGDPREndpoints from "./oauth/shopifyGDPREndpoints.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
@@ -87,6 +88,7 @@ fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 fastify.register(shopifyEndpoints);
 fastify.register(shopifyDevEndpoints);
+fastify.register(shopifyGDPREndpoints);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {

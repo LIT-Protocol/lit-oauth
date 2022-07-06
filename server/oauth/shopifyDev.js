@@ -2,6 +2,11 @@ import { shortenShopName } from "./shopifyHelpers.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
+import {
+  makeShopifyInstance,
+  removeTagAndMetafieldFromProducts,
+  updateProductWithTagAndUuid
+} from "./shopifyApiNodeHelpers.js";
 
 dotenv.config({
   path: "../../env",
@@ -69,8 +74,6 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
     const redeemed_by = '{}';
 
-    console.log('ITS IDS AND WHATEVER', asset_id_on_service)
-
     try {
       const result = await validateDevToken(request.headers.authorization);
       if (!result) {
@@ -83,43 +86,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
         .where("shop_name", "=", shortenShopName(shop_name));
 
       // adds exclusive or discount tag to product
-      const shopify = new Shopify({
-        shopName: shop[0].shopName,
-        accessToken: shop[0].accessToken,
-      });
-
-      let ids = JSON.parse(asset_id_on_service).map(id => {
-        return id.split("/").pop();
-      })
-
-      let splitTags;
-      let resolvedProducts;
-
-      try {
-        const products = await ids.map(async id => {
-          return await shopify.product.get(id);
-        })
-        resolvedProducts = await Promise.all(products);
-        console.log('resolvedProducts', resolvedProducts);
-        splitTags = resolvedProducts.map(p => {
-          return p.tags.split(',');
-        });
-        console.log('splitTags', splitTags);
-      } catch (err) {
-        console.error("--> Error getting product on save DO:", err);
-      }
-
-      const updatedSplitTags = splitTags.map(s => {
-        let updatedTag = s;
-        console.log('check split tags', updatedTag)
-        if (asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
-          updatedTag.push('lit-exclusive');
-        } else if (asset_type === 'discount' && updatedTag.indexOf('lit-discount') === -1) {
-          updatedTag.push('lit-discount');
-        }
-        return updatedTag;
-      });
-      // end add exclusive or discount tag to product
+      const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
 
       const query = await fastify.objection.models.shopifyDraftOrders
         .query()
@@ -140,16 +107,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
       console.log('@@@ post insert query res', query)
 
-      try {
-        const updatedProductPromises = resolvedProducts.map(async (p, i) => {
-          console.log('UPDATED PRODUCT PROMISES', p)
-          return await shopify.product.update(p.id, { tags: updatedSplitTags[i].join(',') });
-        })
-        const updatedProductsResolved = await Promise.all(updatedProductPromises);
-        console.log('UPDATED PRODUCT RESOLVED', updatedProductsResolved)
-      } catch (err) {
-        console.error("--> Error updating product on save DO:", err);
-      };
+      const updateResolve = await updateProductWithTagAndUuid(shopify, request.body, shop[0], query);
 
       return query.id;
     } catch (err) {
@@ -193,31 +151,30 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.id);
 
-    const shopify = new Shopify({
-      shopName: shop[0].shopName,
-      accessToken: shop[0].accessToken,
-    });
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
 
-    let id = draftToDelete[0].assetIdOnService;
-    id = id.split("/").pop();
+    const deleteProductDataResolve = await removeTagAndMetafieldFromProducts(shopify, draftToDelete[0], shop[0], request.body.id)
 
-    let product;
-    let splitTags;
-    try {
-      product = await shopify.product.get(id);
-      splitTags = product.tags.split(',');
-    } catch (err) {
-      console.error("--> Error getting product on delete DO:", err);
-    }
-
-    if (!!product) {
-      try {
-        const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-        product = await shopify.product.update(id, { tags: filteredTags.join(',') });
-      } catch (err) {
-        console.error("--> Error updating product on delete DO:", err);
-      }
-    }
+    // let id = draftToDelete[0].assetIdOnService;
+    // id = id.split("/").pop();
+    //
+    // let product;
+    // let splitTags;
+    // try {
+    //   product = await shopify.product.get(id);
+    //   splitTags = product.tags.split(',');
+    // } catch (err) {
+    //   console.error("--> Error getting product on delete DO:", err);
+    // }
+    //
+    // if (!!product) {
+    //   try {
+    //     const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
+    //     product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+    //   } catch (err) {
+    //     console.error("--> Error updating product on delete DO:", err);
+    //   }
+    // }
     // end delete exclusive or discount tag from deleted draft order
 
     try {
