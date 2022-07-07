@@ -277,7 +277,7 @@ export default async function (fastify, opts) {
       daoAddress = accessControlConditions[0].contractAddress;
     }
 
-    console.log('request.body', req.body)
+    console.log("request.body", req.body);
 
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
@@ -402,6 +402,13 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getDAOShares", async (req, res) => {
+    const authSig = req.body.authSig;
+
+    if (!authUser(authSig)) {
+      res.code(400);
+      return { error: "Invalid signature" };
+    }
+
     const daoAddress = req.body.daoAddress;
 
     const shares = await fastify.objection.models.shares
