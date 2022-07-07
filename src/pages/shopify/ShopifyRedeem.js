@@ -211,7 +211,7 @@ const ShopifyRedeem = () => {
   const formatSelectMenuOptions = (product) => {
     const mappedVariantRows = product.variants.map((p) => {
       return p.title
-    })
+    });
     setVariantMenuOptions(mappedVariantRows);
   }
 

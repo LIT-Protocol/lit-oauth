@@ -246,7 +246,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-
     let id = draftToDelete[0].assetIdOnService;
     id = id.split("/").pop();
 

@@ -7,6 +7,7 @@ export const makeShopifyInstance = (shopName, accessToken) => {
 }
 
 export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj, shopObj, queryObj) => {
+  console.log('!@!@!@!@! ACC:', draftOrderObj)
   let ids = JSON.parse(draftOrderObj.asset_id_on_service).map(id => {
     return id.split("/").pop();
   })
@@ -20,11 +21,9 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
       return await shopifyInstance.product.get(id);
     })
     resolvedProducts = await Promise.all(products);
-    console.log('resolvedProducts', resolvedProducts);
     splitTags = resolvedProducts.map(p => {
       return p.tags.split(',');
     });
-    console.log('splitTags', splitTags);
   } catch (err) {
     console.error("--> Error getting product on save DO:", err);
   }
@@ -32,7 +31,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   // add exclusive or discount tag to list of current tags
   const updatedSplitTags = splitTags.map(s => {
     let updatedTag = s;
-    console.log('check split tags', updatedTag)
     if (draftOrderObj.asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
       updatedTag.push('lit-exclusive');
     } else if (draftOrderObj.asset_type === 'discount' && updatedTag.indexOf('lit-discount') === -1) {
@@ -47,7 +45,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
       return await shopifyInstance.product.update(p.id, { tags: updatedSplitTags[i].join(',') });
     })
     const updatedProductsResolved = await Promise.all(updatedProductPromises);
-    console.log('UPDATED PRODUCT RESOLVED', updatedProductsResolved)
   } catch (err) {
     console.error("--> Error updating product on save DO:", err);
   };
@@ -55,19 +52,27 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
 
   // map over products and add metafield with query id
   try {
+    const metafieldValue = {
+      description: draftOrderObj.humanized_access_control_conditions,
+      summary: draftOrderObj.summary,
+      title: draftOrderObj.title,
+      accessControlConditions: draftOrderObj.access_control_conditions,
+      assetType: draftOrderObj.asset_type
+    }
+    console.log('check metafield valie', metafieldValue)
     const updatedMetafieldPromises = resolvedProducts.map(async (p, i) => {
       const metafieldObj = {
         owner_id: p.id,
         type: 'single_line_text_field',
         owner_resource: 'product',
-        value: queryObj.id,
-        namespace: 'lit-offer',
-        key: 'lit-offer'
+        value: JSON.stringify(metafieldValue),
+        namespace: 'lit_offer',
+        key: queryObj.id
       }
       return await shopifyInstance.metafield.create(metafieldObj);
-    })
+    });
     const updatedMetafieldResolved = await Promise.all(updatedMetafieldPromises);
-    console.log('check on metafield resolved', updatedMetafieldResolved);
+    console.log('Check new metafields', updatedMetafieldResolved)
   } catch (err) {
     console.log('Error updating product metafields:', err)
   }
@@ -75,8 +80,28 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   return true;
 }
 
+const removeMetafieldFromProducts = async (shopifyInstance, productMetafields, uuid) => {
+  const metafieldsToBeRemoved = productMetafields.filter(m => {
+    return m.key === uuid;
+  })
+
+  const metafieldRemovalPromises = metafieldsToBeRemoved.map(async (m) => {
+    return await shopifyInstance.metafield.delete(m.id);
+  })
+
+  // switch out function below with function above to delete all metafields for a given product
+
+  // const metafieldRemovalPromises = productMetafields.map(async (m) => {
+  //   return await shopifyInstance.metafield.delete(m.id);
+  // })
+
+  const metafieldsRemovedResolution = await Promise.all(metafieldRemovalPromises);
+  return metafieldsRemovedResolution;
+}
+
 export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOrderObj, shopObj, uuid) => {
-  let ids = JSON.parse(draftOrderObj.asset_id_on_service).map(id => {
+  console.log('check uuid', draftOrderObj)
+  let ids = JSON.parse(draftOrderObj.assetIdOnService).map(id => {
     return id.split("/").pop();
   })
 
@@ -97,14 +122,24 @@ export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOr
     console.error("--> Error getting product on save DO:", err);
   }
 
-  console.log('^^^^^$$$$$ - remove tags products', resolvedProducts);
-
   try {
+    // map over product list and get metafields for each
     const productMetafieldPromises = resolvedProducts.map(async (p) => {
-      return await shopifyInstance.metafield.get(p.id);
+      return await shopifyInstance.metafield.list({
+        metafield: {
+          owner_resource: 'product', owner_id: p.id
+        }
+      });
     });
-    const productMetafieldResolved = Promise.all(productMetafieldPromises);
-    console.log('PRODUCT METAFIELD RESOLVED', productMetafieldResolved)
+    // resolve promises create an array of arrays [ [], [], [] ]
+    const productMetafieldResolved = await Promise.all(productMetafieldPromises);
+
+
+    // map over resolved metafield arrays and call removeMetafieldFromProducts to delete uuid metafield
+    const deletedMetafields = productMetafieldResolved.map(async (m) => {
+      return await removeMetafieldFromProducts(shopifyInstance, m, uuid);
+    });
+    const resolvedDeletedMetafield = await Promise.all(deletedMetafields);
   } catch (err) {
     console.log('Error getting product Metafields:', err);
   }
