@@ -425,7 +425,7 @@ const ShopifyRedeem = () => {
                 ) : (
                   <span>
                     <p className={'redemptionUrl-prompt'}>
-                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Use the button to the right to copy the link and paste it into a new window, but make sure to save it if you don't checkout immediately.  You might not be able to access it again if you don't.
+                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Use the button to the right to copy the link and paste it into a new window, but make sure to save the link if you don't checkout immediately.  You might not be able to access it again if you don't.
                     </p>
                     <Button className={"redeem-button"}
                             variant={"contained"}
