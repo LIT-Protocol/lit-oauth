@@ -9,7 +9,7 @@ import {
   MenuItem,
   Tooltip, FormControl, InputLabel, LinearProgress
 } from "@mui/material";
-import {setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl, getWalletNFTs} from "./shopifyAsyncHelpers";
+import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl, getWalletNFTs } from "./shopifyAsyncHelpers";
 import "./ShopifyRedeem.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
@@ -17,30 +17,30 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { updateV1ConditionTypes } from "./shopifyHelpers";
 
 const ShopifyRedeem = () => {
-  const { performWithAuthSig } = useAppContext();
-  const [loading, setLoading] = useState(true);
-  const [product, setProduct] = useState(null);
-  const [errorText, setErrorText] = useState(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarInfo, setSnackbarInfo] = useState(null);
+  const {performWithAuthSig} = useAppContext();
+  const [ loading, setLoading ] = useState(true);
+  const [ product, setProduct ] = useState(null);
+  const [ errorText, setErrorText ] = useState(null);
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ snackbarInfo, setSnackbarInfo ] = useState(null);
 
-  const [accessControlData, setAccessControlData] = useState(null);
-  const [draftOrderId, setDraftOrderId] = useState(null);
-  const [draftOrderDetails, setDraftOrderDetails] = useState(null);
-  const [allowUserToRedeem, setAllowUserToRedeem] = useState(true);
-  const [storedEVMAuthSig, setStoredEVMAuthSig] = useState(null);
-  const [storedSolanaAuthSig, setStoredSolanaAuthSig] = useState(null);
-  const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
-  const [accessVerified, setAccessVerified] = useState(false);
-  const [humanizedAccessControlConditions, setHumanizedAccessControlConditions] = useState(null);
-  const [redemptionURL, setRedemptionURL] = useState(null);
-  const [linkCopied, setLinkCopied] = useState(false);
+  const [ accessControlData, setAccessControlData ] = useState(null);
+  const [ draftOrderId, setDraftOrderId ] = useState(null);
+  const [ draftOrderDetails, setDraftOrderDetails ] = useState(null);
+  const [ allowUserToRedeem, setAllowUserToRedeem ] = useState(true);
+  const [ storedEVMAuthSig, setStoredEVMAuthSig ] = useState(null);
+  const [ storedSolanaAuthSig, setStoredSolanaAuthSig ] = useState(null);
+  const [ connectedToLitNodeClient, setConnectedToLitNodeClient ] = useState(false);
+  const [ accessVerified, setAccessVerified ] = useState(false);
+  const [ humanizedAccessControlConditions, setHumanizedAccessControlConditions ] = useState(null);
+  const [ redemptionURL, setRedemptionURL ] = useState(null);
+  const [ linkCopied, setLinkCopied ] = useState(false);
 
-  const [selectedProductVariant, setSelectedProductVariant] = useState('');
-  const [variantMenuOptions, setVariantMenuOptions] = useState('');
-  const [selectedVariantMenuOption, setSelectedVariantMenuOption] = useState('');
+  const [ selectedProductVariant, setSelectedProductVariant ] = useState('');
+  const [ variantMenuOptions, setVariantMenuOptions ] = useState('');
+  const [ selectedVariantMenuOption, setSelectedVariantMenuOption ] = useState('');
 
-  const [loadingDraftOrderLink, setLoadingDraftOrderLink] = useState(false);
+  const [ loadingDraftOrderLink, setLoadingDraftOrderLink ] = useState(false);
 
   document.addEventListener('lit-ready', function (e) {
     console.log('lit-ready event listener')
@@ -51,20 +51,20 @@ const ShopifyRedeem = () => {
     if (!connectedToLitNodeClient) {
       connectToLitNode();
     }
-  }, [connectedToLitNodeClient]);
+  }, [ connectedToLitNodeClient ]);
 
   useEffect(() => {
     if (!accessVerified && (storedSolanaAuthSig || storedEVMAuthSig)) {
       callSetUpRedeemDraftOrder();
     }
-  }, [accessVerified, storedSolanaAuthSig, storedEVMAuthSig]);
+  }, [ accessVerified, storedSolanaAuthSig, storedEVMAuthSig ]);
 
   useEffect(() => {
     if (selectedVariantMenuOption.length) {
       const selectedVariant = product.variants.find(v => v.title === selectedVariantMenuOption)
       setSelectedProductVariant(selectedVariant);
     }
-  }, [selectedVariantMenuOption]);
+  }, [ selectedVariantMenuOption ]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === 'clickaway') {
@@ -129,7 +129,7 @@ const ShopifyRedeem = () => {
     try {
       await performWithAuthSig(async (authSig) => {
         setStoredEVMAuthSig(authSig);
-      }, { chain: 'ethereum' });
+      }, {chain: 'ethereum'});
     } catch (err) {
       handleUpdateError(`${err.message} - Make sure you are signed in to Metamask.`);
       setLoading(false);
@@ -140,7 +140,7 @@ const ShopifyRedeem = () => {
     try {
       await performWithAuthSig(async (authSig) => {
         setStoredSolanaAuthSig(authSig);
-      }, { chain: 'solana' })
+      }, {chain: 'solana'})
     } catch (err) {
       handleUpdateError(`${err.message} - Make sure you are signed in to Phantom.`);
       setLoading(false);
@@ -358,53 +358,53 @@ const ShopifyRedeem = () => {
 
           {/*show product info*/}
           {(storedEVMAuthSig || storedSolanaAuthSig) && accessVerified && !loading && allowUserToRedeem &&
-          !!product && !!draftOrderDetails && (
-            <div className={'product-information-container fadeIn'}>
-              <div className={'product-information-left'}>
-                {(!!product['images'] && !!product['images'].length && !!product.images['0']['src']) ? (
-                  <img className={"product-image"} src={product.images[0].src}/>
-                ) : (
-                  <div className={"no-product-image"}>No image available</div>
-                )}
-              </div>
-              <div className={'product-information-right'}>
-                <div className={'product-detail'}>
-                  <p
-                    className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? `Exclusive Access` : 'Discount'}</p>
-                  {draftOrderDetails.value !== 0 && (
-                    <p className={'product-light'}>{draftOrderDetails.value}% off full price</p>)}
+            !!product && !!draftOrderDetails && (
+              <div className={'product-information-container fadeIn'}>
+                <div className={'product-information-left'}>
+                  {(!!product['images'] && !!product['images'].length && !!product.images['0']['src']) ? (
+                    <img className={"product-image"} src={product.images[0].src}/>
+                  ) : (
+                    <div className={"no-product-image"}>No image available</div>
+                  )}
                 </div>
-                {product.title && (
-                  <span className={'product-conditions'}>
+                <div className={'product-information-right'}>
+                  <div className={'product-detail'}>
+                    <p
+                      className={'product-attribute-label'}>{draftOrderDetails.value === 0 ? `Exclusive Access` : 'Discount'}</p>
+                    {draftOrderDetails.value !== 0 && (
+                      <p className={'product-light'}>{draftOrderDetails.value}% off full price</p>)}
+                  </div>
+                  {product.title && (
+                    <span className={'product-conditions'}>
             <p className={'product-attribute-label'}>Title:</p>
             <p className={'product-condition'}>{product.title}</p>
             </span>
-                )}
-                <div className={'product-conditions'}>
-                  <p className={'product-attribute-label'}>Requirement:</p>
-                  <p className={'product-condition'}>{humanizedAccessControlConditions}</p>
+                  )}
+                  <div className={'product-conditions'}>
+                    <p className={'product-attribute-label'}>Requirement:</p>
+                    <p className={'product-condition'}>{humanizedAccessControlConditions}</p>
+                  </div>
+                  {!!variantMenuOptions && (
+                    <FormControl fullWidth>
+                      <InputLabel>Select a product</InputLabel>
+                      <Select value={selectedVariantMenuOption}
+                              className={'product-variant-select'}
+                              label={'Select a product'}
+                              onChange={(e) => {
+                                console.log('setSelectedVariantMenuOption', e.target.value);
+                                setSelectedVariantMenuOption(e.target.value)
+                              }}
+                      >
+                        {variantMenuOptions.map((v, i) => (
+                          <MenuItem key={i} value={v}>{product.title} - {v}</MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
                 </div>
-                {!!variantMenuOptions && (
-                  <FormControl fullWidth>
-                    <InputLabel>Select a product</InputLabel>
-                    <Select value={selectedVariantMenuOption}
-                            className={'product-variant-select'}
-                            label={'Select a product'}
-                            onChange={(e) => {
-                              console.log('setSelectedVariantMenuOption', e.target.value);
-                              setSelectedVariantMenuOption(e.target.value)
-                            }}
-                    >
-                      {variantMenuOptions.map((v, i) => (
-                        <MenuItem key={i} value={v}>{product.title} - {v}</MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                )}
               </div>
-            </div>
-          )}
-          <CardActions className={'redeem-card-actions'} style={{ padding: '0' }}>
+            )}
+          <CardActions className={'redeem-card-actions'} style={{padding: '0'}}>
             {(storedEVMAuthSig || storedSolanaAuthSig) && accessVerified && !loading && allowUserToRedeem && (
               <Fragment>
                 {!redemptionURL ? (
@@ -424,14 +424,16 @@ const ShopifyRedeem = () => {
                   </Tooltip>
                 ) : (
                   <span>
-                    <p className={'redemptionUrl-prompt'}><strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed.  Make sure to save the checkout link, as you might not be able to recreate it and claim the product if you don't.</p>
+                    <p className={'redemptionUrl-prompt'}>
+                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Use the button to the right to copy the link and paste it into a new window, but make sure to save the link if you don't checkout immediately.  You might not be able to access it again if you don't.
+                    </p>
                     <Button className={"redeem-button"}
                             variant={"contained"}
                             onClick={async () => {
                               navigator.clipboard.writeText(redemptionURL);
                               setLinkCopied(true);
                               // window.location.href = redemptionURL;
-                    }}>
+                            }}>
                       {!linkCopied ? 'Click to copy checkout link' : 'Copied!'}
                     </Button>
                   </span>
@@ -443,7 +445,7 @@ const ShopifyRedeem = () => {
       </section>
       {!!snackbarInfo && (
         <Snackbar
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
           open={openSnackbar}
           autoHideDuration={4000}
           onClose={handleCloseSnackbar}

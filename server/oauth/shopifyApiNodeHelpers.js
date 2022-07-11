@@ -42,12 +42,13 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   // map over new tag array and update products
   try {
     const updatedProductPromises = resolvedProducts.map(async (p, i) => {
-      return await shopifyInstance.product.update(p.id, { tags: updatedSplitTags[i].join(',') });
+      return await shopifyInstance.product.update(p.id, {tags: updatedSplitTags[i].join(',')});
     })
     const updatedProductsResolved = await Promise.all(updatedProductPromises);
   } catch (err) {
     console.error("--> Error updating product on save DO:", err);
-  };
+  }
+
   // end add exclusive or discount tag to product
 
   // map over products and add metafield with query id
@@ -57,7 +58,8 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
       summary: draftOrderObj.summary,
       title: draftOrderObj.title,
       accessControlConditions: draftOrderObj.access_control_conditions,
-      assetType: draftOrderObj.asset_type
+      assetType: draftOrderObj.asset_type,
+      offerId: queryObj.id
     }
     console.log('check metafield valie', metafieldValue)
     const updatedMetafieldPromises = resolvedProducts.map(async (p, i) => {
