@@ -424,17 +424,21 @@ const ShopifyRedeem = () => {
                   </Tooltip>
                 ) : (
                   <span>
-                    <p className={'redemptionUrl-prompt'}>
-                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Use the button to the right to copy the link and paste it into a new window, but make sure to save the link if you don't checkout immediately.  You might not be able to access it again if you don't.
+                    <p className={'redemptionUrl-prompt'} onClick={async () => {
+                      navigator.clipboard.writeText(redemptionURL);
+                      setLinkCopied(true)
+                    }}>
+                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Make sure to save the link URL if you don't plan on completing checkout right now. You might not be able to access checkout again if you don't have it.
+                      {` `}<strong><i>{!linkCopied ? 'Click here to copy checkout link.' : 'Copied!'}</i></strong>
                     </p>
                     <Button className={"redeem-button"}
                             variant={"contained"}
                             onClick={async () => {
-                              navigator.clipboard.writeText(redemptionURL);
-                              setLinkCopied(true);
-                              // window.location.href = redemptionURL;
+                              // navigator.clipboard.writeText(redemptionURL);
+                              // setLinkCopied(true);
+                              window.location.href = redemptionURL;
                             }}>
-                      {!linkCopied ? 'Click to copy checkout link' : 'Copied!'}
+                      Go to checkout
                     </Button>
                   </span>
                 )}
