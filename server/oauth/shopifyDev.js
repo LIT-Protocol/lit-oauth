@@ -16,7 +16,7 @@ const validateDevToken = async (token) => {
   const removeBearer = token.split(' ');
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
-    jsonwebtoken.verify(splitToken, process.env.LIT_AUTH_PLAYGROUND_SHOPIFY_SECRET, ['H256'], (err, decoded) => {
+    jsonwebtoken.verify(splitToken, process.env.LIT_AUTH_PLAYGROUND_SHOPIFY_SECRET, [ 'H256' ], (err, decoded) => {
       if (err) reject(false);
       else if (decoded) resolve(decoded);
     })
@@ -37,24 +37,24 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  fastify.post("/api/shopify/checkIfDevProductHasBeenUsed", async (request, reply) => {
-      try {
-        const result = await validateDevToken(
-          request.headers.authorization
-        );
-        if (!result) {
-          return "Unauthorized";
-        }
-        const gid = request.body.gid;
-
-        return await fastify.objection.models.shopifyDraftOrders
-          .query()
-          .where("asset_id_on_service", "=", gid);
-      } catch (err) {
-        return err;
-      }
-    }
-  );
+  // fastify.post("/api/shopify/checkIfDevProductHasBeenUsed", async (request, reply) => {
+  //     try {
+  //       const result = await validateDevToken(
+  //         request.headers.authorization
+  //       );
+  //       if (!result) {
+  //         return "Unauthorized";
+  //       }
+  //       const gid = request.body.gid;
+  //
+  //       return await fastify.objection.models.shopifyDraftOrders
+  //         .query()
+  //         .where("asset_id_on_service", "=", gid);
+  //     } catch (err) {
+  //       return err;
+  //     }
+  //   }
+  // );
 
   fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
     const {
@@ -188,5 +188,9 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       console.error("--> Error deleting draft order");
       return "--> Error deleting draft order";
     }
+  });
+
+  fastify.post("/api/shopify/checkUserValidity", async (request, reply) => {
+    console.log('CHECK ON USER VALIDITY YO!', request.body)
   });
 }
