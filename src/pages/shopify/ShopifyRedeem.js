@@ -423,7 +423,7 @@ const ShopifyRedeem = () => {
                     </div>
                   </Tooltip>
                 ) : (
-                  <span>
+                  <span className={'redemptionUrl-container'}>
                     <p className={'redemptionUrl-prompt'} onClick={async () => {
                       navigator.clipboard.writeText(redemptionURL);
                       setLinkCopied(true)
