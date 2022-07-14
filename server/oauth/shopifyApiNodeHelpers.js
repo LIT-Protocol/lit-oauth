@@ -59,7 +59,9 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
       title: draftOrderObj.title,
       accessControlConditions: draftOrderObj.access_control_conditions,
       assetType: draftOrderObj.asset_type,
-      offerId: queryObj.id
+      offerId: queryObj.id,
+      extraData: draftOrderObj.extraData,
+      redeemAddress: `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${queryObj.id}`
     }
     console.log('check metafield valie', metafieldValue)
     const updatedMetafieldPromises = resolvedProducts.map(async (p, i) => {

@@ -37,25 +37,6 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     reply.code(200).send(true);
   });
 
-  // fastify.post("/api/shopify/checkIfDevProductHasBeenUsed", async (request, reply) => {
-  //     try {
-  //       const result = await validateDevToken(
-  //         request.headers.authorization
-  //       );
-  //       if (!result) {
-  //         return "Unauthorized";
-  //       }
-  //       const gid = request.body.gid;
-  //
-  //       return await fastify.objection.models.shopifyDraftOrders
-  //         .query()
-  //         .where("asset_id_on_service", "=", gid);
-  //     } catch (err) {
-  //       return err;
-  //     }
-  //   }
-  // );
-
   fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
     const {
       shop_id,
