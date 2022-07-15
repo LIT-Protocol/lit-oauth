@@ -11,20 +11,17 @@ export default async function (fastify, opts) {
 
   fastify.get("/api/oauth/google/callback", async (req, res) => {
     // response.redirect(`${process.env.LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/google`);
-    console.log("start of google callback");
-    const { state, code } = req.query;
+    const {state, code} = req.query;
     if (!state) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
     const authSig = JSON.parse(state);
 
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
-
-    console.log("middle of google callback");
 
     const oauth_client = new OAuth2Client(
       process.env.REACT_APP_LIT_PROTOCOL_OAUTH_GOOGLE_CLIENT_ID,
@@ -32,8 +29,7 @@ export default async function (fastify, opts) {
       `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}/api/oauth/google/callback`
     );
 
-    const { tokens } = await oauth_client.getToken(code);
-    console.log("tokens from google", tokens);
+    const {tokens} = await oauth_client.getToken(code);
 
     oauth_client.setCredentials(tokens);
 
@@ -102,12 +98,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/checkIfUserExists", async (request, response) => {
-    const { authSig } = request.body;
-    console.log("start of checkIfUserExists");
+    const {authSig} = request.body;
 
     if (!authUser(authSig)) {
       response.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     let userExists = false;
@@ -116,8 +111,6 @@ export default async function (fastify, opts) {
       .query()
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
-
-    console.log("checkExistingRows", existingRows);
 
     if (existingRows.length > 0) {
       userExists = true;
@@ -173,11 +166,11 @@ export default async function (fastify, opts) {
   });
 
   fastify.post("/api/google/getUserProfile", async (request, response) => {
-    const { authSig } = request.body;
+    const {authSig} = request.body;
 
     if (!authUser(authSig)) {
       response.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const existingRows = await fastify.objection.models.connectedServices
@@ -185,7 +178,7 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
-    const { scope, extraData, idOnService, email, accessToken } =
+    const {scope, extraData, idOnService, email, accessToken} =
       existingRows[0];
     return {
       scope,
@@ -201,7 +194,7 @@ export default async function (fastify, opts) {
     const idOnService = req.body.idOnService;
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const connectedService = await fastify.objection.models.connectedServices
@@ -236,7 +229,7 @@ export default async function (fastify, opts) {
     } = req.body;
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const connectedService = (
@@ -277,8 +270,6 @@ export default async function (fastify, opts) {
       daoAddress = accessControlConditions[0].contractAddress;
     }
 
-    console.log("request.body", req.body);
-
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
@@ -315,7 +306,7 @@ export default async function (fastify, opts) {
       await fastify.objection.models.shares.query().where("id", "=", uuid)
     )[0];
 
-    return { share };
+    return {share};
   });
 
   fastify.post("/api/google/shareLink", async (req, res) => {
@@ -325,11 +316,11 @@ export default async function (fastify, opts) {
     const uuid = req.body.uuid;
     const jwt = req.body.jwt;
     // TODO: expand security
-    const { verified, header, payload } = LitJsSdk.verifyJwt({ jwt });
+    const {verified, header, payload} = LitJsSdk.verifyJwt({jwt});
     if (
       !verified ||
       payload.baseUrl !==
-        `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
       payload.path !== "/google/l/" + uuid ||
       payload.orgId !== "" ||
       payload.role !== role ||
@@ -381,22 +372,22 @@ export default async function (fastify, opts) {
     }
 
     // Send drive ID back and redirect
-    return { fileId: share.assetIdOnService };
+    return {fileId: share.assetIdOnService};
   });
 
   fastify.post("/api/google/signOutUser", async (request, response) => {
-    const { authSig } = request.body;
+    const {authSig} = request.body;
 
     if (!authUser(authSig)) {
       response.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const results = await fastify.objection.models.connectedServices
       .query()
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address)
-      .patch({ access_token: null });
+      .patch({access_token: null});
 
     return true;
   });
@@ -406,7 +397,7 @@ export default async function (fastify, opts) {
 
     if (!authUser(authSig)) {
       res.code(400);
-      return { error: "Invalid signature" };
+      return {error: "Invalid signature"};
     }
 
     const daoAddress = req.body.daoAddress;

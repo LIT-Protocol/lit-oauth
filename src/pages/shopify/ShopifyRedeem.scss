@@ -164,6 +164,30 @@
     }
   }
 
+  .redemptionUrl-container {
+    margin-top: 1rem;
+    display: flex;
+    //justify-content: flex-end;
+    flex-direction: column;
+
+
+    .redemptionUrl-prompt {
+      //margin: 0 1rem 0 0;
+      //width: 50%;
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    .MuiButton-root {
+      //border-radius: 0;
+      min-width: auto;
+      white-space: nowrap;
+      padding: 1rem 2rem;
+      border-radius: 0;
+      //margin: 0 1rem 1rem 0;
+    }
+  }
+
   .redeem-card-error {
     margin: 35% auto 0;
     width: 90%;
