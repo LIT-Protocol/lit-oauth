@@ -28,7 +28,7 @@
     "http2": "^3.3.7",
     "lit-access-control-conditions-modal": "^1.1.28",
     "lit-fastify-bugsnag": "^0.3.1",
-    "lit-js-sdk": "^1.1.177",
+    "lit-js-sdk": "^1.1.202",
     "lit-share-modal-v3-react-17": "^0.0.82",
     "luxon": "^2.0.2",
     "mui-datatables": "^3.7.8",
