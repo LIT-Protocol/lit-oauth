@@ -315,6 +315,8 @@ export default function GoogleGranting(props) {
       idOnService: currentUser.idOnService,
     };
 
+    console.log('check request data in UI', requestData)
+
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
       const {data} = response;

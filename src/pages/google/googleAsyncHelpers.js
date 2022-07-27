@@ -25,6 +25,7 @@ export const share = async (requestData, requestOptions) => {
     idOnService,
     extraData
   } = requestData;
+  console.log('check google share request data', requestData)
   return await axios.post(
     API_HOST + "/api/google/share",
     {

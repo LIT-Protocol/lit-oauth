@@ -229,6 +229,7 @@ export default async function (fastify, opts) {
       accessControlConditions,
       source,
     } = req.body;
+    console.log('api.google.share.req.body', req.body)
     if (!authUser(authSig)) {
       res.code(400);
       return {error: "Invalid signature"};
@@ -288,6 +289,8 @@ export default async function (fastify, opts) {
         source,
         dao_address: daoAddress,
       });
+
+    console.log('----> INSERT TO LINKS QUERY', insertToLinksQuery)
 
     let uuid = await insertToLinksQuery.id;
 
