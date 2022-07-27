@@ -178,8 +178,6 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
-    console.log('existingRows', existingRows)
-
     const {scope, extraData, idOnService, email, accessToken} =
       existingRows[0];
     return {
@@ -208,6 +206,8 @@ export default async function (fastify, opts) {
       .query()
       // .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
+
+    console.log('----> RECOVERED SHARES', recoveredShares)
 
     return recoveredShares;
   });
