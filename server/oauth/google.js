@@ -273,6 +273,8 @@ export default async function (fastify, opts) {
       daoAddress = accessControlConditions[0].contractAddress;
     }
 
+    console.log('check req.body.extraData', req.body.extraData)
+
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
       .insert({
@@ -446,4 +448,15 @@ export default async function (fastify, opts) {
   //   console.log('test endpoint successfull')
   //   return 'test endpoint successfull'
   // })
+
+  fastify.post('/api/google/checkShares', async (req, res) => {
+    if (req.body.pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const insertToLinksQuery = await fastify.objection.models.shares
+      .query()
+
+    return insertToLinksQuery;
+  })
 }
