@@ -1,11 +1,13 @@
 export const up = (knex) => {
   return knex.schema.createTable("shares", (table) => {
-    table.text("extra_data");
+    table.boolean("permanent");
+    table.text("auth_sig_types");
   });
 };
 
 export const down = (knex) => {
   return knex.schema.table('shares', table => {
-    table.dropColumn('redeemed_by');
+    table.dropColumn('permanent');
+    table.dropColumn('auth_sig_types');
   })
 };

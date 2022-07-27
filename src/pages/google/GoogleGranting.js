@@ -311,11 +311,11 @@ export default function GoogleGranting(props) {
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
+      permanent,
+      authSigTypes: JSON.stringify(authSigTypes),
       extraData: JSON.stringify({permanent, authSigTypes}),
       idOnService: currentUser.idOnService,
     };
-
-    console.log('check request data in UI', requestData)
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);

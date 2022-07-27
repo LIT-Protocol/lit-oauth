@@ -23,7 +23,9 @@ export const share = async (requestData, requestOptions) => {
     accessControlConditions,
     authSig,
     idOnService,
-    extraData
+    extraData,
+    permanent,
+    authSigTypes
   } = requestData;
   console.log('check google share request data', requestData)
   return await axios.post(
@@ -36,7 +38,9 @@ export const share = async (requestData, requestOptions) => {
       accessControlConditions,
       authSig,
       idOnService,
-      extraData
+      extraData,
+      permanent,
+      authSigTypes
     },
     requestOptions
   );
