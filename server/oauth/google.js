@@ -178,6 +178,8 @@ export default async function (fastify, opts) {
       .where("service_name", "=", "google")
       .where("user_id", "=", authSig.address);
 
+    console.log('existingRows', existingRows)
+
     const {scope, extraData, idOnService, email, accessToken} =
       existingRows[0];
     return {

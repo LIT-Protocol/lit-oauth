@@ -15,7 +15,7 @@ export const up = (knex) => {
     table.text("user_id");
     table.text('draft_order_details');
     table.text("extra_data");
-    // table.text("redeemed_by");
+    table.text("redeemed_by");
     table.boolean('active');
     table.timestamps();
   });
