@@ -1,0 +1,44 @@
+.redeem-success-container {
+    animation: fade-in 1s;
+    max-width: 1600px;
+    min-width: 750px;
+}
+
+.offer-info {
+    /*text-align: left;*/
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /*margin: 1em;*/
+    padding: 1em 1em;
+}
+
+.offer-info p {
+    margin: 0;
+    padding: 0.25em 0;
+}
+
+.offer-info-title {
+    margin: 0;
+    padding: 0 0 0.25em;
+}
+
+.product-redeem-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.product-redeem-cards ShopifyProductSelect {
+    animation: fade-in 1s;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}

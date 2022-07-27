@@ -17,9 +17,9 @@ export const getPromotion = async (uuid) => {
     });
 }
 
-export const getAccessControl = async (uuid) => {
+export const getOfferData = async (uuid) => {
   return await axios
-    .post(API_HOST + "/api/shopify/getAccessControl", {
+    .post(API_HOST + "/api/shopify/getOfferData", {
       uuid
     });
 }
@@ -49,10 +49,10 @@ export const getProductInformation = async (shopId, productId) => {
     });
 }
 
-export const getWalletNFTs = async (authSigs, unifiedAccessControlConditions) => {
-  return await axios
-    .post(API_HOST + "/api/shopify/getWalletNFTs", {
-      authSigs,
-      unifiedAccessControlConditions
-    });
-}
+// export const getWalletNFTs = async (authSigs, unifiedAccessControlConditions) => {
+//   return await axios
+//     .post(API_HOST + "/api/shopify/getWalletNFTs", {
+//       authSigs,
+//       unifiedAccessControlConditions
+//     });
+// }

@@ -18,8 +18,15 @@ export default class ShopifyDraftOrders extends BaseModel {
       'user_id',
       'draft_order_details',
       'extra_data',
+      'active',
+      'description',
+      'discount',
+      'used_chains',
+      'redeemed_nfts',
       'redeemed_by',
-      'active'
+      'asset_name_on_service',
+      'offer_type',
+      'condition_types'
     ];
   }
 }

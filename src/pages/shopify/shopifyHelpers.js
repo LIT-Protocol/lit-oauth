@@ -16,6 +16,9 @@ export const updateV1ConditionTypes = (acc) => {
       if (!accHolder['conditionType']) {
         accHolder['conditionType'] = 'evmBasic';
       }
+      if (!accHolder['conditionType']) {
+        accHolder['conditionTypes'] = accHolder['extraData']
+      }
       unifiedAccessControlConditions.push(accHolder);
     }
   }

@@ -7,7 +7,6 @@ export const makeShopifyInstance = (shopName, accessToken) => {
 }
 
 export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj, shopObj, queryObj) => {
-  console.log('!@!@!@!@! ACC:', draftOrderObj)
   let ids = JSON.parse(draftOrderObj.asset_id_on_service).map(id => {
     return id.split("/").pop();
   })
@@ -29,6 +28,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   }
 
   // add exclusive or discount tag to list of current tags
+  // TODO: might not need tags anymore
   const updatedSplitTags = splitTags.map(s => {
     let updatedTag = s;
     if (draftOrderObj.asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
@@ -48,22 +48,22 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   } catch (err) {
     console.error("--> Error updating product on save DO:", err);
   }
-
   // end add exclusive or discount tag to product
 
   // map over products and add metafield with query id
   try {
     const metafieldValue = {
-      description: draftOrderObj.humanized_access_control_conditions,
+      description: draftOrderObj?.description ? draftOrderObj.description : draftOrderObj.humanized_access_control_conditions,
       summary: draftOrderObj.summary,
       title: draftOrderObj.title,
       accessControlConditions: draftOrderObj.access_control_conditions,
-      assetType: draftOrderObj.asset_type,
+      offerType: draftOrderObj.offer_type,
       offerId: queryObj.id,
-      extraData: draftOrderObj.extraData,
+      extraData: draftOrderObj.extra_data,
+      usedChains: draftOrderObj.used_chains,
+      conditionTypes: draftOrderObj.conditionTypes,
       redeemAddress: `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${queryObj.id}`
     }
-    console.log('check metafield valie', metafieldValue)
     const updatedMetafieldPromises = resolvedProducts.map(async (p, i) => {
       const metafieldObj = {
         owner_id: p.id,
@@ -76,7 +76,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
       return await shopifyInstance.metafield.create(metafieldObj);
     });
     const updatedMetafieldResolved = await Promise.all(updatedMetafieldPromises);
-    console.log('Check new metafields', updatedMetafieldResolved)
   } catch (err) {
     console.log('Error updating product metafields:', err)
   }
@@ -88,6 +87,8 @@ const removeMetafieldFromProducts = async (shopifyInstance, productMetafields, u
   const metafieldsToBeRemoved = productMetafields.filter(m => {
     return m.key === uuid;
   })
+
+  console.log('REMOVE METAFIELDS FROM PRODUCTS')
 
   const metafieldRemovalPromises = metafieldsToBeRemoved.map(async (m) => {
     return await shopifyInstance.metafield.delete(m.id);
@@ -104,7 +105,6 @@ const removeMetafieldFromProducts = async (shopifyInstance, productMetafields, u
 }
 
 export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOrderObj, shopObj, uuid) => {
-  console.log('check uuid', draftOrderObj)
   let ids = JSON.parse(draftOrderObj.assetIdOnService).map(id => {
     return id.split("/").pop();
   })
@@ -121,7 +121,6 @@ export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOr
     splitTags = resolvedProducts.map(p => {
       return p.tags.split(',');
     });
-    console.log('splitTags', splitTags);
   } catch (err) {
     console.error("--> Error getting product on save DO:", err);
   }

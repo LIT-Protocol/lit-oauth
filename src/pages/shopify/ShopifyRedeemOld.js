@@ -9,14 +9,14 @@ import {
   MenuItem,
   Tooltip, FormControl, InputLabel, LinearProgress
 } from "@mui/material";
-import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl, getWalletNFTs } from "./shopifyAsyncHelpers";
-import "./ShopifyRedeem.scss";
+import { setUpRedeemDraftOrder, redeemDraftOrder, getOfferData } from "./shopifyAsyncHelpers";
+import "./ShopifyRedeemOld.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { updateV1ConditionTypes } from "./shopifyHelpers";
 
-const ShopifyRedeem = () => {
+const ShopifyRedeemOld = () => {
   const {performWithAuthSig} = useAppContext();
   const [ loading, setLoading ] = useState(true);
   const [ product, setProduct ] = useState(null);
@@ -98,10 +98,10 @@ const ShopifyRedeem = () => {
     const id = queryParams.get('id');
     setDraftOrderId(id);
     try {
-      const resp = await getAccessControl(id);
+      const resp = await getOfferData(id);
       setAccessControlData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      getAuthSigs(resp.data.extraData);
+      getAuthSigs(resp.data.conditionTypes);
     } catch (err) {
       console.log('Error getting access control', err);
       handleUpdateError(err);
@@ -149,7 +149,7 @@ const ShopifyRedeem = () => {
 
   const checkForPromotionAccessControl = async () => {
     try {
-      return provisionAccess(accessControlData.parsedAcc).then(jwt => {
+      return provisionAccess(accessControlData.parsedUacc).then(jwt => {
         return jwt;
       });
     } catch (err) {
@@ -163,25 +163,24 @@ const ShopifyRedeem = () => {
   }
 
   const provisionAccess = async (unifiedAccessControlConditions) => {
-    let chainArray;
+    let conditionTypeArray;
     let authSigs = {};
-    // for obsolete access control conditions where extraData was null
-    if (!accessControlData['extraData']) {
+    // for obsolete access control conditions where usedChains was null
+    if (!accessControlData['conditionTypes']) {
       authSigs['ethereum'] = storedEVMAuthSig;
     } else {
-      chainArray = accessControlData.extraData.split(',');
-      chainArray.forEach(c => {
+      conditionTypeArray = accessControlData.conditionTypes.split(',');
+      conditionTypeArray.forEach(c => {
         // if (c === 'evmBasic' || c === 'ethereum') {
         if (c !== 'solRpc') {
-          authSigs['ethereum'] = storedEVMAuthSig;
+          authSigs['evmBasic'] = storedEVMAuthSig;
         } else if (c === 'solRpc') {
-          authSigs['solana'] = storedSolanaAuthSig;
+          authSigs['solRpc'] = storedSolanaAuthSig;
         }
       });
     }
-    console.log('unifiedAccessControlConditions', unifiedAccessControlConditions)
 
-    const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
+    // const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
 
     const resourceId = {
       baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
@@ -191,7 +190,13 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
 
+
     const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
+    console.log('CHECK RESOURCE ID', {
+      unifiedAccessControlConditions: afterUpdateV1Conditions,
+      authSig: authSigs,
+      resourceId: resourceId
+    })
 
     try {
       const jwt = await window.litNodeClient.getSignedToken({
@@ -458,4 +463,4 @@ const ShopifyRedeem = () => {
   )
 }
 
-export default ShopifyRedeem;
+export default ShopifyRedeemOld;

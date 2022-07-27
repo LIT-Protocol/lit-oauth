@@ -1,0 +1,20 @@
+.lit-shopify-container {
+  margin: 0;
+  padding: 0;
+  background-color: #efecec;
+  height: 100vh;
+  width: 100vw;
+  //background-color: blue;
+}
+
+.lit-center-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.lit-loading-container {
+  width: 50%;
+  height: 50%;
+}

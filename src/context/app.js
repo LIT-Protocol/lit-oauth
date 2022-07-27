@@ -6,22 +6,22 @@ export const AppContext = createContext({
 });
 
 export const AppContextProvider = (props) => {
-  const { children } = props;
+  const {children} = props;
 
-  const [authSig, setAuthSig] = useState(null);
-  const [tokenList, setTokenList] = useState(null);
-  const [globalError, setGlobalError] = useState(null);
+  const [ authSig, setAuthSig ] = useState(null);
+  const [ tokenList, setTokenList ] = useState(null);
+  const [ globalError, setGlobalError ] = useState(null);
 
   const performWithAuthSig = async (
     action,
-    { chain } = { chain: "ethereum" }
+    {chain} = {chain: "ethereum"}
   ) => {
     //TODO add chain selection???
 
     let currentAuthSig = authSig;
     if (!currentAuthSig) {
       try {
-        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+        currentAuthSig = await LitJsSdk.checkAndSignAuthMessage({chain, switchChain: false});
         setAuthSig(currentAuthSig);
       } catch (e) {
         if (e.code === 4001) {

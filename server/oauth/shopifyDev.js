@@ -1,4 +1,4 @@
-import { shortenShopName } from "./shopifyHelpers.js";
+import { shortenShopName } from "./shopifyHelpers/shopifyReusableFunctions.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
@@ -7,6 +7,12 @@ import {
   removeTagAndMetafieldFromProducts,
   updateProductWithTagAndUuid
 } from "./shopifyApiNodeHelpers.js";
+import LitJsSdk from "lit-js-sdk";
+import {
+  checkAndUpdateUserRedemption,
+  checkUserValidity,
+  updateV1WalletRedeemedBy
+} from "./shopifyHelpers/shopifyUserRedemptions.js";
 
 dotenv.config({
   path: "../../env",
@@ -50,10 +56,18 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       user_id,
       draft_order_details,
       extra_data,
+      used_chains,
       summary,
+      discount,
+      description,
+      asset_name_on_service,
+      offer_type,
+      condition_types
+
     } = request.body;
 
     const redeemed_by = '{}';
+    const redeemed_nfts = '{}';
 
     try {
       const result = await validateDevToken(request.headers.authorization);
@@ -82,8 +96,15 @@ export default async function shopifyDevEndpoints(fastify, opts) {
           user_id,
           draft_order_details,
           extra_data,
+          used_chains,
+          description,
+          discount,
           summary,
-          redeemed_by
+          redeemed_by,
+          redeemed_nfts,
+          asset_name_on_service,
+          offer_type,
+          condition_types
         });
 
       console.log('@@@ post insert query res', query)
@@ -134,29 +155,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
     const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
 
-    const deleteProductDataResolve = await removeTagAndMetafieldFromProducts(shopify, draftToDelete[0], shop[0], request.body.id)
-
-    // let id = draftToDelete[0].assetIdOnService;
-    // id = id.split("/").pop();
-    //
-    // let product;
-    // let splitTags;
-    // try {
-    //   product = await shopify.product.get(id);
-    //   splitTags = product.tags.split(',');
-    // } catch (err) {
-    //   console.error("--> Error getting product on delete DO:", err);
-    // }
-    //
-    // if (!!product) {
-    //   try {
-    //     const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-    //     product = await shopify.product.update(id, { tags: filteredTags.join(',') });
-    //   } catch (err) {
-    //     console.error("--> Error updating product on delete DO:", err);
-    //   }
-    // }
-    // end delete exclusive or discount tag from deleted draft order
+    const deleteProductDataResolve = await removeTagAndMetafieldFromProducts(shopify, draftToDelete[0], shop[0], request.body.id);
 
     try {
       const draftOrders = await fastify.objection.models.shopifyDraftOrders
@@ -171,7 +170,184 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/checkUserValidity", async (request, reply) => {
+  fastify.post("/api/shopify/checkForUserValidity", async (request, reply) => {
     console.log('CHECK ON USER VALIDITY YO!', request.body)
+    const {uuid, jwt, authSig} = request.body;
+    let verified;
+    let payload;
+    try {
+      const jwtData = LitJsSdk.verifyJwt({jwt});
+      verified = jwtData.verified;
+      payload = jwtData.payload;
+    } catch (err) {
+
+      return {
+        err,
+        allowUserToRedeem: false,
+      }
+    }
+
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + uuid
+    ) {
+      return "Unauthorized.";
+    }
+
+    let offerData = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.uuid);
+
+    const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
+
+    if (!draftOrderDetails.hasRedeemLimit) {
+      return true;
+    }
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_id", "=", offerData[0].shopId);
+
+    const updatedRedeemedBy = await updateV1WalletRedeemedBy(fastify, offerData)
+
+    console.log('updatedRedeemedBy', updatedRedeemedBy)
+
+    const redemptionStatus = await checkUserValidity(offerData[0], authSig);
+
+    console.log('after allow redeem', redemptionStatus)
+    return redemptionStatus;
   });
+
+  fastify.post("/api/shopify/getAllOfferProducts", async (request, reply) => {
+    const {uuid, jwt, authSig} = request.body;
+    let verified;
+    let payload;
+    try {
+      const jwtData = LitJsSdk.verifyJwt({jwt});
+      verified = jwtData.verified;
+      payload = jwtData.payload;
+    } catch (err) {
+
+      return {
+        err,
+        allowUserToRedeem: false,
+      }
+    }
+
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + uuid
+    ) {
+      return "Unauthorized.";
+    }
+
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.uuid);
+
+    const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_id", "=", draftOrder[0].shopId);
+
+    const shopify = new Shopify({
+      shopName: shop[0].shopName,
+      accessToken: shop[0].accessToken,
+    });
+
+    let errorGettingPromises = null;
+
+    const productsArrayPromises = draftOrderDetails.id.map(async productId => {
+      const splitProductId = productId.split("/").pop();
+
+      let productResult;
+      try {
+        productResult = await shopify.product.get(splitProductId);
+      } catch (err) {
+        console.log('Error getting product with id', productId, ' - ', err)
+        errorGettingPromises = {
+          message: 'Error getting products.',
+          error: err
+        }
+      }
+      return productResult;
+    })
+
+    const productArrayResolved = await Promise.all(productsArrayPromises);
+
+    if (!errorGettingPromises) {
+      return productArrayResolved;
+    } else {
+      return errorGettingPromises;
+    }
+  });
+
+  fastify.post("/api/shopify/getOffer", async (request, reply) => {
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.uuid);
+    console.log('GET OFFER DATA', draftOrder[0])
+
+    if (draftOrder[0]) {
+      // const humanizedAccessControlConditions =
+      //   draftOrder[0].humanizedAccessControlConditions;
+      // const parsedUacc = JSON.parse(draftOrder[0].accessControlConditions);
+      // return {parsedUacc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData};
+      return draftOrder[0];
+    } else {
+      return null;
+    }
+  });
+
+  fastify.post("/api/shopify/redeemOfferAndUpdateUserStats", async (request, reply) => {
+    const {uuid, jwt, authSig, variantsForCheckout} = request.body;
+    let verified;
+    let payload;
+    try {
+      const jwtData = LitJsSdk.verifyJwt({jwt});
+      verified = jwtData.verified;
+      payload = jwtData.payload;
+    } catch (err) {
+
+      return {
+        err,
+        allowUserToRedeem: false,
+      }
+    }
+
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + uuid
+    ) {
+      return "Unauthorized.";
+    }
+
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.uuid);
+
+    const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_id", "=", draftOrder[0].shopId);
+
+    // const shopify = new Shopify({
+    //   shopName: shop[0].shopName,
+    //   accessToken: shop[0].accessToken,
+    // });
+
+    const lineItemsArray = []
+    console.log('variantsForCheckout', variantsForCheckout)
+    // keep for a rainy day
+    // let allowUserToRedeem = checkAndUpdateUserRedemption(offerData[0], authSig);
+  })
+
 }

@@ -1,4 +1,4 @@
-import { validateMerchantToken } from "./shopifyHelpers.js";
+import { validateMerchantToken } from "./shopifyHelpers/shopifyReusableFunctions.js";
 
 // NEW_SECTION: required GDPR shopify endpoints
 export default async function shopifyGDPREndpoints(fastify, opts) {
@@ -9,7 +9,7 @@ export default async function shopifyGDPREndpoints(fastify, opts) {
       return;
     }
     const result = await validateMerchantToken(request.headers.authorization);
-    const { shop_domain } = request.body;
+    const {shop_domain} = request.body;
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;
@@ -24,7 +24,7 @@ export default async function shopifyGDPREndpoints(fastify, opts) {
       return;
     }
     const result = await validateMerchantToken(request.headers.authorization);
-    const { shop_domain } = request.body;
+    const {shop_domain} = request.body;
     if (!result) {
       reply.code(401).send("Unauthorized");
       return;

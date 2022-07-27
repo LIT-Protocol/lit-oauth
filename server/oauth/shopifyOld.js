@@ -2,8 +2,7 @@ import {
   shortenShopName,
   validateMerchantToken,
   parseAndUpdateUsedByList,
-  checkWalletEthNFTsOnAlchemy, checkWalletSolanaNFTs
-} from "./shopifyHelpers.js";
+} from "./shopifyHelpers/shopifyReusableFunctions.js";
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
@@ -17,7 +16,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
-    const { shop, accessToken } = JSON.parse(request.body);
+    const {shop, accessToken} = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
@@ -34,7 +33,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           accessToken: accessToken,
         });
 
-        shopDetails = await shopify.shop.get([shop, accessToken]);
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
 
       } catch (err) {
         console.log('----> Error getting shopify details', err)
@@ -63,7 +62,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           accessToken: accessToken,
         });
 
-        shopDetails = await shopify.shop.get([shop, accessToken]);
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
 
         // patch shop to update email in case it's changed
         await fastify.objection.models.shopifyStores
@@ -72,22 +71,22 @@ export default async function shopifyEndpoints(fastify, opts) {
           .patch({
             email: shopDetails.email,
             access_token: accessToken,
-           });
+          });
       } catch (err) {
         // if token is invalid, update it with new access token
         console.log('saveAccessToken: token is invalid, update', shop)
         console.log('----> Error with Shopify: token is probably invalid', err);
         await fastify.objection.models.shopifyStores
-            .query()
-            .where("shop_name", "=", shortenedShopName)
-            .patch({
-              access_token: accessToken,
-              email: shopDetails.email,
-            });
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            access_token: accessToken,
+            email: shopDetails.email,
+          });
       }
     }
 
-    const shopInfo = { shopId: shopDetails.id, name: shopDetails.myshopify_domain };
+    const shopInfo = {shopId: shopDetails.id, name: shopDetails.myshopify_domain};
     reply.code(200).send(shopInfo);
   });
 
@@ -174,7 +173,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       }
 
       try {
-        product = await shopify.product.update(id, { tags: splitTags.join(',') });
+        product = await shopify.product.update(id, {tags: splitTags.join(',')});
       } catch (err) {
         console.error(`----> Error updating product on save DO for ${shop_name}:`, err);
         console.log('----> Body for failed save draft order:', request.body);
@@ -261,7 +260,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-      product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+      product = await shopify.product.update(id, {tags: filteredTags.join(',')});
     } catch (err) {
       console.error(`----> Error updating product on save DO for ${shopName}:`, err);
       return err;
@@ -281,18 +280,18 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   // NEW_SECTION: Start of customer calls
 
-  fastify.post("/api/shopify/getWalletNFTs", async ( request, reply) => {
+  fastify.post("/api/shopify/getWalletNFTs", async (request, reply) => {
     console.log('getWalletNFTs address', request.body.authSigs.ethereum.address)
     console.log('getWalletNFTs unifiedAccessControlConditions', request.body)
     let NFTResponse = {};
-    if (request.body?.authSigs?.ethereum) {
-      let checkWalletEthNFTsResp;
-      checkWalletEthNFTsResp = await checkWalletEthNFTsOnAlchemy(request.body.authSigs.ethereum.address);
-      NFTResponse['evmNfts'] = checkWalletEthNFTsResp.data;
-      console.log('getWalletNFTs response', checkWalletEthNFTsResp.data)
-    }
+    // if (request.body?.authSigs?.ethereum) {
+    //   let checkWalletEthNFTsResp;
+    //   checkWalletEthNFTsResp = await checkWalletEthNFTsOnAlchemy(request.body.authSigs.ethereum.address);
+    //   NFTResponse['evmNfts'] = checkWalletEthNFTsResp.data;
+    //   console.log('getWalletNFTs response', checkWalletEthNFTsResp.data)
+    // }
     console.log('NFTResponse', NFTResponse)
-    return NFTResponse;
+    // return NFTResponse;
   });
 
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
@@ -333,27 +332,29 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAccessControl", async (request, reply) => {
+  fastify.post("/api/shopify/getOfferData", async (request, reply) => {
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
+    console.log('GET OFFER DATA', draftOrder[0])
 
     if (draftOrder[0]) {
-      const humanizedAccessControlConditions =
-        draftOrder[0].humanizedAccessControlConditions;
-      const parsedAcc = JSON.parse(draftOrder[0].accessControlConditions);
-      return { parsedAcc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData };
+      // const humanizedAccessControlConditions =
+      //   draftOrder[0].humanizedAccessControlConditions;
+      // const parsedUacc = JSON.parse(draftOrder[0].accessControlConditions);
+      // return {parsedUacc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData};
+      return draftOrder[0];
     } else {
       return null;
     }
   });
 
   fastify.post("/api/shopify/setUpDraftOrder", async (request, reply) => {
-    const { uuid, jwt } = request.body;
+    const {uuid, jwt} = request.body;
     let verified;
     let payload;
     try {
-      const jwtData = LitJsSdk.verifyJwt({ jwt });
+      const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
       payload = jwtData.payload;
     } catch (err) {
@@ -418,7 +419,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       // TODO: comment in when redeem limit is ready
-      return { draftOrderDetails, product, allowUserToRedeem };
+      return {draftOrderDetails, product, allowUserToRedeem};
       // return { draftOrderDetails, product };
     } catch (err) {
       console.error("----> Error creating draft order", err);
@@ -427,8 +428,8 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
-    const { uuid, selectedProductVariant, jwt, authSigs } = request.body;
-    const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
+    const {uuid, selectedProductVariant, jwt, authSigs} = request.body;
+    const {verified, payload} = LitJsSdk.verifyJwt({jwt});
     if (
       !verified ||
       payload.baseUrl !==
@@ -503,7 +504,7 @@ export default async function shopifyEndpoints(fastify, opts) {
             'redeemed_by': updatedUsedByList
           });
 
-        return { redeemUrl: draftOrderRes.invoice_url };
+        return {redeemUrl: draftOrderRes.invoice_url};
       }
     } catch (err) {
       console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
@@ -548,7 +549,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
 
     try {
-      return { product };
+      return {product};
     } catch (err) {
       console.error(`----> Error returning product info for ${shop[0].shopName}:`, err);
       return err;
@@ -572,7 +573,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const { name, pass } = request.body;
+    const {name, pass} = request.body;
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
