@@ -83,8 +83,6 @@ function GoogleLinkShare() {
       linkData.accessControlConditions
     );
 
-    const extraData = JSON.parse(linkData.extraData);
-
     const authSigs = await getAuthSigs(JSON.parse(linkData.authSigTypes));
 
     const chain = accessControlConditions[0].chain;
