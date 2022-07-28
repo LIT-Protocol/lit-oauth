@@ -273,7 +273,7 @@ export default async function (fastify, opts) {
       daoAddress = accessControlConditions[0].contractAddress;
     }
 
-    console.log('check req.body.extraData', req.body.extraData)
+    console.log('check req.body', req.body)
 
     const insertToLinksQuery = await fastify.objection.models.shares
       .query()
@@ -287,7 +287,8 @@ export default async function (fastify, opts) {
         user_id: authSig.address,
         name: fileInfo.data.name,
         asset_type: fileInfo.data.mimeType,
-        extra_data: req.body.extraData,
+        permanent: req.body.permanent,
+        auth_sig_types: req.body.authSigTypes,
         source,
         dao_address: daoAddress,
       });

@@ -11,14 +11,14 @@ const BASE_URL = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 const FRONT_END_URI = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST;
 
 function GoogleLinkShare() {
-  const [conditionsFetched, setConditionsFetched] = useState(false);
-  const [error, setError] = useState("");
-  const [litNodeClient, setLitNodeClient] = useState({});
-  const [linkData, setLinkData] = useState(null);
-  const [email, setEmail] = useState("");
-  const [uuid, setUuid] = useState("");
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarInfo, setSnackbarInfo] = useState({});
+  const [ conditionsFetched, setConditionsFetched ] = useState(false);
+  const [ error, setError ] = useState("");
+  const [ litNodeClient, setLitNodeClient ] = useState({});
+  const [ linkData, setLinkData ] = useState(null);
+  const [ email, setEmail ] = useState("");
+  const [ uuid, setUuid ] = useState("");
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ snackbarInfo, setSnackbarInfo ] = useState({});
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -39,10 +39,10 @@ function GoogleLinkShare() {
     if (conditionsFetched === false) {
       const uuid = /[^/]*$/.exec(window.location.pathname)[0];
       setUuid(uuid);
-      const body = JSON.stringify({ uuid: uuid });
-      const headers = { "Content-Type": "application/json" };
+      const body = JSON.stringify({uuid: uuid});
+      const headers = {"Content-Type": "application/json"};
       axios
-        .post(`${BASE_URL}/api/google/conditions`, body, { headers })
+        .post(`${BASE_URL}/api/google/conditions`, body, {headers})
         .then(async (res) => {
 
           let litNodeClient = new LitJsSdk.LitNodeClient();
@@ -85,7 +85,7 @@ function GoogleLinkShare() {
 
     const extraData = JSON.parse(linkData.extraData);
 
-    const authSigs = await getAuthSigs(extraData.authSigTypes);
+    const authSigs = await getAuthSigs(JSON.parse(linkData.authSigTypes));
 
     const chain = accessControlConditions[0].chain;
     const resourceId = {
@@ -94,10 +94,10 @@ function GoogleLinkShare() {
       orgId: "",
       role: linkData["role"].toString(),
       extraData: "",
-      permanent: extraData.permanent
+      permanent: linkData.permanent
     };
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
+    const authSig = await LitJsSdk.checkAndSignAuthMessage({chain});
 
     const jwt = await litNodeClient.getSignedToken({
       unifiedAccessControlConditions: accessControlConditions,
@@ -160,10 +160,10 @@ function GoogleLinkShare() {
   const handleSubmit = async () => {
     provisionAccess().then(async (jwt) => {
       const role = linkData["role"];
-      const body = { email, role, uuid, jwt };
-      const headers = { "Content-Type": "application/json" };
+      const body = {email, role, uuid, jwt};
+      const headers = {"Content-Type": "application/json"};
       try {
-        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, { headers });
+        const shareLinkResponse = await axios.post(`${BASE_URL}/api/google/shareLink`, body, {headers});
         console.log(
           "LINK",
           `https://docs.google.com/${getFileTypeUrl(
@@ -220,7 +220,7 @@ function GoogleLinkShare() {
           <Card className={'access-service-card'}>
             <CardContent className={'access-service-card-header'}>
             <span className={'access-service-card-header-left'}>
-              <div style={{ backgroundImage: `url('/appslogo.svg')` }} className={'access-service-card-logo'}/>
+              <div style={{backgroundImage: `url('/appslogo.svg')`}} className={'access-service-card-logo'}/>
               <div className={'access-service-card-title'}>
                 <h2>Lit Apps</h2>
                 <p>The power of blockchain-defined access combine with your current tool suite.</p>
@@ -242,13 +242,13 @@ function GoogleLinkShare() {
                 <p>Enter your email to redeem access.</p>
                 <TextField
                   helperText={!validateEmail(email) ? 'Please enter valid email.' : ''}
-                  style={{ width: '75%' }}
+                  style={{width: '75%'}}
                   autoFocus
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </section>
             </CardContent>
-            <CardActions className={'access-service-card-actions'} style={{ padding: '0' }}>
+            <CardActions className={'access-service-card-actions'} style={{padding: '0'}}>
               <Tooltip title={getSubmitTooltip()} placement="top">
                 <span className={getButtonClasses()} onClick={async () => {
                   if (!email.length) return;
@@ -263,7 +263,7 @@ function GoogleLinkShare() {
             </CardActions>
           </Card>
           <Snackbar
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
             open={openSnackbar}
             autoHideDuration={4000}
             onClose={handleCloseSnackbar}

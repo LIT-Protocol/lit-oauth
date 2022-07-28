@@ -1,5 +1,5 @@
 export const up = (knex) => {
-  return knex.schema.createTable("shares", (table) => {
+  return knex.schema.table("shares", (table) => {
     table.boolean("permanent");
     table.text("auth_sig_types");
   });
