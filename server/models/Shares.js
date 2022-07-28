@@ -14,7 +14,11 @@ export default class Shares extends BaseModel {
       'name',
       'user_id',
       'asset_type',
-      'extra_data'
+      'extra_data',
+      'dao_address',
+      'source',
+      'auth_sig_types',
+      'permanent',
     ];
   }
 }
