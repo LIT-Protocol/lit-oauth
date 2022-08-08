@@ -178,20 +178,20 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     let shops = [];
     if (request.body['shopId']) {
-      shops = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId);
+      shops = await fastify.objection.models.shopifyStores.query().where('shop_id', '=', request.body.shopId);
     } else {
-      shops = await fastify.objection.models.shopifyDraftOrders.query();
+      shops = await fastify.objection.models.shopifyStores.query();
     }
 
     console.log('check shops', shops)
 
-    // const allShopsWithDraftOrders = shops.map(async s => {
-    //   let draftOrderHolder = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', s.shopId);
-    //   return draftOrderHolder;
-    // })
-    //
-    // const resolvedAllShopsWithDraftOrders = await Promise.all(allShopsWithDraftOrders)
-    // console.log('resolvedAllShopsWithDraftOrders', resolvedAllShopsWithDraftOrders)
+    const allShopsWithDraftOrders = shops.map(async s => {
+      let draftOrderHolder = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', s.shopId);
+      return draftOrderHolder;
+    })
+
+    const resolvedAllShopsWithDraftOrders = await Promise.all(allShopsWithDraftOrders)
+    console.log('resolvedAllShopsWithDraftOrders', resolvedAllShopsWithDraftOrders)
     // const updateRes = await getAndUpdateOldOffers(fastify, draftOrders);
     // const allOffers = await fastify.objective.models.shopifyDraftOrders.query().where('shopId', '=', request.body.shopId)
     // console.log('updateRes', updateRes);
