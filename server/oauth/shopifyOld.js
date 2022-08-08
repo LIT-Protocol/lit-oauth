@@ -582,12 +582,17 @@ export default async function shopifyEndpoints(fastify, opts) {
     let specificStore = null;
     let draftOrders = null;
     let allDraftOrders;
-    let allStores = {};
+    let allStores = [];
     if (name === 'all') {
-      allStores = await fastify.objection.models.shopifyStores
+      const allStoresHolder = await fastify.objection.models.shopifyStores
         .query()
       draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
+      allStores = allStoresHolder.map(s => {
+        let tempStore = s;
+        delete tempStore.accessToken;
+        return tempStore;
+      })
 
     } else if (!!name) {
       specificStore = await fastify.objection.models.shopifyStores
