@@ -22,12 +22,15 @@ export const provisionAccess = async ({
   }
 
   const resourceId = {
-    baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
+    // baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
+    baseUrl: 'http://localhost:4000',
     path: "/shopify/l/" + draftOrderId,
     orgId: "",
     role: "customer",
     extraData: "",
   };
+
+  console.log('@@@@ -> resourceId', resourceId)
 
   // const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
 
