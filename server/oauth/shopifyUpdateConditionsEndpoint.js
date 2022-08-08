@@ -176,8 +176,21 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    const allShops = await fastify.objection.models.shopifyStores.query();
+    if (request.body['shopsOnly']) {
+      const shops = await fastify.objection.models.shopifyStores.query();
+      return shops;
+    }
+
+    let draftOrders = [];
+    if (request.body['shopId']) {
+      draftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId);
+    } else {
+      draftOrders = await fastify.objection.models.shopifyDraftOrders.query();
+    }
+
+    // const updateRes = await getAndUpdateOldOffers(fastify, draftOrders);
     // const allOffers = await fastify.objective.models.shopifyDraftOrders.query().where('shopId', '=', request.body.shopId)
-    console.log('allShops', allShops);
+    console.log('draftOrders', draftOrders);
+    return draftOrders;
   })
 }
