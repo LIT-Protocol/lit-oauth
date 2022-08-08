@@ -22,8 +22,7 @@ export const provisionAccess = async ({
   }
 
   const resourceId = {
-    // baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
-    baseUrl: 'http://localhost:4000',
+    baseUrl: process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST,
     path: "/shopify/l/" + draftOrderId,
     orgId: "",
     role: "customer",
