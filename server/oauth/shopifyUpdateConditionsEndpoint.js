@@ -172,6 +172,10 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
   fastify.post("/api/shopify/updateAllConditions", async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
     const allShops = await fastify.objection.models.shopifyStores.query();
     // const allOffers = await fastify.objective.models.shopifyDraftOrders.query().where('shopId', '=', request.body.shopId)
     console.log('allShops', allShops);
