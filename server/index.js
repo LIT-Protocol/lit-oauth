@@ -10,6 +10,7 @@ import shopifyEndpoints from "./oauth/shopifyOld.js";
 import shopifyDevEndpoints from "./oauth/shopifyDev.js";
 import shopifyGDPREndpoints from "./oauth/shopifyGDPREndpoints.js";
 import shopifyThemeAppExtensionEndpoints from "./oauth/shopifyThemeAppExtensionEndpoints.js";
+import shopifyUpdateConditionsEndpoint from "./oauth/shopifyUpdateConditionsEndpoint.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
@@ -91,6 +92,7 @@ fastify.register(shopifyEndpoints);
 fastify.register(shopifyDevEndpoints);
 fastify.register(shopifyGDPREndpoints);
 fastify.register(shopifyThemeAppExtensionEndpoints);
+fastify.register(shopifyUpdateConditionsEndpoint);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {
