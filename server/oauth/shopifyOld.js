@@ -1,8 +1,8 @@
 import {
   shortenShopName,
   validateMerchantToken,
-  parseAndUpdateUsedByList
-} from "./shopifyHelpers.js";
+  parseAndUpdateUsedByList,
+} from "./shopifyHelpers/shopifyReusableFunctions.js";
 import Shopify from "shopify-api-node";
 import LitJsSdk from "lit-js-sdk";
 import dotenv from "dotenv";
@@ -16,7 +16,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // NEW_SECTION: save auth
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
-    const { shop, accessToken } = JSON.parse(request.body);
+    const {shop, accessToken} = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
       .query()
@@ -33,7 +33,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           accessToken: accessToken,
         });
 
-        shopDetails = await shopify.shop.get([shop, accessToken]);
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
 
       } catch (err) {
         console.log('----> Error getting shopify details', err)
@@ -62,7 +62,7 @@ export default async function shopifyEndpoints(fastify, opts) {
           accessToken: accessToken,
         });
 
-        shopDetails = await shopify.shop.get([shop, accessToken]);
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
 
         // patch shop to update email in case it's changed
         await fastify.objection.models.shopifyStores
@@ -71,70 +71,23 @@ export default async function shopifyEndpoints(fastify, opts) {
           .patch({
             email: shopDetails.email,
             access_token: accessToken,
-           });
+          });
       } catch (err) {
         // if token is invalid, update it with new access token
         console.log('saveAccessToken: token is invalid, update', shop)
         console.log('----> Error with Shopify: token is probably invalid', err);
         await fastify.objection.models.shopifyStores
-            .query()
-            .where("shop_name", "=", shortenedShopName)
-            .patch({
-              access_token: accessToken,
-              email: shopDetails.email,
-            });
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            access_token: accessToken,
+            email: shopDetails.email,
+          });
       }
     }
 
-    const shopInfo = { shopId: shopDetails.id, name: shopDetails.myshopify_domain };
+    const shopInfo = {shopId: shopDetails.id, name: shopDetails.myshopify_domain};
     reply.code(200).send(shopInfo);
-  });
-
-  // NEW_SECTION: required GDPR shopify endpoints
-
-  fastify.post("/api/shopify/getCustomerData", async (request, reply) => {
-    // will not be needed because we do not store customer data
-    if (!request.headers.authorization) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    const result = await validateMerchantToken(request.headers.authorization);
-    const { shop_domain } = request.body;
-    if (!result) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    reply.code(200).send(true);
-  });
-
-  fastify.post("/api/shopify/deleteCustomerData", async (request, reply) => {
-    // will not be needed because we do not store customer data
-    if (!request.headers.authorization) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    const result = await validateMerchantToken(request.headers.authorization);
-    const { shop_domain } = request.body;
-    if (!result) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    reply.code(200).send(true);
-  });
-
-  fastify.post("/api/shopify/deleteShopData", async (request, reply) => {
-    if (!request.headers.authorization) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    const result = await validateMerchantToken(request.headers.authorization);
-    if (!result) {
-      reply.code(401).send("Unauthorized");
-      return;
-    }
-    console.log('Webhook to delete shop data')
-    // TODO: will need to be expanded and tested to delete shop data upon deleting the app
-    reply.code(200).send(true);
   });
 
   // NEW_SECTION: merchant calls
@@ -220,7 +173,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       }
 
       try {
-        product = await shopify.product.update(id, { tags: splitTags.join(',') });
+        product = await shopify.product.update(id, {tags: splitTags.join(',')});
       } catch (err) {
         console.error(`----> Error updating product on save DO for ${shop_name}:`, err);
         console.log('----> Body for failed save draft order:', request.body);
@@ -292,7 +245,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-
     let id = draftToDelete[0].assetIdOnService;
     id = id.split("/").pop();
 
@@ -308,7 +260,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       const filteredTags = splitTags.filter(t => (t !== 'lit-discount' && t !== 'lit-exclusive'));
-      product = await shopify.product.update(id, { tags: filteredTags.join(',') });
+      product = await shopify.product.update(id, {tags: filteredTags.join(',')});
     } catch (err) {
       console.error(`----> Error updating product on save DO for ${shopName}:`, err);
       return err;
@@ -328,6 +280,20 @@ export default async function shopifyEndpoints(fastify, opts) {
 
   // NEW_SECTION: Start of customer calls
 
+  fastify.post("/api/shopify/getWalletNFTs", async (request, reply) => {
+    console.log('getWalletNFTs address', request.body.authSigs.ethereum.address)
+    console.log('getWalletNFTs unifiedAccessControlConditions', request.body)
+    let NFTResponse = {};
+    // if (request.body?.authSigs?.ethereum) {
+    //   let checkWalletEthNFTsResp;
+    //   checkWalletEthNFTsResp = await checkWalletEthNFTsOnAlchemy(request.body.authSigs.ethereum.address);
+    //   NFTResponse['evmNfts'] = checkWalletEthNFTsResp.data;
+    //   console.log('getWalletNFTs response', checkWalletEthNFTsResp.data)
+    // }
+    console.log('NFTResponse', NFTResponse)
+    // return NFTResponse;
+  });
+
   fastify.post("/api/shopify/checkForPromotions", async (request, reply) => {
     const shortenedShopName = shortenShopName(request.body.shopName);
     console.log('request.body', request.body)
@@ -340,12 +306,15 @@ export default async function shopifyEndpoints(fastify, opts) {
       .where("shop_id", "=", shop[0].shopId);
 
     const shopName = shop[0].shopName;
+    console.log('--> draft oreders', draftOrders)
 
     if (draftOrders.length) {
       const filteredDraftOrders = draftOrders.filter((d, i) => {
         return request.body.productGid === d.assetIdOnService;
       });
-      return filteredDraftOrders[0].id;
+      console.log('---> filteredDraftOrders: ', filteredDraftOrders)
+      // return filteredDraftOrders[0]?.id;
+      return draftOrders[1]?.id;
     } else {
       return [];
     }
@@ -363,28 +332,29 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAccessControl", async (request, reply) => {
+  fastify.post("/api/shopify/getOfferData", async (request, reply) => {
     const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
-    console.log('draftOrder in get access', draftOrder)
+    console.log('GET OFFER DATA', draftOrder[0])
 
     if (draftOrder[0]) {
-      const humanizedAccessControlConditions =
-        draftOrder[0].humanizedAccessControlConditions;
-      const parsedAcc = JSON.parse(draftOrder[0].accessControlConditions);
-      return { parsedAcc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData };
+      // const humanizedAccessControlConditions =
+      //   draftOrder[0].humanizedAccessControlConditions;
+      // const parsedUacc = JSON.parse(draftOrder[0].accessControlConditions);
+      // return {parsedUacc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData};
+      return draftOrder[0];
     } else {
       return null;
     }
   });
 
   fastify.post("/api/shopify/setUpDraftOrder", async (request, reply) => {
-    const { uuid, jwt } = request.body;
+    const {uuid, jwt} = request.body;
     let verified;
     let payload;
     try {
-      const jwtData = LitJsSdk.verifyJwt({ jwt });
+      const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
       payload = jwtData.payload;
     } catch (err) {
@@ -416,7 +386,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     // TODO: comment in when redeem limit is ready
     // if offer has a redeem limit, check that use hasn't exceeded it
     let allowUserToRedeem = true;
-    console.log('draftOrder', draftOrder)
     if (!!draftOrder[0].redeemedBy) {
       let redeemedBy = JSON.parse(draftOrder[0].redeemedBy);
       console.log('check redeemedBy', redeemedBy)
@@ -434,7 +403,10 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    let id = draftOrderDetails.id;
+    console.log('draftOrderDetails', draftOrderDetails)
+
+    // let id = draftOrderDetails.id;
+    let id = draftOrderDetails.id[0];
     id = id.split("/").pop();
 
     let product;
@@ -447,7 +419,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     try {
       // TODO: comment in when redeem limit is ready
-      return { draftOrderDetails, product, allowUserToRedeem };
+      return {draftOrderDetails, product, allowUserToRedeem};
       // return { draftOrderDetails, product };
     } catch (err) {
       console.error("----> Error creating draft order", err);
@@ -456,8 +428,8 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/redeemDraftOrder", async (request, reply) => {
-    const { uuid, selectedProductVariant, jwt, authSigs } = request.body;
-    const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
+    const {uuid, selectedProductVariant, jwt, authSigs} = request.body;
+    const {verified, payload} = LitJsSdk.verifyJwt({jwt});
     if (
       !verified ||
       payload.baseUrl !==
@@ -481,7 +453,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
-    let id = draftOrderDetails.id;
+    // let id = draftOrderDetails.id;
+    let id = draftOrderDetails.id[0];
     id = id.split("/").pop();
 
     let product;
@@ -531,8 +504,7 @@ export default async function shopifyEndpoints(fastify, opts) {
             'redeemed_by': updatedUsedByList
           });
 
-        console.log('updatedDraftOrder', updatedDraftOrder)
-        return { redeemUrl: draftOrderRes.invoice_url };
+        return {redeemUrl: draftOrderRes.invoice_url};
       }
     } catch (err) {
       console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
@@ -541,6 +513,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   // TEST ENDPOINTS
+
   fastify.post("/api/shopify/getProductInformation", async (request, reply) => {
     // const { uuid, jwt } = request.body;
     // const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
@@ -576,7 +549,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     }
 
     try {
-      return { product };
+      return {product};
     } catch (err) {
       console.error(`----> Error returning product info for ${shop[0].shopName}:`, err);
       return err;
@@ -600,9 +573,9 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const { name, pass } = request.body;
+    const {name, pass} = request.body;
 
-    if (pass !== '5P8+Ep!mCNzmtxuV') {
+    if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
     }
 
@@ -613,6 +586,9 @@ export default async function shopifyEndpoints(fastify, opts) {
     if (name === 'all') {
       allStores = await fastify.objection.models.shopifyStores
         .query()
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+
     } else if (!!name) {
       specificStore = await fastify.objection.models.shopifyStores
         .query()
@@ -623,26 +599,27 @@ export default async function shopifyEndpoints(fastify, opts) {
         .where("shop_id", "=", specificStore[0].shopId);
     }
 
-    allDraftOrders = await fastify.objection.models.shopifyDraftOrders
-      .query()
-
     return {
       specificStore: specificStore,
       storeDraftOrders: draftOrders,
       allStores: allStores,
-      length: allDraftOrders.length
+      length: draftOrders.length
     };
   });
-  //
-  // fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
-  //   const uuid = request.body;
-  //   const allResults = await fastify.objection.models.shopifyDraftOrders
-  //     .query()
-  //     .delete()
-  //     .where('id', '=', uuid);
-  //
-  //   return allResults;
-  // })
+
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
+  })
 
   fastify.get("/api/shopify/testGetEndpoint", async (request, reply) => {
     console.log('toggle get testEndpoint');

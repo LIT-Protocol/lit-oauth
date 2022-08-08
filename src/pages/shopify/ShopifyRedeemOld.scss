@@ -99,6 +99,33 @@
     position: absolute;
     bottom: 0;
 
+    .redemptionUrl-prompt {
+      margin: 0;
+      padding: 0 0 0.5rem;
+    }
+
+    .MuiButton-root {
+      //border-radius: 0;
+      padding: 1rem 2rem;
+      margin: 0 1rem 1rem 0;
+    }
+  }
+
+  span {
+    position: absolute;
+    bottom: 0;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+
+
+    .redemptionUrl-prompt {
+      margin: 0 1rem 0 0;
+      width: 50%;
+      padding: 0 0 0.5rem;
+      text-align: right;
+    }
+
     .MuiButton-root {
       //border-radius: 0;
       padding: 1rem 2rem;
