@@ -19,6 +19,7 @@ const ROUTING_COMPONENTS = {
   ServiceLogin: ServiceLogin,
   ShopifySplash: ShopifySplash,
   ShopifyRedeem: ShopifyRedeem,
+  ShopifyRedeemOld: ShopifyRedeemOld,
   ShopifyDocs: ShopifyDocs
 };
 

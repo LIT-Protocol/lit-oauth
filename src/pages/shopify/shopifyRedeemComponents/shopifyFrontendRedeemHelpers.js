@@ -16,7 +16,7 @@ export const provisionAccess = async ({
       if (c !== 'solRpc') {
         authSigs['ethereum'] = storedEVMAuthSig;
       } else if (c === 'solRpc') {
-        authSigs['aolana'] = storedSolanaAuthSig;
+        authSigs['solana'] = storedSolanaAuthSig;
       }
     });
   }
@@ -29,17 +29,11 @@ export const provisionAccess = async ({
     extraData: "",
   };
 
-  const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
-
-  console.log('check all of it', {
-    unifiedAccessControlConditions: afterUpdateV1Conditions,
-    authSig: authSigs,
-    resourceId: resourceId
-  })
+  // const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
 
   try {
     const jwt = await window.litNodeClient.getSignedToken({
-      unifiedAccessControlConditions: afterUpdateV1Conditions,
+      unifiedAccessControlConditions: unifiedAccessControlConditions,
       authSig: authSigs,
       resourceId: resourceId
     });
@@ -51,29 +45,24 @@ export const provisionAccess = async ({
   }
 }
 
-const updateV1ConditionTypes = (acc) => {
-  const unifiedAccessControlConditions = [];
-  for (let i = 0; i < acc.length; i++) {
-    if (Array.isArray(acc[i])) {
-      const updatedConditions = updateV1ConditionTypes(acc[i]);
-      unifiedAccessControlConditions.push(updatedConditions);
-    } else if (!!acc[i] && !!acc[i]['operator']) {
-      unifiedAccessControlConditions.push(acc[i]);
-    } else {
-      const accHolder = acc[i];
-      if (!accHolder['conditionType']) {
-        accHolder['conditionType'] = 'evmBasic';
-      }
-      if (!accHolder['conditionType']) {
-        accHolder['conditionTypes'] = accHolder['extraData']
-      }
-      unifiedAccessControlConditions.push(accHolder);
-    }
-  }
-  return unifiedAccessControlConditions;
-}
-
-
-export const checkAndUpdateUserRedemption = async (fastify, offerData) => {
-  console.log('checkAndUpdateUserRedemption', offerData)
-}
+// const updateV1ConditionTypes = (acc) => {
+//   const unifiedAccessControlConditions = [];
+//   for (let i = 0; i < acc.length; i++) {
+//     if (Array.isArray(acc[i])) {
+//       const updatedConditions = updateV1ConditionTypes(acc[i]);
+//       unifiedAccessControlConditions.push(updatedConditions);
+//     } else if (!!acc[i] && !!acc[i]['operator']) {
+//       unifiedAccessControlConditions.push(acc[i]);
+//     } else {
+//       const accHolder = acc[i];
+//       if (!accHolder['conditionType']) {
+//         accHolder['conditionType'] = 'evmBasic';
+//       }
+//       if (!accHolder['conditionType']) {
+//         accHolder['conditionTypes'] = accHolder['extraData']
+//       }
+//       unifiedAccessControlConditions.push(accHolder);
+//     }
+//   }
+//   return unifiedAccessControlConditions;
+// }

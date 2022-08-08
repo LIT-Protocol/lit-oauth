@@ -10,6 +10,8 @@ import ShopifyRedeemFailure from "./shopifyRedeemFailure/ShopifyRedeemFailure.js
 import { provisionAccess } from "./shopifyFrontendRedeemHelpers.js";
 import { checkForUserValidity } from "./shopifyRedeemApi.js";
 import ShopifyRedeemSuccess from "./shopifyRedeemSuccess/ShopifyRedeemSuccess.js";
+import { IconButton, Tooltip } from "@mui/material";
+import InfoIcon from '@mui/icons-material/Info';
 
 const ShopifyRedeem = () => {
   const {performWithAuthSig} = useAppContext();
@@ -20,7 +22,7 @@ const ShopifyRedeem = () => {
   const [ openSnackbar, setOpenSnackbar ] = useState(false);
   const [ snackbarInfo, setSnackbarInfo ] = useState({message: '', severity: null});
   const [ showRedeemFailure, setShowRedeemFailure ] = useState(false);
-  const [ redeemFailureMessage, setRedeemFailureMessage ] = useState({title: '', list: [], err: null});
+  const [ redeemFailureMessage, setRedeemFailureMessage ] = useState({title: '', detailList: [], err: null});
 
   // lit status and auth sigs
   const [ connectedToLitNodeClient, setConnectedToLitNodeClient ] = useState(false);
@@ -32,6 +34,7 @@ const ShopifyRedeem = () => {
   // draft order and offer data states
   const [ offerProducts, setOfferProducts ] = useState(null);
   const [ draftOrderId, setDraftOrderId ] = useState(null);
+  const [ validityResponse, setValidityResponse ] = useState({});
   const [ humanizedAccessControlConditions, setHumanizedAccessControlConditions ] = useState(null);
   const [ offerData, setOfferData ] = useState(null);
 
@@ -80,7 +83,6 @@ const ShopifyRedeem = () => {
     // todo: remove eventually. this loads the EVM signature for obsolete condition types that don't have a chain string
     if (!chainString) {
       await getEVMAuthSig();
-      // setLoading(false);
     } else {
       const chainArray = chainString.split(',');
       chainArray.forEach(c => {
@@ -91,14 +93,12 @@ const ShopifyRedeem = () => {
           getSolanaAuthSig();
         }
       });
-      // setLoading(false);
     }
   }
 
   const getEVMAuthSig = async () => {
     try {
       await performWithAuthSig(async (authSig) => {
-        console.log('CHECK AUTH SIG', authSig)
         setStoredEVMAuthSig(authSig);
       }, {chain: 'ethereum'});
     } catch (err) {
@@ -114,7 +114,6 @@ const ShopifyRedeem = () => {
       }, {chain: 'solana'})
     } catch (err) {
       toggleSnackbar(`${err.message} - Make sure you are signed into Phantom`, 'error');
-
       setLoading(false);
     }
   }
@@ -143,7 +142,6 @@ const ShopifyRedeem = () => {
 
   const checkForRedemptionValidity = async () => {
     checkForPromotionAccessControl().then(async (jwt) => {
-      console.log('jwt', jwt)
       try {
         const checkForUserValidityObj = {
           uuid: draftOrderId,
@@ -155,9 +153,10 @@ const ShopifyRedeem = () => {
         }
         const redemptionValidityResp = await checkForUserValidity(checkForUserValidityObj);
         console.log('redemptionValidityResp', redemptionValidityResp)
+        setValidityResponse(redemptionValidityResp);
         setLoading(false);
         if (!redemptionValidityResp.data.allowRedeem) {
-          setRedeemFailureMessage(redemptionValidityResp.data.message);
+          toggleRedeemFailure('Error checking offer validity', redemptionValidityResp.data.message, '');
           setShowRedeemFailure(true);
         } else {
           setAccessVerified(true);
@@ -165,12 +164,7 @@ const ShopifyRedeem = () => {
           await setUpProducts(checkForUserValidityObj);
         }
       } catch (err) {
-        setRedeemFailureMessage({
-          title: 'Error checking validity of offers',
-          list: [],
-          err
-        });
-        setShowRedeemFailure(true);
+        toggleRedeemFailure('Error checking offer validity', [], err);
       }
     })
   }
@@ -182,15 +176,19 @@ const ShopifyRedeem = () => {
     try {
       resolvedProductArray = await getAllOfferProducts(checkForUserValidityObj);
     } catch (err) {
-      setRedeemFailureMessage({
-        title: 'Error getting products.',
-        list: [],
-        err
-      })
-      setShowRedeemFailure(true);
+      toggleRedeemFailure('Error getting products.', [], err)
     }
     setOfferProducts(resolvedProductArray.data);
     setLoading(false);
+  }
+
+  const toggleRedeemFailure = (title, detailList, err) => {
+    setRedeemFailureMessage({
+      title,
+      detailList,
+      err
+    })
+    setShowRedeemFailure(true);
   }
 
   const testSnackbar = () => {
@@ -198,27 +196,30 @@ const ShopifyRedeem = () => {
   }
 
   const getState = () => {
-    console.log('getState')
     if (loading) {
       return (
-        <div className={'lit-loading-container lit-center-container'}>
+        <div className={'lit-loading-container'}>
           <ShopifyLoader loaderMessage={loaderMessage}/>
         </div>
       )
     }
     if (showRedeemFailure) {
       return (
-        <div className={'lit-fail-container lit-center-container'}>
+        <div className={'lit-fail-container'}>
           <ShopifyRedeemFailure redeemFailureMessage={redeemFailureMessage}/>
         </div>
       )
     }
     if (accessVerified && offerProducts) {
       return (
-        <div className={'lit-success-container lit-center-container'}>
+        <div className={'lit-success-container'}>
           <ShopifyRedeemSuccess offerData={offerData}
                                 offerProducts={offerProducts}
                                 currentJwt={currentJwt}
+                                storedEVMAuthSig={storedEVMAuthSig}
+                                storedSolanaAuthSig={storedSolanaAuthSig}
+                                validityResponse={validityResponse.data}
+                                toggleRedeemFailure={toggleRedeemFailure}
           ></ShopifyRedeemSuccess>
         </div>
       )
@@ -231,6 +232,13 @@ const ShopifyRedeem = () => {
       {/*<button onClick={testSnackbar}>test snackbar</button>*/}
       {getState()}
       <ShopifySnackbar snackbarInfo={snackbarInfo} openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar}/>
+      <span className={'lit-info'}>
+        <Tooltip placement={'left'} title="Powered by Lit Token Access">
+          <IconButton>
+            <InfoIcon/>
+          </IconButton>
+        </Tooltip>
+      </span>
     </div>
   )
 }

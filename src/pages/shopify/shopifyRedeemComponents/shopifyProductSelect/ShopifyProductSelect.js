@@ -44,7 +44,6 @@ const ShopifyProductSelect = ({product, index, updateSelectedVariant, selectedVa
                     className={'product-variant-select'}
                     label={'Select a product'}
                     onChange={(e) => {
-                      console.log('setSelectedVariantMenuOption', e.target.value);
                       setSelectedVariantMenuOption(e.target.value);
                     }}
             >

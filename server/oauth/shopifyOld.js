@@ -586,6 +586,9 @@ export default async function shopifyEndpoints(fastify, opts) {
     if (name === 'all') {
       allStores = await fastify.objection.models.shopifyStores
         .query()
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+
     } else if (!!name) {
       specificStore = await fastify.objection.models.shopifyStores
         .query()
@@ -596,14 +599,11 @@ export default async function shopifyEndpoints(fastify, opts) {
         .where("shop_id", "=", specificStore[0].shopId);
     }
 
-    allDraftOrders = await fastify.objection.models.shopifyDraftOrders
-      .query()
-
     return {
       specificStore: specificStore,
       storeDraftOrders: draftOrders,
       allStores: allStores,
-      length: allDraftOrders.length
+      length: draftOrders.length
     };
   });
 

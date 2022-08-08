@@ -10,7 +10,7 @@ export const URL_MAP = {
     exact: true,
   },
   zoomGranting: {
-    path: ["/zoom"],
+    path: [ "/zoom" ],
     componentName: "ZoomGranting",
     exact: true,
   },
@@ -20,22 +20,27 @@ export const URL_MAP = {
     exact: false,
   },
   serviceLogin: {
-    path: ["/", "/apps"],
+    path: [ "/", "/apps" ],
     componentName: "ServiceLogin",
     exact: true,
   },
   shopify: {
-    path: ["/shopify"],
+    path: [ "/shopify" ],
     componentName: "ShopifySplash",
     exact: true,
   },
   shopifyRedeem: {
-    path: ["/shopify/l"],
+    path: [ "/shopify/redeem" ],
     componentName: "ShopifyRedeem",
     exact: true,
   },
+  shopifyRedeemOld: {
+    path: [ "/shopify/l" ],
+    componentName: "shopifyRedeemOld",
+    exact: true,
+  },
   shopifyDocs: {
-    path: ["/shopify/docs"],
+    path: [ "/shopify/docs" ],
     componentName: "ShopifyDocs",
     exact: true,
   },

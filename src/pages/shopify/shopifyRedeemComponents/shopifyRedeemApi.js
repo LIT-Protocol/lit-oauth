@@ -26,11 +26,7 @@ export const getAllOfferProducts = async ({uuid, jwt, authSig}) => {
   });
 }
 
-export const redeemOfferAndUpdateUserStats = async ({uuid, jwt, selectedVariantArray}) => {
+export const redeemOfferAndUpdateUserStats = async (redeemOfferObj) => {
   return await axios
-    .post(API_HOST + "/api/shopify/redeemOfferAndUpdateUserStats", {
-      uuid,
-      selectedVariantArray,
-      jwt
-    });
+    .post(API_HOST + "/api/shopify/redeemOfferAndUpdateUserStats", redeemOfferObj);
 }

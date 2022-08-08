@@ -31,29 +31,29 @@ const googleRoleMap = {
 
 export default function GoogleGranting(props) {
   const parsedEnv = dotenv.config();
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
-  const [file, setFile] = useState(null);
-  const [currentClient, setCurrentClient] = useState(null);
-  const [allShares, setAllShares] = useState([]);
-  const [accessToken, setAccessToken] = useState("");
-  const [connectedServiceId, setConnectedServiceId] = useState("");
-  const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [role, setRole] = useState("reader");
-  const [currentUser, setCurrentUser] = useState({});
-  const [storedAuthSig, setStoredAuthSig] = useState({});
-  const [permanent, setPermanent] = useState(true);
-  const [authSigTypes, setAuthSigTypes] = useState([]);
-  const [humanizedAccessControlArray, setHumanizedAccessControlArray] =
+  const [ file, setFile ] = useState(null);
+  const [ currentClient, setCurrentClient ] = useState(null);
+  const [ allShares, setAllShares ] = useState([]);
+  const [ accessToken, setAccessToken ] = useState("");
+  const [ connectedServiceId, setConnectedServiceId ] = useState("");
+  const [ accessControlConditions, setAccessControlConditions ] = useState([]);
+  const [ role, setRole ] = useState("reader");
+  const [ currentUser, setCurrentUser ] = useState({});
+  const [ storedAuthSig, setStoredAuthSig ] = useState({});
+  const [ permanent, setPermanent ] = useState(true);
+  const [ authSigTypes, setAuthSigTypes ] = useState([]);
+  const [ humanizedAccessControlArray, setHumanizedAccessControlArray ] =
     useState([]);
 
-  const [openShareModal, setOpenShareModal] = useState(false);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
+  const [ openShareModal, setOpenShareModal ] = useState(false);
+  const [ openProvisionAccessDialog, setOpenProvisionAccessDialog ] =
     useState(false);
-  const [injectInitialState, setInjectInitialState] = useState(false);
-  const [initialState, setInitialState] = useState(null);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarInfo, setSnackbarInfo] = useState({});
+  const [ injectInitialState, setInjectInitialState ] = useState(false);
+  const [ initialState, setInitialState ] = useState(null);
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ snackbarInfo, setSnackbarInfo ] = useState({});
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -75,7 +75,7 @@ export default function GoogleGranting(props) {
     if (!!performWithAuthSig) {
       loadAuth();
     }
-  }, [performWithAuthSig]);
+  }, [ performWithAuthSig ]);
 
   useEffect(() => {
     const humanizeAccessControlConditions = async () => {
@@ -90,7 +90,7 @@ export default function GoogleGranting(props) {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
-  }, [accessControlConditions]);
+  }, [ accessControlConditions ]);
 
   const handleAddAccessControl = () => {
     setOpenShareModal(true);
@@ -282,7 +282,7 @@ export default function GoogleGranting(props) {
     });
     const requestOptions = {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {"Content-Type": "application/json"},
     };
     const requestData = {
       driveId: file.id,
@@ -291,13 +291,13 @@ export default function GoogleGranting(props) {
       connectedServiceId: connectedServiceId,
       accessControlConditions: accessControlConditions,
       authSig,
-      extraData: JSON.stringify({ permanent, authSigTypes }),
+      extraData: JSON.stringify({permanent, authSigTypes}),
       idOnService: currentUser.idOnService,
     };
 
     try {
       const response = await asyncHelpers.share(requestData, requestOptions);
-      const { data } = response;
+      const {data} = response;
       const accessControlConditions = data["authorizedControlConditions"];
       const uuid = data["uuid"];
       const chain = accessControlConditions[0].chain;
@@ -428,7 +428,7 @@ export default function GoogleGranting(props) {
         </div>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

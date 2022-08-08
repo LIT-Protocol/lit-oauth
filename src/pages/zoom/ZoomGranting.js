@@ -11,7 +11,7 @@ import {
   getServiceInfo,
 } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
-import { ShareModal } from "lit-access-control-conditions-modal";
+// import { ShareModal } from "lit-access-control-conditions-modal";
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
@@ -20,30 +20,30 @@ import BackToApps from "../sharedComponents/backToApps/BackToApps";
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export default function ZoomGranting() {
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
-  const [currentUser, setCurrentUser] = useState({});
-  const [allShares, setAllShares] = useState([]);
-  const [currentServiceInfo, setCurrentServiceInfo] = useState(null);
-  const [storedAuthSig, setStoredAuthSig] = useState({});
-  const [humanizedAccessControlArray, setHumanizedAccessControlArray] =
+  const [ currentUser, setCurrentUser ] = useState({});
+  const [ allShares, setAllShares ] = useState([]);
+  const [ currentServiceInfo, setCurrentServiceInfo ] = useState(null);
+  const [ storedAuthSig, setStoredAuthSig ] = useState({});
+  const [ humanizedAccessControlArray, setHumanizedAccessControlArray ] =
     useState([]);
-  const [accessControlConditions, setAccessControlConditions] = useState([]);
-  const [selectedMeeting, setSelectedMeeting] = useState(null);
-  const [meetings, setMeetings] = useState([]);
+  const [ accessControlConditions, setAccessControlConditions ] = useState([]);
+  const [ selectedMeeting, setSelectedMeeting ] = useState(null);
+  const [ meetings, setMeetings ] = useState([]);
 
-  const [openShareModal, setOpenShareModal] = useState(false);
-  const [openProvisionAccessDialog, setOpenProvisionAccessDialog] =
+  const [ openShareModal, setOpenShareModal ] = useState(false);
+  const [ openProvisionAccessDialog, setOpenProvisionAccessDialog ] =
     useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarInfo, setSnackbarInfo] = useState({});
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ snackbarInfo, setSnackbarInfo ] = useState({});
 
   useEffect(() => {
     console.log("PROCESS", process.env);
     if (!!performWithAuthSig) {
       loadAuth();
     }
-  }, [performWithAuthSig, storedAuthSig]);
+  }, [ performWithAuthSig, storedAuthSig ]);
 
   useEffect(() => {
     const humanizeAccessControlConditions = async () => {
@@ -57,7 +57,7 @@ export default function ZoomGranting() {
         setHumanizedAccessControlArray(() => humanizedAccessControlConditions);
       }
     );
-  }, [accessControlConditions]);
+  }, [ accessControlConditions ]);
 
   const handleAddAccessControl = async () => {
     setOpenShareModal(true);
@@ -145,7 +145,7 @@ export default function ZoomGranting() {
 
   const loadMeetings = async (authSig) => {
     console.log("start of meetings and webinars");
-    const resp = await getMeetingsAndWebinars({ authSig });
+    const resp = await getMeetingsAndWebinars({authSig});
 
     // const flatMeetings = resp.meetings.map((m) => m.meetings).flat();
     // const flatWebinars = resp.webinars.map((m) => m.webinars).flat();
@@ -240,7 +240,7 @@ export default function ZoomGranting() {
       console.log("SELECTED MEETING", share);
 
       const resourceId = getResourceIdForMeeting({
-        meeting: { id: share.id },
+        meeting: {id: share.id},
         share,
       });
 
@@ -333,21 +333,21 @@ export default function ZoomGranting() {
             setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
           />
 
-          {openShareModal && (
-            <ShareModal
-              onClose={() => setOpenShareModal(false)}
-              sharingItems={[selectedMeeting]}
-              onAccessControlConditionsSelected={async (restriction) => {
-                await addToAccessControlConditions(restriction);
-                setOpenShareModal(false);
-                setOpenProvisionAccessDialog(true);
-              }}
-              getSharingLink={() => getSharingLink(selectedMeeting)}
-              onlyAllowCopySharingLink={false}
-              copyLinkText="Only authorized users will be able to enter this Zoom meeting"
-              showStep="ableToAccess"
-            />
-          )}
+          {/*{openShareModal && (*/}
+          {/*  <ShareModal*/}
+          {/*    onClose={() => setOpenShareModal(false)}*/}
+          {/*    sharingItems={[selectedMeeting]}*/}
+          {/*    onAccessControlConditionsSelected={async (restriction) => {*/}
+          {/*      await addToAccessControlConditions(restriction);*/}
+          {/*      setOpenShareModal(false);*/}
+          {/*      setOpenProvisionAccessDialog(true);*/}
+          {/*    }}*/}
+          {/*    getSharingLink={() => getSharingLink(selectedMeeting)}*/}
+          {/*    onlyAllowCopySharingLink={false}*/}
+          {/*    copyLinkText="Only authorized users will be able to enter this Zoom meeting"*/}
+          {/*    showStep="ableToAccess"*/}
+          {/*  />*/}
+          {/*)}*/}
           <LitProtocolConnection
             className={"lit-protocol-connection"}
             connection={!!storedAuthSig["sig"]}
@@ -374,7 +374,7 @@ export default function ZoomGranting() {
         </section>
       )}
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={5000}
         onClose={handleCloseSnackbar}

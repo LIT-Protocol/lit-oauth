@@ -1,20 +1,69 @@
 .lit-shopify-container {
-  margin: 0;
-  padding: 0;
-  background-color: #efecec;
-  height: 100vh;
-  width: 100vw;
-  //background-color: blue;
-}
-
-.lit-center-container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    margin: 0;
+    padding: 0;
+    background-color: #efecec;
+    height: 100vh;
+    width: 100vw;
 }
 
 .lit-loading-container {
-  width: 50%;
-  height: 50%;
+    width: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.lit-fail-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.lit-success-container {
+    width: auto;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.lit-success-container, .lit-fail-container {
+    animation: fade-in 1s;
+}
+
+.lit-info {
+    animation: fade-in 1s;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@media only screen and (max-width: 500px) {
+    .lit-success-container {
+        position: static;
+        top: auto;
+        left: auto;
+        transform: translate(0, 0);
+    }
+
+    .lit-fail-container {
+        left: 0;
+        transform: translate(0, -50%);
+    }
+
+    .lit-info {
+        display: none;
+    }
 }

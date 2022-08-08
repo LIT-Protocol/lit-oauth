@@ -6,8 +6,10 @@ export const makeShopifyInstance = (shopName, accessToken) => {
   });
 }
 
-export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj, shopObj, queryObj) => {
-  let ids = JSON.parse(draftOrderObj.asset_id_on_service).map(id => {
+export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, shopObj) => {
+  console.log('shopObj', shopObj)
+  console.log('queryObj', queryObj)
+  let ids = JSON.parse(queryObj.asset_id_on_service).map(id => {
     return id.split("/").pop();
   })
 
@@ -31,9 +33,9 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   // TODO: might not need tags anymore
   const updatedSplitTags = splitTags.map(s => {
     let updatedTag = s;
-    if (draftOrderObj.asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
+    if (queryObj.asset_type === 'exclusive' && updatedTag.indexOf('lit-exclusive') === -1) {
       updatedTag.push('lit-exclusive');
-    } else if (draftOrderObj.asset_type === 'discount' && updatedTag.indexOf('lit-discount') === -1) {
+    } else if (queryObj.asset_type === 'discount' && updatedTag.indexOf('lit-discount') === -1) {
       updatedTag.push('lit-discount');
     }
     return updatedTag;
@@ -51,18 +53,19 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
   // end add exclusive or discount tag to product
 
   // map over products and add metafield with query id
+  let metafieldValue = {};
   try {
-    const metafieldValue = {
-      description: draftOrderObj?.description ? draftOrderObj.description : draftOrderObj.humanized_access_control_conditions,
-      summary: draftOrderObj.summary,
-      title: draftOrderObj.title,
-      accessControlConditions: draftOrderObj.access_control_conditions,
-      offerType: draftOrderObj.offer_type,
+    metafieldValue = {
+      description: queryObj?.description ? queryObj.description : queryObj.humanized_access_control_conditions,
+      summary: queryObj.summary,
+      title: queryObj.title,
+      accessControlConditions: queryObj.access_control_conditions,
+      offerType: queryObj.offer_type,
       offerId: queryObj.id,
-      extraData: draftOrderObj.extra_data,
-      usedChains: draftOrderObj.used_chains,
-      conditionTypes: draftOrderObj.conditionTypes,
-      redeemAddress: `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${queryObj.id}`
+      extraData: queryObj.extra_data,
+      usedChains: queryObj.used_chains,
+      conditionTypes: queryObj.condition_types,
+      redeemAddress: `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/redeem/?id=${queryObj.id}`
     }
     const updatedMetafieldPromises = resolvedProducts.map(async (p, i) => {
       const metafieldObj = {
@@ -80,15 +83,13 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, draftOrderObj
     console.log('Error updating product metafields:', err)
   }
 
-  return true;
+  return metafieldValue;
 }
 
 const removeMetafieldFromProducts = async (shopifyInstance, productMetafields, uuid) => {
   const metafieldsToBeRemoved = productMetafields.filter(m => {
     return m.key === uuid;
   })
-
-  console.log('REMOVE METAFIELDS FROM PRODUCTS')
 
   const metafieldRemovalPromises = metafieldsToBeRemoved.map(async (m) => {
     return await shopifyInstance.metafield.delete(m.id);
@@ -137,7 +138,6 @@ export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOr
     // resolve promises create an array of arrays [ [], [], [] ]
     const productMetafieldResolved = await Promise.all(productMetafieldPromises);
 
-
     // map over resolved metafield arrays and call removeMetafieldFromProducts to delete uuid metafield
     const deletedMetafields = productMetafieldResolved.map(async (m) => {
       return await removeMetafieldFromProducts(shopifyInstance, m, uuid);
@@ -148,5 +148,74 @@ export const removeTagAndMetafieldFromProducts = async (shopifyInstance, draftOr
   }
 
   return true;
+}
 
+export const addShopifyMetafieldToDraftOrder = async ({shopify, draftOrderRes}) => {
+  const lineItems = draftOrderRes.line_items.map(d => {
+    return d.id;
+  })
+
+  const metafieldObj = {
+    namespace: 'web_3',
+    key: 'gated_wallet_line_items',
+    owner_id: draftOrderRes.id,
+    value: JSON.stringify(lineItems),
+    owner_resource: 'draft_order',
+  }
+  try {
+    const metafieldRes = await shopify.metafield.create(metafieldObj);
+  } catch (err) {
+    return err;
+    console.log('Error creating metafield for draft order:', err);
+  }
+}
+
+export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selectedNft}) => {
+  let noteAttributes = [];
+  let tags = [];
+
+  console.log('selectedNft', selectedNft)
+
+  if (draftOrderDetails['hasRedeemLimit']) {
+    if (draftOrderDetails.typeOfRedeem === 'nftId') {
+      tags.push(`lit-nftId`);
+      // tags.push(selectedNft.nft.contract.address);
+      // tags.push(selectedNft.nft.id.tokenId);
+      const nftIdNote = {
+        name: 'Redeem Limited by NFT ID',
+        value: `NFT contract address: ${selectedNft.nft.contract.address} - NFT TokenId: ${selectedNft.nft.id.tokenId}`
+      }
+      noteAttributes.push(nftIdNote);
+    } else {
+      tags.push(`lit-walletAddress`);
+      const splitConditionTypes = draftOrderDetails.conditionTypes.split(',');
+      if (splitConditionTypes.indexOf('evmBasic') !== -1) {
+        // tags.push(authSig.ethereum.address);
+        const nftIdNote = {
+          name: 'Redeem Limited by EVM wallet address',
+          value: `EVM wallet address: ${authSig.ethereum.address}`
+        }
+        noteAttributes.push(nftIdNote);
+      }
+      if (splitConditionTypes.indexOf('solRpc') !== -1) {
+        // tags.push(authSig.solana.address);
+        const nftIdNote = {
+          name: 'Redeem Limited by Solana wallet address',
+          value: `Solana wallet address: ${authSig.solana.address}`
+        }
+        noteAttributes.push(nftIdNote);
+      }
+    }
+  }
+
+  if (draftOrderDetails['typeOfAccessControl'] === 'exclusive') {
+    tags.push('lit-exclusive');
+  } else {
+    tags.push('lit-discount');
+  }
+
+  return {
+    tags: tags.join(','),
+    note_attributes: noteAttributes
+  }
 }

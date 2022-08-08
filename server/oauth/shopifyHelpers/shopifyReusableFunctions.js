@@ -31,3 +31,27 @@ export const parseAndUpdateUsedByList = (redeemedBy, userAddress) => {
 
   return JSON.stringify(updatedRedeemedBy);
 }
+
+export const seedRedeemedByList = (draftOrderDetails) => {
+  const parsedDraftOrderDetails = JSON.parse(draftOrderDetails);
+  let redeemedByList = {};
+  if (parsedDraftOrderDetails.hasRedeemLimit && parsedDraftOrderDetails.typeOfRedeem === 'walletAddress') {
+    const parsedConditionTypes = parsedDraftOrderDetails.conditionType.split(',');
+    parsedConditionTypes.forEach(conditionType => {
+      redeemedByList[conditionType] = {};
+    })
+  }
+  return JSON.stringify(redeemedByList);
+}
+
+export const seedRedeemedNFtList = (draftOrderDetails) => {
+  const parsedDraftOrderDetails = JSON.parse(draftOrderDetails);
+  let redeemedNftsList = {};
+  if (parsedDraftOrderDetails.hasRedeemLimit && parsedDraftOrderDetails.typeOfRedeem === 'nftId') {
+    const parsedConditionTypes = parsedDraftOrderDetails.usedChains.split(',');
+    parsedConditionTypes.forEach(conditionType => {
+      redeemedNftsList[conditionType] = {};
+    })
+  }
+  return JSON.stringify(redeemedNftsList);
+}

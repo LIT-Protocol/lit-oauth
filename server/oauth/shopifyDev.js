@@ -1,17 +1,21 @@
-import { shortenShopName } from "./shopifyHelpers/shopifyReusableFunctions.js";
+import {
+  parseAndUpdateUsedByList,
+  seedRedeemedByList, seedRedeemedNFtList,
+  shortenShopName
+} from "./shopifyHelpers/shopifyReusableFunctions.js";
 import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
 import {
+  addShopifyMetafieldToDraftOrder, createNoteAttributesAndTags,
   makeShopifyInstance,
   removeTagAndMetafieldFromProducts,
   updateProductWithTagAndUuid
-} from "./shopifyApiNodeHelpers.js";
+} from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import LitJsSdk from "lit-js-sdk";
 import {
-  checkAndUpdateUserRedemption,
-  checkUserValidity,
-  updateV1WalletRedeemedBy
+  checkUserValidity, updateNftIdRedeem,
+  updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
 
 dotenv.config({
@@ -62,12 +66,12 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       description,
       asset_name_on_service,
       offer_type,
-      condition_types
-
+      condition_types,
+      redeem_type
     } = request.body;
 
-    const redeemed_by = '{}';
-    const redeemed_nfts = '{}';
+    const redeemed_by = seedRedeemedByList(draft_order_details);
+    const redeemed_nfts = seedRedeemedNFtList(draft_order_details);
 
     try {
       const result = await validateDevToken(request.headers.authorization);
@@ -104,12 +108,13 @@ export default async function shopifyDevEndpoints(fastify, opts) {
           redeemed_nfts,
           asset_name_on_service,
           offer_type,
-          condition_types
+          condition_types,
+          redeem_type
         });
 
       console.log('@@@ post insert query res', query)
 
-      const updateResolve = await updateProductWithTagAndUuid(shopify, request.body, shop[0], query);
+      const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
       return query.id;
     } catch (err) {
@@ -179,11 +184,13 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
       payload = jwtData.payload;
+      console.log('verified', verified)
     } catch (err) {
 
       return {
         err,
-        allowUserToRedeem: false,
+        detailList: [ 'Unauthorized' ],
+        allowRedeem: false,
       }
     }
 
@@ -203,7 +210,11 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
 
     if (!draftOrderDetails.hasRedeemLimit) {
-      return true;
+      return {
+        err: '',
+        detailList: [],
+        allowRedeem: true,
+      }
     }
 
     const shop = await fastify.objection.models.shopifyStores
@@ -232,7 +243,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
       return {
         err,
-        allowUserToRedeem: false,
+        allowRedeem: false,
       }
     }
 
@@ -245,15 +256,15 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       return "Unauthorized.";
     }
 
-    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+    const offerData = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
 
-    const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+    const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
-      .where("shop_id", "=", draftOrder[0].shopId);
+      .where("shop_id", "=", offerData[0].shopId);
 
     const shopify = new Shopify({
       shopName: shop[0].shopName,
@@ -288,24 +299,19 @@ export default async function shopifyDevEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getOffer", async (request, reply) => {
-    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+    const offerData = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
-    console.log('GET OFFER DATA', draftOrder[0])
 
-    if (draftOrder[0]) {
-      // const humanizedAccessControlConditions =
-      //   draftOrder[0].humanizedAccessControlConditions;
-      // const parsedUacc = JSON.parse(draftOrder[0].accessControlConditions);
-      // return {parsedUacc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData};
-      return draftOrder[0];
+    if (offerData[0]) {
+      return offerData[0];
     } else {
       return null;
     }
   });
 
   fastify.post("/api/shopify/redeemOfferAndUpdateUserStats", async (request, reply) => {
-    const {uuid, jwt, authSig, variantsForCheckout} = request.body;
+    const {uuid, jwt, selectedVariantsArray, selectedNft, authSig} = request.body;
     let verified;
     let payload;
     try {
@@ -316,7 +322,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
       return {
         err,
-        allowUserToRedeem: false,
+        allowRedeem: false,
       }
     }
 
@@ -329,25 +335,144 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       return "Unauthorized.";
     }
 
-    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+    const offerData = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
 
-    const draftOrderDetails = JSON.parse(draftOrder[0].draftOrderDetails);
+    const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
+    console.log('draftOrderDetails', draftOrderDetails)
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
-      .where("shop_id", "=", draftOrder[0].shopId);
+      .where("shop_id", "=", offerData[0].shopId);
 
-    // const shopify = new Shopify({
-    //   shopName: shop[0].shopName,
-    //   accessToken: shop[0].accessToken,
-    // });
+    const shopify = new Shopify({
+      shopName: shop[0].shopName,
+      accessToken: shop[0].accessToken,
+    });
 
-    const lineItemsArray = []
-    console.log('variantsForCheckout', variantsForCheckout)
-    // keep for a rainy day
-    // let allowUserToRedeem = checkAndUpdateUserRedemption(offerData[0], authSig);
+    const lineItemsArray = selectedVariantsArray.map(v => {
+      return {
+        title: `${v.productTitle} - ${v.title}`,
+        variant_id: v.id,
+        id: v.productId,
+        price: v.price,
+        quantity: 1,
+        applied_discount: {
+          value_type: draftOrderDetails.valueType.toLowerCase(),
+          value: draftOrderDetails.value
+        }
+      }
+    })
+
+    const {tags, note_attributes} = createNoteAttributesAndTags({draftOrderDetails, authSig, selectedNft});
+
+    const draftOrderRequest = {
+      note: `Offer Title: ${draftOrderDetails.title}`,
+      line_items: lineItemsArray,
+      tags,
+      note_attributes
+    };
+
+    try {
+      const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
+      if (draftOrderRes && draftOrderDetails.hasRedeemLimit) {
+        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
+          const updateWalletRes = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
+        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
+          const updateNftIdRes = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
+        }
+      }
+      try {
+        const draftOrderMetafieldRes = await addShopifyMetafieldToDraftOrder({shopify, draftOrderRes, selectedNft});
+      } catch (err) {
+        console.log('Error creating draft order metafield', err);
+        return err;
+      }
+      return {redeemUrl: draftOrderRes.invoice_url};
+    } catch (err) {
+      console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
+      return err;
+    }
   })
 
+  fastify.post('/api/shopify/getRedeemLimitStats', async (request, reply) => {
+    try {
+      const result = await validateDevToken(request.headers.authorization);
+      if (!result) {
+        return "Unauthorized";
+      }
+
+      const orderData = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("id", "=", request.body.id);
+
+      return orderData[0];
+    } catch (err) {
+      console.error("--> Error getting all draft orders:", err);
+      return err;
+    }
+  })
+
+  fastify.post('/api/shopify/updateDevRedeemedList', async (request, reply) => {
+    console.log('request.body', request.body)
+    try {
+      const result = await validateDevToken(request.headers.authorization);
+      if (!result) {
+        return "Unauthorized";
+      }
+
+      const {id, typeOfRedeem, redeemedList} = request.body;
+
+      let updatedOrderRes = null;
+
+      if (typeOfRedeem === 'nftId') {
+        updatedOrderRes = await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("id", "=", id)
+          .patch({
+            'redeemed_nfts': redeemedList
+          })
+      } else if (typeOfRedeem === 'walletAddress') {
+        updatedOrderRes = await fastify.objection.models.shopifyDraftOrders
+          .query()
+          .where("id", "=", id)
+          .patch({
+            'redeemed_by': redeemedList
+          })
+      }
+
+      return updatedOrderRes;
+    } catch (err) {
+      console.error("--> Error getting all draft orders:", err);
+      return err;
+    }
+  })
+
+  fastify.post('/api/shopify/seed', async (request, reply) => {
+    const res = await fastify.objection.models.shopifyDraftOrders.query().insert({
+      shopId: '59835023511',
+      accessControlConditions: "[{\"conditionType\":\"evmBasic\",\"contractAddress\":\"0xA3D109E28589D2AbC15991B57Ce5ca461Ad8e026\",\"standardContractType\":\"ERC721\",\"chain\":\"polygon\",\"method\":\"balanceOf\",\"parameters\":[\":userAddress\"],\"returnValueTest\":{\"comparator\":\">=\",\"value\":\"1\"}}]",
+      humanizedAccessControlConditions: 'Controls wallet with address 0xcC542677e244c83FF66cEd6b6a88Eb7A6da1f024',
+      assetIdOnService: 'gid://shopify/Product/7347665535127',
+      title: 'check it out - DO NOT DELETE',
+      summary: 'Token gated twilight darkness',
+      assetType: 'exclusive',
+      userId: '',
+      draftOrderDetails: '{"id":"gid://shopify/Product/7347665535127","quantity":1,"title":"original discount - DO NOT DELETE","description":null,"redeemLimit":"0","value":0,"valueType":"PERCENTAGE"}',
+      extraData: 'evmBasic',
+      active: true,
+      redeemedBy: '{}',
+      description: null,
+      discount: null,
+      usedChains: null,
+      conditionTypes: null,
+      redeemedNfts: null,
+      assetNameOnService: null,
+      offerType: null,
+      redeemType: null
+    })
+    console.log('CHCEK RES!', res)
+    return res;
+  })
 }
