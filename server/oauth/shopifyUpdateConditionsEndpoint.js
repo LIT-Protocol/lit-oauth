@@ -192,12 +192,14 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedAllShopsWithDraftOrders = await Promise.all(allShopsWithDraftOrders)
     console.log('resolvedAllShopsWithDraftOrders', resolvedAllShopsWithDraftOrders)
-    // const iterateThroughShops = resolvedAllShopsWithDraftOrders.map(s => {
-    //   const updateRes = await getAndUpdateOldOffers(fastify, s);
-    // })
-    // const allOffers = await fastify.objective.models.shopifyDraftOrders.query().where('shopId', '=', request.body.shopId)
-    // console.log('updateRes', updateRes);
-    return resolvedAllShopsWithDraftOrders;
+    const iterateThroughShops = resolvedAllShopsWithDraftOrders.map(async s => {
+      const updateRes = await getAndUpdateOldOffers(fastify, s);
+      return updateRes;
+    })
+
+    const resolvedShopIterations = await Promise.all(iterateThroughShops);
+
+    return resolvedShopIterations;
   })
 
   fastify.post("/api/shopify/returnFormatToPrevious", async (request, response) => {
