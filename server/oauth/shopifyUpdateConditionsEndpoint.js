@@ -188,9 +188,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       draftOrders = await fastify.objection.models.shopifyDraftOrders.query();
     }
 
-    // const updateRes = await getAndUpdateOldOffers(fastify, draftOrders);
+    const updateRes = await getAndUpdateOldOffers(fastify, draftOrders);
     // const allOffers = await fastify.objective.models.shopifyDraftOrders.query().where('shopId', '=', request.body.shopId)
-    console.log('draftOrders', draftOrders);
+    console.log('updateRes', updateRes);
     return draftOrders;
   })
 }
