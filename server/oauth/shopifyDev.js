@@ -26,7 +26,7 @@ const validateDevToken = async (token) => {
   const removeBearer = token.split(' ');
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
-    jsonwebtoken.verify(splitToken, process.env.LIT_DOODLES_SECRET, [ 'H256' ], (err, decoded) => {
+    jsonwebtoken.verify(splitToken, process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET, [ 'H256' ], (err, decoded) => {
       if (err) reject(false);
       else if (decoded) resolve(decoded);
     })
