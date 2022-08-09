@@ -48,9 +48,9 @@ export const seedRedeemedNftList = (draftOrderDetails) => {
   const parsedDraftOrderDetails = JSON.parse(draftOrderDetails);
   let redeemedNftsList = {};
   if (parsedDraftOrderDetails.hasRedeemLimit && parsedDraftOrderDetails.typeOfRedeem === 'nftId') {
-    const parsedConditionTypes = parsedDraftOrderDetails.usedChains.split(',');
-    parsedConditionTypes.forEach(conditionType => {
-      redeemedNftsList[conditionType] = {};
+    const parsedUsedChains = parsedDraftOrderDetails.usedChains.split(',');
+    parsedUsedChains.forEach(usedChain => {
+      redeemedNftsList[usedChain] = {};
     })
   }
   return JSON.stringify(redeemedNftsList);

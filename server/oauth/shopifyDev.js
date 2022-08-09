@@ -48,7 +48,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
-    console.log('start of saveDevDraftOrder')
+    console.log('start of saveDevDraftOrder', request.body)
     const {
       shop_id,
       shop_name,
