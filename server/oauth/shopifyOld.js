@@ -573,7 +573,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const {name, pass, field} = request.body;
+    const {name, pass, getEmptyFields} = request.body;
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
@@ -583,9 +583,9 @@ export default async function shopifyEndpoints(fastify, opts) {
     let draftOrders = null;
     let allDraftOrders;
     let allStores = [];
-    if (field) {
+    if (!!getEmptyFields) {
       draftOrders = await fastify.objection.models.shopifyDraftOrders
-        .query().where(field, "=", null)
+        .query().where("offer_type", "=", null)
     } else if (name === 'all') {
       const allStoresHolder = await fastify.objection.models.shopifyStores
         .query()
