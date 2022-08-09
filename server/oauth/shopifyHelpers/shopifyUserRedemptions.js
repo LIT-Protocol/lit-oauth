@@ -1,6 +1,10 @@
 // functions for checking user redemption status
 import { checkEthereumNfts, checkPolygonNfts } from "./shopifyAlchemyHelpers.js";
 
+export const updateMetrics = (fastify, offerData) => {
+  console.log('updateMetrics offerData', offerData)
+}
+
 export const checkUserValidity = async (offerData, authSig) => {
   let redemptionStatus = {
     allowRedeem: true,

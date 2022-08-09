@@ -14,7 +14,7 @@ import {
 } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import LitJsSdk from "lit-js-sdk";
 import {
-  checkUserValidity, updateNftIdRedeem,
+  checkUserValidity, updateMetrics, updateNftIdRedeem,
   updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
 
@@ -389,6 +389,12 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       } catch (err) {
         console.log('Error creating draft order metafield', err);
         return err;
+      }
+
+      try {
+        updateMetrics(fastify, offerData[0])
+      } catch (err) {
+        console.log('Error updating metrics:', err);
       }
       return {redeemUrl: draftOrderRes.invoice_url};
     } catch (err) {
