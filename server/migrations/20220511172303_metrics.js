@@ -5,7 +5,7 @@ export const up = (knex) => {
       .unique()
       .primary()
       .defaultTo(knex.raw("gen_random_uuid()"));
-    table.uuid("shopify_draft_order_data")
+    table.text("shopify_draft_order_data")
     table.timestamps();
   });
 };

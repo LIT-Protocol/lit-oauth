@@ -13,7 +13,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
 
   console.log('ids', ids)
 
-  let splitTags;
+  let splitTags = [];
   let resolvedProducts;
 
   // map over product ids
@@ -25,9 +25,13 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     splitTags = resolvedProducts.map(p => {
       return p.tags.split(',');
     });
+    console.log('splitTags', splitTags)
   } catch (err) {
     console.error("--> Error getting product on save DO:", err);
+    splitTags = [];
   }
+
+  console.log('resolvedProducts', resolvedProducts)
 
   // add exclusive or discount tag to list of current tags
   // TODO: might not need tags anymore
