@@ -352,7 +352,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     }
 
     const {entries} = request.body;
-    const parsedString = JSON.parse(entries);
+    const parsedString = entries.split(',');
 
     const mappedEntries = parsedString.map(async s => {
       const entry = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', s);
