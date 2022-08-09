@@ -11,7 +11,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     return id.split("/").pop();
   })
 
-  console.log('ids', ids)
+  console.log('ids - check check', ids)
 
   let splitTags = [];
   let resolvedProducts;
@@ -45,6 +45,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     return updatedTag;
   });
 
+  console.log('resolvedProducts - CHECK BEFORE MAP', resolvedProducts)
   // map over new tag array and update products
   try {
     const updatedProductPromises = resolvedProducts.map(async (p, i) => {
