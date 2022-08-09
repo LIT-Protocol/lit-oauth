@@ -1,4 +1,7 @@
-import { makeShopifyInstance, updateProductWithTagAndUuid } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
+import {
+  makeShopifyInstance,
+  updateProductWithTagAndUuid
+} from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import dotenv from "dotenv";
 
 dotenv.config({
@@ -30,39 +33,45 @@ const updateConditionTypes = (acc) => {
     }
   }
   return {
-    unifiedAccessControlConditions,
     chainsUsed,
     conditionTypes
   };
 }
 
 const getAndUpdateOldOffers = async (fastify, allOffers) => {
-  let newOffers = [];
-  let oldOffers = [];
-  allOffers.forEach(o => {
-    try {
-      const parsedAssetId = JSON.parse(o.assetIdOnService);
-      newOffers.push(o);
-    } catch (err) {
-      oldOffers.push(o);
-    }
-  })
-
-  if (!oldOffers.length) {
-    return false;
+  // let newOffers = [];
+  // let oldOffers = [];
+  // allOffers.forEach(o => {
+  //   try {
+  //     const parsedAssetId = JSON.parse(o.assetIdOnService);
+  //     newOffers.push(o);
+  //   } catch (err) {
+  //     oldOffers.push(o);
+  //   }
+  // })
+  //
+  // if (!oldOffers.length) {
+  //   return false;
+  // }
+  if (!allOffers.length) {
+    return [];
   }
 
-  const updatedOldOffers = oldOffers.map(o => {
+  const updatedOldOffers = allOffers.map(o => {
     let offerHolder = JSON.parse(JSON.stringify(o));
     console.log('o', o)
 
     // update access control conditions
     const parsedAcc = JSON.parse(o.accessControlConditions);
     const updatedUaccObj = updateConditionTypes(parsedAcc);
-    offerHolder.accessControlConditions = JSON.stringify(updatedUaccObj.unifiedAccessControlConditions);
 
     // update assetIdOnService
-    offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
+    try {
+      const checkAssetIdOnService = JSON.parse(o.assetIdOnService);
+      offerHolder.assetIdOnService = o.assetIdOnService;
+    } catch (err) {
+      offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
+    }
 
     // update conditionTypes.  will always be evmBasic for v1 conditions
     offerHolder.conditionTypes = 'evmBasic';
@@ -85,7 +94,7 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     // update draftOrderDetails
     const parsedDraftOrderDetails = JSON.parse(o.draftOrderDetails);
     parsedDraftOrderDetails['conditionTypes'] = updatedUaccObj.conditionTypes.join(',');
-    parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? true : false;
+    parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
     parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
     parsedDraftOrderDetails['typeOfAccessControl'] = offerHolder.assetType;
     parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
@@ -98,6 +107,8 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     //update conditionType
     return offerHolder;
   })
+
+  console.log('ALL OFFERS', allOffers)
 
   const shop = await fastify.objection.models.shopifyStores.query()
     .where("shop_id", "=", allOffers[0].shopId);
@@ -183,8 +194,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       shops = await fastify.objection.models.shopifyStores.query();
     }
 
-    console.log('check shops', shops)
-
     const allShopsWithDraftOrders = shops.map(async s => {
       let draftOrderHolder = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', s.shopId);
       return draftOrderHolder;
@@ -228,6 +237,59 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         "redeem_type": null,
       })
     return patchResponse;
+  })
+
+  fastify.post('/api/shopify/getAllMetafields', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    console.log('request.body', typeof request.body)
+    const {shopId} = request.body;
+    console.log('SHop', shopId)
+    const shop = await fastify.objection.models.shopifyStores.query()
+      .where("shop_id", "=", shopId);
+
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+    const allDraftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId)
+    let ids = [];
+    allDraftOrders.forEach(draftOrder => {
+      try {
+        const idHolder = JSON.parse(draftOrder.assetIdOnService);
+        idHolder.forEach(id => {
+          const endHolder = id.split("/").pop();
+          console.log('endHolder', endHolder)
+          ids.push(endHolder)
+        })
+      } catch (err) {
+        const endHolder = draftOrder.assetIdOnService.split("/").pop();
+        ids.push(endHolder)
+      }
+    })
+
+    // return ids;
+
+    const allProductMetafieldPromises = ids.map(async id => {
+      return await shopify.metafield.list({
+        metafield: {
+          owner_resource: 'product',
+          owner_id: id
+        }
+      })
+    })
+
+    const resolvedAllProductMetafields = await Promise.all(allProductMetafieldPromises);
+
+    return resolvedAllProductMetafields.flat();
+
+    // const checkDelete = resolvedAllProductMetafields.flat().map(async meta => {
+    //   return await shopify.metafield.delete(meta.id);
+    // })
+    //
+    // const deleteChecked = await Promise.all(checkDelete);
+    //
+    // return deleteChecked;
   })
 
 }

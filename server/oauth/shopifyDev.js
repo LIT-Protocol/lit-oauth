@@ -1,6 +1,6 @@
 import {
   parseAndUpdateUsedByList,
-  seedRedeemedByList, seedRedeemedNFtList,
+  seedRedeemedByList, seedRedeemedNftList,
   shortenShopName
 } from "./shopifyHelpers/shopifyReusableFunctions.js";
 import Shopify from "shopify-api-node";
@@ -48,6 +48,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
+    console.log('start of saveDevDraftOrder')
     const {
       shop_id,
       shop_name,
@@ -71,7 +72,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     } = request.body;
 
     const redeemed_by = seedRedeemedByList(draft_order_details);
-    const redeemed_nfts = seedRedeemedNFtList(draft_order_details);
+    const redeemed_nfts = seedRedeemedNftList(draft_order_details);
 
     try {
       const result = await validateDevToken(request.headers.authorization);

@@ -7,11 +7,11 @@ export const makeShopifyInstance = (shopName, accessToken) => {
 }
 
 export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, shopObj) => {
-  console.log('shopObj', shopObj)
-  console.log('queryObj', queryObj)
   let ids = JSON.parse(queryObj.asset_id_on_service).map(id => {
     return id.split("/").pop();
   })
+
+  console.log('ids', ids)
 
   let splitTags;
   let resolvedProducts;
@@ -86,7 +86,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
   return metafieldValue;
 }
 
-const removeMetafieldFromProducts = async (shopifyInstance, productMetafields, uuid) => {
+const removeMetafieldFromProducts = async (shopifyInstance, productMetafields = [], uuid) => {
   const metafieldsToBeRemoved = productMetafields.filter(m => {
     return m.key === uuid;
   })

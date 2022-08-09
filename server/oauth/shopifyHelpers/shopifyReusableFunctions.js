@@ -44,7 +44,7 @@ export const seedRedeemedByList = (draftOrderDetails) => {
   return JSON.stringify(redeemedByList);
 }
 
-export const seedRedeemedNFtList = (draftOrderDetails) => {
+export const seedRedeemedNftList = (draftOrderDetails) => {
   const parsedDraftOrderDetails = JSON.parse(draftOrderDetails);
   let redeemedNftsList = {};
   if (parsedDraftOrderDetails.hasRedeemLimit && parsedDraftOrderDetails.typeOfRedeem === 'nftId') {

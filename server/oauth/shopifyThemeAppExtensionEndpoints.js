@@ -12,6 +12,7 @@ dotenv.config({
 
 export default async function shopifyThemeAppExtensionEndpoints(fastify, opts) {
   fastify.post("/api/shopify/getRedeemStats", async (request, reply) => {
+    console.log('start of redeem stats')
     const {jwt, offerArray, authSig, shopName, product} = request.body;
 
     let verified;
@@ -50,8 +51,10 @@ export default async function shopifyThemeAppExtensionEndpoints(fastify, opts) {
 
     // TODO FOR TOMORROW: remove this check user validity and move below
 
+    console.log('offerArray', offerArray)
     const offerDataArray = offerArray.map(async offer => {
       const offerDataHolder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', offer.offerId)
+      console.log('offerDataHolder', offerDataHolder)
       const offerData = offerDataHolder[0];
       try {
         offerData['redeemStatus'] = await checkUserValidity(offerData, authSig);
