@@ -3,6 +3,7 @@ import {
   updateProductWithTagAndUuid
 } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import dotenv from "dotenv";
+import { brokenIds } from "../scratch/brokenIds.js";
 
 dotenv.config({
   path: "../../env",
@@ -39,20 +40,6 @@ const updateConditionTypes = (acc) => {
 }
 
 const getAndUpdateOldOffers = async (fastify, allOffers) => {
-  // let newOffers = [];
-  // let oldOffers = [];
-  // allOffers.forEach(o => {
-  //   try {
-  //     const parsedAssetId = JSON.parse(o.assetIdOnService);
-  //     newOffers.push(o);
-  //   } catch (err) {
-  //     oldOffers.push(o);
-  //   }
-  // })
-  //
-  // if (!oldOffers.length) {
-  //   return false;
-  // }
   if (!allOffers.length) {
     return [];
   }
@@ -95,7 +82,13 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     const parsedDraftOrderDetails = JSON.parse(o.draftOrderDetails);
     parsedDraftOrderDetails['conditionTypes'] = updatedUaccObj.conditionTypes.join(',');
     parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
-    parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
+    // parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
+    try {
+      const checkAssetIdOnService = JSON.parse(parsedDraftOrderDetails.id);
+      offerHolder.assetIdOnService = parsedDraftOrderDetails.id;
+    } catch (err) {
+      offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
+    }
     parsedDraftOrderDetails['typeOfAccessControl'] = offerHolder.assetType;
     parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
     parsedDraftOrderDetails['usedChains'] = updatedUaccObj.chainsUsed.join(',');
@@ -343,6 +336,32 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const deleteChecked = await Promise.all(checkDelete);
 
     return deleteChecked;
+  })
+
+  fastify.post('/api/shopify/getSpecificDraftOrder', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', request.body.id)
+    return draftOrder;
+  })
+
+  fastify.post('/api/shopify/fixOffers', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {entries} = request.body;
+    const parsedString = JSON.parse(entries);
+
+    const mappedEntries = parsedString.map(async s => {
+      const entry = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', s);
+      return entry;
+    })
+
+    const resolvedEntries = await Promise.all(mappedEntries);
+
+    return resolvedEntries;
   })
 
 }
