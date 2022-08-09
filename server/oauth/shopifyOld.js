@@ -573,7 +573,7 @@ export default async function shopifyEndpoints(fastify, opts) {
   // });
   //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
-    const {name, pass, getEmptyFields} = request.body;
+    const {name, pass, getEmptyFields, shopId} = request.body;
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
@@ -596,7 +596,14 @@ export default async function shopifyEndpoints(fastify, opts) {
         delete tempStore.accessToken;
         return tempStore;
       })
+    } else if (!!shopId) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_id', '=', shopId);
 
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
     } else if (!!name) {
       specificStore = await fastify.objection.models.shopifyStores
         .query()
