@@ -1,0 +1,174 @@
+.redeem-success-container {
+    animation: fade-in 1s;
+    width: 100%;
+    min-width: 750px;
+}
+
+.offer-info {
+    /*text-align: left;*/
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    /*margin: 1em;*/
+    padding: 1em 1em;
+}
+
+.offer-info p {
+    margin: 0;
+    padding: 0.25em 0;
+}
+
+.offer-info-title {
+    margin: 0;
+    padding: 0 0 0.25em;
+}
+
+.offer-actions {
+    padding: 0.5em;
+    width: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.offer-action-email {
+    width: 50%;
+}
+
+.offer-actions-redeemed {
+    display: flex;
+    flex-direction: column;
+    padding: 0 1em;
+}
+
+.offer-actions-button-holder {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.offer-actions-button {
+    margin-left: 1em !important;
+}
+
+.offer-container-prompt {
+    width: auto;
+    color: rgb(36, 78, 112);
+    margin: 0 1em 0 0;
+    padding: 0;
+}
+
+.offer-actions-notice {
+    text-align: left;
+}
+
+.product-redeem-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.product-redeem-cards ShopifyProductSelect {
+    animation: fade-in 1s;
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.select-nft-dialog {
+}
+
+.select-nft-content {
+
+}
+
+.select-nft-card {
+    width: 40em;
+    height: 12em;
+    display: flex;
+    align-items: center;
+    padding: 1em;
+    transition-duration: 0.2s;
+    border: 1px solid transparent;
+    border-radius: 0.25em;
+    margin-bottom: 0.5em;
+}
+
+.selected-nft-card, select-nft-card:hover {
+    border: 1px solid #333;
+    background: #efefef;
+}
+
+.select-nft-already-redeemed {
+    color: rgba(168, 0, 0, 0.7);
+}
+
+.select-nft-card-disabled {
+    filter: grayscale(1);
+}
+
+.select-nft-image {
+    height: 12em;
+    width: auto;
+}
+
+.select-nft-info {
+    padding: 0 1em;
+}
+
+.select-nft-info p {
+    word-break: break-all;
+}
+
+.select-nft-dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 1em 0.5em;
+}
+
+@media only screen and (max-width: 500px) {
+    .redeem-success-container {
+        min-width: auto;
+        height: 100vh;
+    }
+
+    .offer-info p {
+        text-align: left;
+        word-break: break-all;
+    }
+
+    .select-nft-card {
+        width: 90%;
+        flex-direction: column;
+        height: auto;
+    }
+
+    .select-nft-info {
+        word-break: break-all;
+    }
+
+    .select-nft-info p {
+        word-break: break-all;
+    }
+
+    .select-nft-dialog-actions Button {
+        margin: 0 0.5em;
+    }
+
+    .offer-actions-button-holder {
+        justify-content: space-between;
+    }
+
+    .offer-actions-button {
+        margin-left: 0 !important;
+    }
+}

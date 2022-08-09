@@ -6,13 +6,11 @@ import fastifyBugsnag from "lit-fastify-bugsnag";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
-import shopifyEndpoints from "./oauth/shopify.js";
-import shopifyDoodlesEndpoints from "./oauth/customShopifyEndpoints/shopifyDoodles.js";
-import shopifyMetarelicEndpoints from "./oauth/customShopifyEndpoints/shopifyMetarelic.js";
-import shopifyRhEndpoints from "./oauth/customShopifyEndpoints/shopifyRh.js";
-import shopifyMetafactoryEndpoints from "./oauth/customShopifyEndpoints/shopifyMetafactory.js";
-import shopifyAuthPlaygroundEndpoints from "./oauth/customShopifyEndpoints/shopifyAuthPlayground.js";
-import shopifyPoapEndpoints from "./oauth/customShopifyEndpoints/shopifyPoapEndpoints.js";
+import shopifyEndpoints from "./oauth/shopifyOld.js";
+import shopifyDevEndpoints from "./oauth/shopifyDev.js";
+import shopifyGDPREndpoints from "./oauth/shopifyGDPREndpoints.js";
+import shopifyThemeAppExtensionEndpoints from "./oauth/shopifyThemeAppExtensionEndpoints.js";
+import shopifyUpdateConditionsEndpoint from "./oauth/shopifyUpdateConditionsEndpoint.js";
 import knexConfig from "./knexfile.js";
 import Bugsnag from "@bugsnag/js";
 
@@ -40,12 +38,12 @@ const fastify = Fastify();
 
 fastify.register(fastifyCors, {
   origin: "*",
-  methods: ["POST", "GET", "DELETE", "PUT", "PATCH"],
+  methods: [ "POST", "GET", "DELETE", "PUT", "PATCH" ],
 });
 
 fastify.register(fastifyObjectionJS, {
   knexConfig: knexConfig[process.env.NODE_ENV || "development"],
-  models: [ConnectedServices, Shares, ShopifyShares, ShopifyStores, ShopifyDraftOrders],
+  models: [ ConnectedServices, Shares, ShopifyShares, ShopifyStores, ShopifyDraftOrders ],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");
@@ -58,7 +56,7 @@ fastify.setErrorHandler((error, request, reply) => {
   if (process.env.LIT_GATEWAY_ENVIRONMENT !== "local") {
     Bugsnag.notify(error);
   }
-  reply.send({ error });
+  reply.send({error});
 });
 
 fastify.register(fastifyBugsnag, {
@@ -68,18 +66,18 @@ fastify.register(fastifyBugsnag, {
 });
 
 fastify.post("/api/connectedServices", async (request, reply) => {
-  const { authSig } = request.body;
+  const {authSig} = request.body;
 
   if (!authUser(authSig)) {
     reply.code(400);
-    return { error: "Invalid signature" };
+    return {error: "Invalid signature"};
   }
   const userId = authSig.address;
 
   const services = (
     await fastify.pg.query(
       "SELECT service_name, email, created_at FROM connected_services WHERE user_id=$1",
-      [userId]
+      [ userId ]
     )
   ).rows;
 
@@ -91,13 +89,10 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 fastify.register(shopifyEndpoints);
-// TODO: erase custom shop endpoints once public Shopify store is active
-fastify.register(shopifyDoodlesEndpoints);
-fastify.register(shopifyMetarelicEndpoints);
-fastify.register(shopifyRhEndpoints);
-fastify.register(shopifyMetafactoryEndpoints);
-fastify.register(shopifyAuthPlaygroundEndpoints);
-fastify.register(shopifyPoapEndpoints);
+fastify.register(shopifyDevEndpoints);
+fastify.register(shopifyGDPREndpoints);
+fastify.register(shopifyThemeAppExtensionEndpoints);
+fastify.register(shopifyUpdateConditionsEndpoint);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {

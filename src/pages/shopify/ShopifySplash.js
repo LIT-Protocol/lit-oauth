@@ -38,8 +38,10 @@ export default function ShopifySplash() {
     }
   }, [shopName])
 
+  // todo: this will be deprecate for old versions.  should split obsolete code into a different file
   const checkForShopPromotions = async (shop, productId) => {
     try {
+      console.log('CHECK FOR PROMOTIONS')
       const res = await checkForPromotions(shop, productId);
       console.log('RES', res)
       if (!res.data) {

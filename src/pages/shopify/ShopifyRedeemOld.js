@@ -9,14 +9,14 @@ import {
   MenuItem,
   Tooltip, FormControl, InputLabel, LinearProgress
 } from "@mui/material";
-import { setUpRedeemDraftOrder, redeemDraftOrder, getAccessControl } from "./shopifyAsyncHelpers";
-import "./ShopifyRedeem.scss";
+import { setUpRedeemDraftOrder, redeemDraftOrder, getOfferData } from "./shopifyAsyncHelpers";
+import "./ShopifyRedeemOld.scss";
 import './ShopifyStyles.scss';
 import LitJsSdk from "lit-js-sdk";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import { updateV1ConditionTypes } from "./shopifyHelpers";
 
-const ShopifyRedeem = () => {
+const ShopifyRedeemOld = () => {
   const {performWithAuthSig} = useAppContext();
   const [ loading, setLoading ] = useState(true);
   const [ product, setProduct ] = useState(null);
@@ -98,10 +98,10 @@ const ShopifyRedeem = () => {
     const id = queryParams.get('id');
     setDraftOrderId(id);
     try {
-      const resp = await getAccessControl(id);
+      const resp = await getOfferData(id);
       setAccessControlData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      getAuthSigs(resp.data.extraData);
+      getAuthSigs(resp.data.conditionTypes);
     } catch (err) {
       console.log('Error getting access control', err);
       handleUpdateError(err);
@@ -149,7 +149,7 @@ const ShopifyRedeem = () => {
 
   const checkForPromotionAccessControl = async () => {
     try {
-      return provisionAccess(accessControlData.parsedAcc).then(jwt => {
+      return provisionAccess(accessControlData.parsedUacc).then(jwt => {
         return jwt;
       });
     } catch (err) {
@@ -163,23 +163,22 @@ const ShopifyRedeem = () => {
   }
 
   const provisionAccess = async (unifiedAccessControlConditions) => {
-    let chainArray;
+    let conditionTypeArray;
     let authSigs = {};
-    // for obsolete access control conditions where extraData was null
-    if (!accessControlData['extraData']) {
+    // for obsolete access control conditions where usedChains was null
+    if (!accessControlData['conditionTypes']) {
       authSigs['ethereum'] = storedEVMAuthSig;
     } else {
-      chainArray = accessControlData.extraData.split(',');
-      chainArray.forEach(c => {
+      conditionTypeArray = accessControlData.conditionTypes.split(',');
+      conditionTypeArray.forEach(c => {
         // if (c === 'evmBasic' || c === 'ethereum') {
         if (c !== 'solRpc') {
-          authSigs['ethereum'] = storedEVMAuthSig;
+          authSigs['evmBasic'] = storedEVMAuthSig;
         } else if (c === 'solRpc') {
-          authSigs['solana'] = storedSolanaAuthSig;
+          authSigs['solRpc'] = storedSolanaAuthSig;
         }
       });
     }
-    console.log('unifiedAccessControlConditions', unifiedAccessControlConditions)
 
     // const getWalletNFTsResponse = await getWalletNFTs(authSigs, unifiedAccessControlConditions);
 
@@ -191,7 +190,13 @@ const ShopifyRedeem = () => {
       extraData: "",
     };
 
+
     const afterUpdateV1Conditions = updateV1ConditionTypes(unifiedAccessControlConditions);
+    console.log('CHECK RESOURCE ID', {
+      unifiedAccessControlConditions: afterUpdateV1Conditions,
+      authSig: authSigs,
+      resourceId: resourceId
+    })
 
     try {
       const jwt = await window.litNodeClient.getSignedToken({
@@ -211,7 +216,7 @@ const ShopifyRedeem = () => {
   const formatSelectMenuOptions = (product) => {
     const mappedVariantRows = product.variants.map((p) => {
       return p.title
-    })
+    });
     setVariantMenuOptions(mappedVariantRows);
   }
 
@@ -423,22 +428,18 @@ const ShopifyRedeem = () => {
                     </div>
                   </Tooltip>
                 ) : (
-                  <span className={'redemptionUrl-container'}>
-                    <p className={'redemptionUrl-prompt'} onClick={async () => {
-                      navigator.clipboard.writeText(redemptionURL);
-                      setLinkCopied(true)
-                    }}>
-                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Make sure to save the link URL if you don't plan on completing checkout right now. You might not be able to access checkout again if you don't have it.
-                      {` `}<strong><i>{!linkCopied ? 'Click here to copy checkout link.' : 'Copied!'}</i></strong>
+                  <span>
+                    <p className={'redemptionUrl-prompt'}>
+                      <strong>NOTICE:</strong> There is a limit on how many times this offer can be redeemed. Use the button to the right to copy the link and paste it into a new window, but make sure to save the link if you don't checkout immediately.  You might not be able to access it again if you don't.
                     </p>
                     <Button className={"redeem-button"}
                             variant={"contained"}
                             onClick={async () => {
-                              // navigator.clipboard.writeText(redemptionURL);
-                              // setLinkCopied(true);
-                              window.location.href = redemptionURL;
+                              navigator.clipboard.writeText(redemptionURL);
+                              setLinkCopied(true);
+                              // window.location.href = redemptionURL;
                             }}>
-                      Go to checkout
+                      {!linkCopied ? 'Click to copy checkout link' : 'Copied!'}
                     </Button>
                   </span>
                 )}
@@ -462,4 +463,4 @@ const ShopifyRedeem = () => {
   )
 }
 
-export default ShopifyRedeem;
+export default ShopifyRedeemOld;
