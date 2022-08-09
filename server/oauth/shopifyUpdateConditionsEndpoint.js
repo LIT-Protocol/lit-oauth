@@ -292,4 +292,57 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // return deleteChecked;
   })
 
+  fastify.post('/api/shopify/deleteAllMetafields', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    console.log('request.body', typeof request.body)
+    const {shopId} = request.body;
+    console.log('SHop', shopId)
+    const shop = await fastify.objection.models.shopifyStores.query()
+      .where("shop_id", "=", shopId);
+
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+    const allDraftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId)
+    let ids = [];
+    allDraftOrders.forEach(draftOrder => {
+      try {
+        const idHolder = JSON.parse(draftOrder.assetIdOnService);
+        idHolder.forEach(id => {
+          const endHolder = id.split("/").pop();
+          console.log('endHolder', endHolder)
+          ids.push(endHolder)
+        })
+      } catch (err) {
+        const endHolder = draftOrder.assetIdOnService.split("/").pop();
+        ids.push(endHolder)
+      }
+    })
+
+    // return ids;
+
+    const allProductMetafieldPromises = ids.map(async id => {
+      return await shopify.metafield.list({
+        metafield: {
+          owner_resource: 'product',
+          owner_id: id
+        }
+      })
+    })
+
+    const resolvedAllProductMetafields = await Promise.all(allProductMetafieldPromises);
+
+    // return resolvedAllProductMetafields.flat();
+
+    const checkDelete = resolvedAllProductMetafields.flat().map(async meta => {
+      return await shopify.metafield.delete(meta.id);
+    })
+
+    const deleteChecked = await Promise.all(checkDelete);
+
+    return deleteChecked;
+  })
+
 }
