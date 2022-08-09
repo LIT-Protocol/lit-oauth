@@ -36,7 +36,7 @@ export const seedRedeemedByList = (draftOrderDetails) => {
   const parsedDraftOrderDetails = JSON.parse(draftOrderDetails);
   let redeemedByList = {};
   if (parsedDraftOrderDetails.hasRedeemLimit && parsedDraftOrderDetails.typeOfRedeem === 'walletAddress') {
-    const parsedConditionTypes = parsedDraftOrderDetails.conditionType.split(',');
+    const parsedConditionTypes = parsedDraftOrderDetails.conditionTypes.split(',');
     parsedConditionTypes.forEach(conditionType => {
       redeemedByList[conditionType] = {};
     })
