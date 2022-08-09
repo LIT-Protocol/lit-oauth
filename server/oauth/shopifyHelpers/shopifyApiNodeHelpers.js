@@ -22,6 +22,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
       return await shopifyInstance.product.get(id);
     })
     resolvedProducts = await Promise.all(products);
+    console.log('resolvedProducts', resolvedProducts)
     splitTags = resolvedProducts.map(p => {
       return p.tags.split(',');
     });
@@ -31,7 +32,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     splitTags = [];
   }
 
-  console.log('resolvedProducts', resolvedProducts)
 
   // add exclusive or discount tag to list of current tags
   // TODO: might not need tags anymore
