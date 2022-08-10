@@ -53,12 +53,7 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     const updatedUaccObj = updateConditionTypes(parsedAcc);
 
     // update assetIdOnService
-    try {
-      const checkAssetIdOnService = JSON.parse(o.assetIdOnService);
-      offerHolder.assetIdOnService = o.assetIdOnService;
-    } catch (err) {
-      offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
-    }
+    // offerHolder.assetIdOnService = JSON.stringify([JSON.parse(o.assetIdOnService)].flat());
 
     // update conditionTypes.  will always be evmBasic for v1 conditions
     offerHolder.conditionTypes = 'evmBasic';
@@ -361,21 +356,36 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedEntries = await Promise.all(mappedEntries);
     const fixDraftOrders = resolvedEntries.flat().map(async d => {
-      let parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
-      if (Array.isArray(parsedDraftOrderDetails.id[0])) {
-        parsedDraftOrderDetails.id = parsedDraftOrderDetails.id.flat();
-        // return JSON.stringify(parsedDraftOrderDetails)
-        const updated = await fastify.objection.models.shopifyDraftOrders.query()
-          .where('id', '=', d.id)
-          .patch({
-            draft_order_details: JSON.stringify(parsedDraftOrderDetails)
-          })
+      console.log('d', d)
+      let parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
+      // let parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
+      //
+      // if (Array.isArray(parsedDraftOrderDetails.id[0])) {
+      //   parsedDraftOrderDetails.id = parsedDraftOrderDetails.id.flat();
+      //   // return JSON.stringify(parsedDraftOrderDetails)
+      //   const updated = await fastify.objection.models.shopifyDraftOrders.query()
+      //     .where('id', '=', d.id)
+      //     .patch({
+      //       draft_order_details: JSON.stringify(parsedDraftOrderDetails)
+      //     })
+      //
+      //   return updated
+      // }
+      // return JSON.stringify(parsedDraftOrderDetails)
+      console.log('BLACH', JSON.parse(parsedAssetIdOnService[0]))
+      // const updated = await fastify.objection.models.shopifyDraftOrders.query()
+      //   .where('id', '=', d.id)
+      //   .patch({
+      //     asset_id_on_service: JSON.stringify(parsedAssetIdOnService.flat())
+      //   })
 
-        return updated
-      }
+      // return updated
+      return true
     })
+    console.log('fix draft orders', fixDraftOrders)
+    const resolvedFixed = await Promise.all(fixDraftOrders)
 
-    return fixDraftOrders;
+    return resolvedFixed;
   })
 
 }
