@@ -3,7 +3,6 @@ import {
   updateProductWithTagAndUuid
 } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import dotenv from "dotenv";
-import { brokenIds } from "../scratch/brokenIds.js";
 
 dotenv.config({
   path: "../../env",
