@@ -12,10 +12,12 @@ import {
 } from "./zoomAsyncHelpers";
 import ZoomProvisionAccessModal from "./ZoomGrantingComponents/ZoomProvisionAccessModal";
 // import { ShareModal } from "lit-access-control-conditions-modal";
+
 import { getResourceIdForMeeting, getSharingLink } from "./utils";
 import * as asyncHelpers from "../zoom/zoomAsyncHelpers";
 import LitProtocolConnection from "../sharedComponents/litProtocolConnection/LitProtocolConnection";
 import BackToApps from "../sharedComponents/backToApps/BackToApps";
+import ShareModal from "lit-share-modal-v3-react-17";
 
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
@@ -138,9 +140,11 @@ export default function ZoomGranting() {
     const resp = await axios.post(`${API_HOST}/api/oauth/zoom/serviceLogin`, {
       authSig,
     });
-    if (resp.data.redirectTo) {
-      window.location = resp.data.redirectTo;
-    }
+    console.log('resp.data.redirectTo', resp.data)
+    // NOTE: comment back in
+    // if (resp.data.redirectTo) {
+    //   window.location = resp.data.redirectTo;
+    // }
   };
 
   const loadMeetings = async (authSig) => {
@@ -286,101 +290,118 @@ export default function ZoomGranting() {
   return (
     <div>
       <BackToApps/>
-      {!storedAuthSig["sig"] || !currentServiceInfo ? (
-        <div className={"service-loader"}>
-          <CircularProgress/>
-          <h3>Waiting for Zoom - Ensure Pop-ups are enabled</h3>
-        </div>
-      ) : (
-        <section className={"service-grid-container"}>
-          <div className={"service-grid-header"}>
-            <ServiceHeader
-              serviceName={"Zoom App"}
-              oauthServiceProvider={"Zoom"}
-              currentUser={currentUser}
-              serviceImageUrl={"/zoom.png"}
-              signOut={signOut}
-            />
-          </div>
-          <div className={"service-grid-links"}>
-            <h3>Zoom Meetings and Webinars</h3>
-            <ZoomMeetings
-              className={"service-links"}
-              serviceName={"Drive"}
-              handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}
-              handleEditLinkAction={() => console.log("EDIT CLICKED")}
-              handleCopyLinkAction={(share) => getLinkFromShare(share)}
-              handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}
-              handleDeleteLinkAction={(share) => handleDeleteShare(share)}
-              listOfShares={allShares}
-            />
-          </div>
-          <ZoomProvisionAccessModal
-            handleCancelProvisionAccessDialog={
-              handleCancelProvisionAccessDialog
-            }
-            accessControlConditions={accessControlConditions}
-            removeIthAccessControlCondition={removeIthAccessControlCondition}
-            setAccessControlConditions={setAccessControlConditions}
-            humanizedAccessControlArray={humanizedAccessControlArray}
-            handleAddAccessControl={handleAddAccessControl}
-            handleGetShareLink={handleGetShareLink}
-            authSig={storedAuthSig}
-            selectedMeeting={selectedMeeting}
-            setSelectedMeeting={setSelectedMeeting}
-            meetings={meetings}
-            openProvisionAccessDialog={openProvisionAccessDialog}
-            setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}
-          />
+      <div className={"service-loader"}>
+        {/*<CircularProgress/>*/}
+        <h3>Zoom is temporarily down, we'll get this working again soon.</h3>
+      </div>
 
-          {/*{openShareModal && (*/}
-          {/*  <ShareModal*/}
-          {/*    onClose={() => setOpenShareModal(false)}*/}
-          {/*    sharingItems={[selectedMeeting]}*/}
-          {/*    onAccessControlConditionsSelected={async (restriction) => {*/}
-          {/*      await addToAccessControlConditions(restriction);*/}
-          {/*      setOpenShareModal(false);*/}
-          {/*      setOpenProvisionAccessDialog(true);*/}
-          {/*    }}*/}
-          {/*    getSharingLink={() => getSharingLink(selectedMeeting)}*/}
-          {/*    onlyAllowCopySharingLink={false}*/}
-          {/*    copyLinkText="Only authorized users will be able to enter this Zoom meeting"*/}
-          {/*    showStep="ableToAccess"*/}
-          {/*  />*/}
-          {/*)}*/}
-          <LitProtocolConnection
-            className={"lit-protocol-connection"}
-            connection={!!storedAuthSig["sig"]}
-          />
-          {/*{(process.env.NODE_ENV === "development" || window.location.href === 'https://oauth-app-dev.litgateway.com/zoom') && (*/}
-          {/*  <button*/}
-          {/*    style={{position: "absolute", top: "0", left: "0"}}*/}
-          {/*    onClick={async () => {*/}
-          {/*      console.log(window.location)*/}
-          {/*      const resp = await axios.post(*/}
-          {/*        `${API_HOST}/api/zoom/deleteUser`,*/}
-          {/*        {*/}
-          {/*          address: storedAuthSig.address,*/}
-          {/*          idOnService: currentServiceInfo.idOnService,*/}
-          {/*        }*/}
-          {/*      );*/}
+      {/*{!storedAuthSig["sig"] || !currentServiceInfo ? (*/}
+      {/*  <div className={"service-loader"}>*/}
+      {/*    <CircularProgress/>*/}
+      {/*    <h3>Waiting for Zoom - Ensure Pop-ups are enabled</h3>*/}
+      {/*  </div>*/}
+      {/*) : (*/}
+      {/*  <section className={"service-grid-container"}>*/}
+      {/*    <div className={"service-grid-header"}>*/}
+      {/*      <ServiceHeader*/}
+      {/*        serviceName={"Zoom App"}*/}
+      {/*        oauthServiceProvider={"Zoom"}*/}
+      {/*        currentUser={currentUser}*/}
+      {/*        serviceImageUrl={"/zoom.png"}*/}
+      {/*        signOut={signOut}*/}
+      {/*      />*/}
+      {/*    </div>*/}
+      {/*    <div className={"service-grid-links"}>*/}
+      {/*      <h3>Zoom Meetings and Webinars</h3>*/}
+      {/*      <ZoomMeetings*/}
+      {/*        className={"service-links"}*/}
+      {/*        serviceName={"Drive"}*/}
+      {/*        handleOpenProvisionAccessDialog={handleOpenProvisionAccessDialog}*/}
+      {/*        handleEditLinkAction={() => console.log("EDIT CLICKED")}*/}
+      {/*        handleCopyLinkAction={(share) => getLinkFromShare(share)}*/}
+      {/*        handleDownloadLinkAction={() => console.log("DOWNLOAD CLICKED")}*/}
+      {/*        handleDeleteLinkAction={(share) => handleDeleteShare(share)}*/}
+      {/*        listOfShares={allShares}*/}
+      {/*      />*/}
+      {/*    </div>*/}
+      {/*    <ZoomProvisionAccessModal*/}
+      {/*      handleCancelProvisionAccessDialog={*/}
+      {/*        handleCancelProvisionAccessDialog*/}
+      {/*      }*/}
+      {/*      accessControlConditions={accessControlConditions}*/}
+      {/*      removeIthAccessControlCondition={removeIthAccessControlCondition}*/}
+      {/*      setAccessControlConditions={setAccessControlConditions}*/}
+      {/*      humanizedAccessControlArray={humanizedAccessControlArray}*/}
+      {/*      handleAddAccessControl={handleAddAccessControl}*/}
+      {/*      handleGetShareLink={handleGetShareLink}*/}
+      {/*      authSig={storedAuthSig}*/}
+      {/*      selectedMeeting={selectedMeeting}*/}
+      {/*      setSelectedMeeting={setSelectedMeeting}*/}
+      {/*      meetings={meetings}*/}
+      {/*      openProvisionAccessDialog={openProvisionAccessDialog}*/}
+      {/*      setOpenProvisionAccessDialog={setOpenProvisionAccessDialog}*/}
+      {/*    />*/}
 
-          {/*      console.log("DELETED", resp);*/}
-          {/*    }}*/}
-          {/*  >*/}
-          {/*    DELETE USER*/}
-          {/*  </button>*/}
-          {/*)}*/}
-        </section>
-      )}
-      <Snackbar
-        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
-        open={openSnackbar}
-        autoHideDuration={5000}
-        onClose={handleCloseSnackbar}
-      >
-        <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>
-      </Snackbar>
+      {/*    /!*{openShareModal && (*!/*/}
+      {/*    /!*  <ShareModal*!/*/}
+      {/*    /!*    onClose={() => setOpenShareModal(false)}*!/*/}
+      {/*    /!*    sharingItems={[ selectedMeeting ]}*!/*/}
+      {/*    /!*    onAccessControlConditionsSelected={async (restriction) => {*!/*/}
+      {/*    /!*      await addToAccessControlConditions(restriction);*!/*/}
+      {/*    /!*      setOpenShareModal(false);*!/*/}
+      {/*    /!*      setOpenProvisionAccessDialog(true);*!/*/}
+      {/*    /!*    }}*!/*/}
+      {/*    /!*    getSharingLink={() => getSharingLink(selectedMeeting)}*!/*/}
+      {/*    /!*    onlyAllowCopySharingLink={false}*!/*/}
+      {/*    /!*    copyLinkText="Only authorized users will be able to enter this Zoom meeting"*!/*/}
+      {/*    /!*    showStep="ableToAccess"*!/*/}
+      {/*    /!*  />*!/*/}
+      {/*    /!*)}*!/*/}
+
+      {/*    {openShareModal && (*/}
+      {/*      <ShareModal*/}
+      {/*        onClose={() => setOpenShareModal(false)}*/}
+      {/*        onUnifiedAccessControlConditionsSelected={async (restriction) => {*/}
+      {/*          await addToAccessControlConditions(restriction);*/}
+      {/*          setOpenShareModal(false);*/}
+      {/*          setOpenProvisionAccessDialog(true);*/}
+      {/*        }}*/}
+      {/*      />*/}
+      {/*    )}*/}
+
+      {/*    <LitProtocolConnection*/}
+      {/*      className={"lit-protocol-connection"}*/}
+      {/*      connection={!!storedAuthSig["sig"]}*/}
+      {/*    />*/}
+      {/*    /!*{(process.env.NODE_ENV === "development" || window.location.href === 'https://oauth-app-dev.litgateway.com/zoom') && (*!/*/}
+      {/*    /!*  <button*!/*/}
+      {/*    /!*    style={{position: "absolute", top: "0", left: "0"}}*!/*/}
+      {/*    /!*    onClick={async () => {*!/*/}
+      {/*    /!*      console.log(window.location)*!/*/}
+      {/*    /!*      const resp = await axios.post(*!/*/}
+      {/*    /!*        `${API_HOST}/api/zoom/deleteUser`,*!/*/}
+      {/*    /!*        {*!/*/}
+      {/*    /!*          address: storedAuthSig.address,*!/*/}
+      {/*    /!*          idOnService: currentServiceInfo.idOnService,*!/*/}
+      {/*    /!*        }*!/*/}
+      {/*    /!*      );*!/*/}
+
+      {/*    /!*      console.log("DELETED", resp);*!/*/}
+      {/*    /!*    }}*!/*/}
+      {/*    /!*  >*!/*/}
+      {/*    /!*    DELETE USER*!/*/}
+      {/*    /!*  </button>*!/*/}
+      {/*    /!*)}*!/*/}
+      {/*  </section>*/}
+      {/*)}*/}
+      {/*<Snackbar*/}
+      {/*  anchorOrigin={{vertical: "bottom", horizontal: "center"}}*/}
+      {/*  open={openSnackbar}*/}
+      {/*  autoHideDuration={5000}*/}
+      {/*  onClose={handleCloseSnackbar}*/}
+      {/*>*/}
+      {/*  <Alert severity={snackbarInfo.severity}>{snackbarInfo.message}</Alert>*/}
+      {/*</Snackbar>*/}
     </div>
   );
 }
