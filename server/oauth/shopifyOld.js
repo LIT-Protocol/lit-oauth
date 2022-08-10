@@ -515,6 +515,9 @@ export default async function shopifyEndpoints(fastify, opts) {
   // TEST ENDPOINTS
 
   fastify.post("/api/shopify/getProductInformation", async (request, reply) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
     // const { uuid, jwt } = request.body;
     // const { verified, payload } = LitJsSdk.verifyJwt({ jwt });
     // if (

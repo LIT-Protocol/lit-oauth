@@ -59,6 +59,7 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
 
   // map over products and add metafield with query id
   let metafieldValue = {};
+  console.log('queryObj', queryObj)
   try {
     metafieldValue = {
       description: queryObj?.description ? queryObj.description : queryObj.humanized_access_control_conditions,

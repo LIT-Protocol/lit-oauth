@@ -52,7 +52,7 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     const updatedUaccObj = updateConditionTypes(parsedAcc);
 
     // update assetIdOnService
-    // offerHolder.assetIdOnService = JSON.stringify([JSON.parse(o.assetIdOnService)].flat());
+    offerHolder.assetIdOnService = JSON.stringify([ JSON.parse(o.assetIdOnService) ].flat());
 
     // update conditionTypes.  will always be evmBasic for v1 conditions
     offerHolder.conditionTypes = 'evmBasic';
@@ -77,12 +77,12 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     parsedDraftOrderDetails['conditionTypes'] = updatedUaccObj.conditionTypes.join(',');
     parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
     // parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
-    try {
-      const checkAssetIdOnService = JSON.parse(parsedDraftOrderDetails.id);
-      offerHolder.assetIdOnService = parsedDraftOrderDetails.id;
-    } catch (err) {
-      offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
-    }
+    // try {
+    //   const checkAssetIdOnService = JSON.parse(parsedDraftOrderDetails.id);
+    //   offerHolder.assetIdOnService = parsedDraftOrderDetails.id;
+    // } catch (err) {
+    //   offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
+    // }
     parsedDraftOrderDetails['typeOfAccessControl'] = offerHolder.assetType;
     parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
     parsedDraftOrderDetails['usedChains'] = updatedUaccObj.chainsUsed.join(',');
@@ -94,8 +94,6 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     //update conditionType
     return offerHolder;
   })
-
-  console.log('ALL OFFERS', allOffers)
 
   const shop = await fastify.objection.models.shopifyStores.query()
     .where("shop_id", "=", allOffers[0].shopId);
@@ -297,6 +295,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     allDraftOrders.forEach(draftOrder => {
       try {
         const idHolder = JSON.parse(draftOrder.assetIdOnService);
+        console.log('idHolder', idHolder)
         idHolder.forEach(id => {
           const endHolder = id.split("/").pop();
           console.log('endHolder', endHolder)
@@ -321,9 +320,20 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedAllProductMetafields = await Promise.all(allProductMetafieldPromises);
 
+    console.log('resolvedAllProductMetafields', resolvedAllProductMetafields)
     // return resolvedAllProductMetafields.flat();
+    let filteredMetafields = [];
+    resolvedAllProductMetafields.forEach((m, i) => {
+      console.log('m', m)
+      filteredMetafields[i] = [];
+      m.forEach(n => {
+        if (n.namespace === 'lit_offer') {
+          filteredMetafields[i].push(n)
+        }
 
-    const checkDelete = resolvedAllProductMetafields.flat().map(async meta => {
+      })
+    })
+    const checkDelete = filteredMetafields.flat().map(async meta => {
       return await shopify.metafield.delete(meta.id);
     })
 
@@ -355,13 +365,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedEntries = await Promise.all(mappedEntries);
     const fixDraftOrders = resolvedEntries.flat().map(async d => {
-      let parsedAssetIdOnService = null;
+      // let parsedAssetIdOnService = null;
       const splitAsset = d.assetIdOnService.split('"');
       const redoneArray = [ splitAsset[1] ];
       console.log('redoneArray', redoneArray)
       const stringifiedRedoneArray = JSON.stringify(redoneArray)
       console.log('stringifiedRedoneArray', stringifiedRedoneArray)
-      // let parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
+      let parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
       // let parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
       //
       // if (Array.isArray(parsedDraftOrderDetails.id[0])) {
@@ -379,13 +389,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       // const nestedAssetIdOnService = JSON.parse(parsedAssetIdOnService[0]);
       // console.log('parsedAssetIdOnService', parsedAssetIdOnService)
       // console.log('IS IT AN ARRAY?', Array.isArray(parsedAssetIdOnService))
-      const updated = await fastify.objection.models.shopifyDraftOrders.query()
-        .where('id', '=', d.id)
-        .patch({
-          asset_id_on_service: stringifiedRedoneArray
-        })
-
-      return updated
+      // const updated = await fastify.objection.models.shopifyDraftOrders.query()
+      //   .where('id', '=', d.id)
+      //   .patch({
+      //     asset_id_on_service: stringifiedRedoneArray
+      //   })
+      //
+      // return updated
       // return true
     })
     const resolvedFixed = await Promise.all(fixDraftOrders)
