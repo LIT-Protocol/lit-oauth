@@ -375,13 +375,14 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       note_attributes
     };
 
+    let redeemEntry = {}
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
       if (draftOrderRes && draftOrderDetails.hasRedeemLimit) {
         if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
-          const updateWalletRes = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
+          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
         } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
-          const updateNftIdRes = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
+          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
         }
       }
       try {
@@ -392,7 +393,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       }
 
       try {
-        updateMetrics(fastify, offerData[0])
+        updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
       } catch (err) {
         console.log('Error updating metrics:', err);
       }

@@ -1,8 +1,39 @@
 // functions for checking user redemption status
 import { checkEthereumNfts, checkPolygonNfts } from "./shopifyAlchemyHelpers.js";
 
-export const updateMetrics = (fastify, offerData) => {
+export const updateMetrics = (fastify, offerData, shopName, redeemEntry) => {
   console.log('updateMetrics offerData', offerData)
+  try {
+    const currentOffer = fastify.objection.models.metrics.query().where('offer_uuid', '=', offerData.id)
+    if (!currentOffer[0]) {
+      let redeemedList = [
+        redeemEntry
+      ];
+
+      const createRes = fastify.objection.models.metrics.query()
+        .insert({
+          offer_uuid: offerData.id,
+          store_id: offerData.shopId,
+          draft_order_details: offerData.draftOrderDetails,
+          asset_id_on_service: offerData.assetIdOnService,
+          shop_name: shopName,
+          list_of_redemptions: JSON.stringify(redeemedList)
+        })
+    } else {
+      let parsedListOfRedemptions = JSON.parse(currentOffer[0].list_of_redemptions);
+      parsedListOfRedemptions.push(redeemEntry);
+      const stringifiedListOfRedemptions = JSON.stringify(parsedListOfRedemptions);
+
+      const updateRes = fastify.objection.models.metrics
+        .query()
+        .where('offer_uuid', '=', offerData.id)
+        .patch({
+          list_of_redemptions: stringifiedListOfRedemptions
+        })
+    }
+  } catch (err) {
+    console.log('Error saving metric:', err);
+  }
 }
 
 export const checkUserValidity = async (offerData, authSig) => {
@@ -109,6 +140,13 @@ const checkForNftRedeem = ({chain, availableNfts, draftOrderDetails, offerData, 
 
 // wallets have two subcategories, evmBasic and solRpc, since EVM chains can use the same wallet
 export const updateWalletAddressRedeem = async (fastify, authSig, offerData, draftOrderDetails) => {
+  let metricObject = {
+    time: Date.now(),
+    type: 'walletAddress',
+    solanaAddress: '',
+    ethereumAddress: '',
+  }
+
   const conditionTypesArray = offerData.conditionTypes.split(',');
   let parsedRedeemedBy = JSON.parse(offerData.redeemedBy);
   if (conditionTypesArray.indexOf('evmBasic') > -1 && authSig['ethereum']) {
@@ -120,6 +158,7 @@ export const updateWalletAddressRedeem = async (fastify, authSig, offerData, dra
     } else {
       parsedRedeemedBy['evmBasic'][authSig.ethereum.address] = parsedRedeemedBy['evmBasic'][authSig.ethereum.address] + 1;
     }
+    metricObject.ethereumAddress = authSig.ethereum.address;
   }
   if (conditionTypesArray.indexOf('solRpc') > -1 && authSig['solana']) {
     if (!parsedRedeemedBy['solRpc']) {
@@ -130,6 +169,7 @@ export const updateWalletAddressRedeem = async (fastify, authSig, offerData, dra
     } else {
       parsedRedeemedBy['solRpc'][authSig.solana.address] = parsedRedeemedBy['solRpc'][authSig.solana.address] + 1;
     }
+    metricObject.solanaAddress = authSig.solana.address;
   }
 
   const updatedRedeemedByList = JSON.stringify(parsedRedeemedBy);
@@ -141,7 +181,7 @@ export const updateWalletAddressRedeem = async (fastify, authSig, offerData, dra
       'redeemed_by': updatedRedeemedByList
     });
 
-  return updateRedeemByRes;
+  return metricObject;
 }
 
 // nft id needs to be organized by individual chains since nfts don't exist cross chain
@@ -172,7 +212,15 @@ export const updateNftIdRedeem = async (fastify, selectedNft, offerData, draftOr
       'redeemed_nfts': updatedRedeemedNftsList
     });
 
-  return updateRedeemedNftsRes;
+  let metricObject = {
+    time: Date.now(),
+    type: 'nftId',
+    usedChain,
+    contractAddress,
+    tokenId
+  }
+
+  return metricObject;
 }
 
 export const updateV1WalletRedeemedBy = async (fastify, offerData) => {
