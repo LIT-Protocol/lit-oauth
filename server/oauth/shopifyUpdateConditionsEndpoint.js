@@ -355,7 +355,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedEntries = await Promise.all(mappedEntries);
     const fixDraftOrders = resolvedEntries.flat().map(async d => {
-      let parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
+      let parsedAssetIdOnService = null;
+      // let parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
       // let parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
       //
       // if (Array.isArray(parsedDraftOrderDetails.id[0])) {
@@ -371,6 +372,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       // }
       // return JSON.stringify(parsedDraftOrderDetails)
       // const nestedAssetIdOnService = JSON.parse(parsedAssetIdOnService[0]);
+      try {
+        parsedAssetIdOnService = JSON.parse(d.assetIdOnService);
+        console.log('parsedAssetIdOnService in try', parsedAssetIdOnService)
+      } catch (err) {
+        console.log('catch')
+      }
+      console.log('parsedAssetIdOnService', parsedAssetIdOnService)
       console.log('IS IT AN ARRAY?', Array.isArray(parsedAssetIdOnService))
       // const updated = await fastify.objection.models.shopifyDraftOrders.query()
       //   .where('id', '=', d.id)
