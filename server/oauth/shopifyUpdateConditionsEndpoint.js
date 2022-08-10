@@ -356,7 +356,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const resolvedEntries = await Promise.all(mappedEntries);
     const fixDraftOrders = resolvedEntries.flat().map(async d => {
       let parsedAssetIdOnService = null;
-      const splitAsset = d.assetIdOnService('"');
+      const splitAsset = d.assetIdOnService.split('"');
       const redoneArray = [ splitAsset[1] ];
       console.log('redoneArray', redoneArray)
       const stringifiedRedoneArray = JSON.stringify(redoneArray)
