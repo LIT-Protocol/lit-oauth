@@ -360,11 +360,18 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     })
 
     const resolvedEntries = await Promise.all(mappedEntries);
-    const fixDraftOrders = resolvedEntries.flat().map(d => {
+    const fixDraftOrders = resolvedEntries.flat().map(async d => {
       let parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
       if (Array.isArray(parsedDraftOrderDetails.id[0])) {
         parsedDraftOrderDetails.id = parsedDraftOrderDetails.id.flat();
-        return parsedDraftOrderDetails
+        // return JSON.stringify(parsedDraftOrderDetails)
+        const updated = await fastify.objection.models.shopifyDraftOrders.query()
+          .where('id', '=', d.id)
+          .patch({
+            draft_order_details: JSON.stringify(parsedDraftOrderDetails)
+          })
+
+        return updated
       }
     })
 
