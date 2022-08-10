@@ -372,17 +372,17 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       // return JSON.stringify(parsedDraftOrderDetails)
       const nestedAssetIdOnService = JSON.parse(parsedAssetIdOnService[0]);
       console.log('BLACH', nestedAssetIdOnService)
-      // const updated = await fastify.objection.models.shopifyDraftOrders.query()
-      //   .where('id', '=', d.id)
-      //   .patch({
-      //     asset_id_on_service: JSON.stringify(parsedAssetIdOnService.flat())
-      //   })
+      const updated = await fastify.objection.models.shopifyDraftOrders.query()
+        .where('id', '=', d.id)
+        .patch({
+          asset_id_on_service: nestedAssetIdOnService
+        })
 
-      // return updated
-      return true
+      return updated
+      // return true
     })
-    console.log('fix draft orders', fixDraftOrders)
     const resolvedFixed = await Promise.all(fixDraftOrders)
+    console.log('fix draft orders', resolvedFixed)
 
     return resolvedFixed;
   })
