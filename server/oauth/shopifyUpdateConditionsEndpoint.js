@@ -396,7 +396,25 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       .query().where('shop_id', '=', shopId);
 
     const updatedMetadata = await draftOrders.map(async d => {
-      return await updateProductWithTagAndUuid(shopify, d)
+      const parsedDraftOrderDetails = JSON.parse(d.draftOrderDetails);
+      let camelCaseQuery = d;
+      camelCaseQuery['shop_id'] = d.shopId;
+      camelCaseQuery['access_control_conditions'] = d.accessControlConditions;
+      camelCaseQuery['humanized_access_control_conditions'] = d.humanizedAccessControlConditions;
+      camelCaseQuery['asset_id_on_service'] = d.assetIdOnService;
+      camelCaseQuery['asset_type'] = d.assetType;
+      camelCaseQuery['user_id'] = d.user_id;
+      camelCaseQuery['draft_order_details'] = d.draftOrderDetails;
+      camelCaseQuery['extra_data'] = d.extraData;
+      camelCaseQuery['redeemed_by'] = d.redeemedBy;
+      camelCaseQuery['used_chains'] = d.usedChains;
+      camelCaseQuery['redeemed_nfts'] = d.redeemedNfts;
+      camelCaseQuery['condition_types'] = d.conditionTypes;
+      camelCaseQuery['asset_name_on_service'] = d.assetNameOnService;
+      camelCaseQuery['offer_type'] = parsedDraftOrderDetails.typeOfAccessControl;
+      camelCaseQuery['redeem_type'] = d.redeemType
+
+      return await updateProductWithTagAndUuid(shopify, camelCaseQuery)
     })
     const resolvedUpdatedMetadata = await Promise.all(updatedMetadata);
     return resolvedUpdatedMetadata;
