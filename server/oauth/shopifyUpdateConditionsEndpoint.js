@@ -395,10 +395,11 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     let draftOrders = await fastify.objection.models.shopifyDraftOrders
       .query().where('shop_id', '=', shopId);
 
-    const updatedMetadata = draftOrders.map(async d => {
+    const updatedMetadata = await draftOrders.map(async d => {
       return await updateProductWithTagAndUuid(shopify, d)
     })
-    return updatedMetadata;
+    const resolvedUpdatedMetadata = await Promise.all(updatedMetadata);
+    return resolvedUpdatedMetadata;
   })
 
 }
