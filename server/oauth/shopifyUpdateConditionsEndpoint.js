@@ -3,6 +3,7 @@ import {
   updateProductWithTagAndUuid
 } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import dotenv from "dotenv";
+import { shortenShopName } from "./shopifyHelpers/shopifyReusableFunctions.js";
 
 dotenv.config({
   path: "../../env",
@@ -307,7 +308,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     })
 
     console.log('filteredMetafields', filteredMetafields)
-    return filteredMetafields;
+    return filteredMetafields.flat();
     // const checkDelete = filteredMetafields.flat().map(async meta => {
     //   return await shopify.metafield.delete(meta.id);
     // })
@@ -377,6 +378,26 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     console.log('fix draft orders', resolvedFixed)
 
     return resolvedFixed;
+  })
+
+  fastify.post('/api/shopify/recreateMetadata', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {shopId} = request.body;
+
+    const shop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_id", "=", shopId);
+
+    // adds exclusive or discount tag to product
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+    let draftOrders = await fastify.objection.models.shopifyDraftOrders
+      .query();
+
+    return draftOrders;
   })
 
 }
