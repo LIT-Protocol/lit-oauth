@@ -305,13 +305,16 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       })
     })
-    const checkDelete = filteredMetafields.flat().map(async meta => {
-      return await shopify.metafield.delete(meta.id);
-    })
 
-    const deleteChecked = await Promise.all(checkDelete);
-
-    return deleteChecked;
+    console.log('filteredMetafields', filteredMetafields)
+    return filteredMetafields;
+    // const checkDelete = filteredMetafields.flat().map(async meta => {
+    //   return await shopify.metafield.delete(meta.id);
+    // })
+    //
+    // const deleteChecked = await Promise.all(checkDelete);
+    //
+    // return deleteChecked;
   })
 
   fastify.post('/api/shopify/getSpecificDraftOrder', async (request, response) => {
