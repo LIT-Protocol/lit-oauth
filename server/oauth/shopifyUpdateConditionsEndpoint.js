@@ -234,6 +234,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // return ids;
 
     const allProductMetafieldPromises = ids.map(async id => {
+      await delay(300);
       return await shopify.metafield.list({
         metafield: {
           owner_resource: 'product',
