@@ -560,21 +560,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   })
 
   // test endpoints
-  // fastify.post("/api/shopify/checkOnStores", async (request, reply) => {
-  //   const name = request.body;
-  //   const allResults = await fastify.objection.models.shopifyStores
-  //     .query()
-  //
-  //   const specificResults = await fastify.objection.models.shopifyStores
-  //     .query()
-  //     .where('shop_name', '=', shortenShopName(name));
-  //
-  //   return {
-  //     allResults,
-  //     specificResults
-  //   };
-  // });
-  //
   fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
     const {name, pass, getEmptyFields, shopId} = request.body;
 

@@ -184,7 +184,7 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
 
   if (draftOrderDetails['hasRedeemLimit']) {
     if (draftOrderDetails.typeOfRedeem === 'nftId') {
-      tags.push(`lit-nftId`);
+      tags.push(`lit-nft-id`);
       // tags.push(selectedNft.nft.contract.address);
       // tags.push(selectedNft.nft.id.tokenId);
       const nftIdNote = {
@@ -193,7 +193,7 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
       }
       noteAttributes.push(nftIdNote);
     } else {
-      tags.push(`lit-walletAddress`);
+      tags.push(`lit-wallet-address`);
       const splitConditionTypes = draftOrderDetails.conditionTypes.split(',');
       if (splitConditionTypes.indexOf('evmBasic') !== -1) {
         // tags.push(authSig.ethereum.address);
@@ -219,6 +219,8 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
   } else {
     tags.push('lit-discount');
   }
+
+  tags.push('lit-offer');
 
   return {
     tags: tags.join(','),

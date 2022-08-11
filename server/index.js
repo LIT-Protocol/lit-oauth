@@ -92,7 +92,7 @@ fastify.register(shopifyEndpoints);
 fastify.register(shopifyDevEndpoints);
 fastify.register(shopifyGDPREndpoints);
 fastify.register(shopifyThemeAppExtensionEndpoints);
-fastify.register(shopifyUpdateConditionsEndpoint);
+// fastify.register(shopifyUpdateConditionsEndpoint);
 
 // http to https redirect
 if (process.env.NODE_ENV === "production") {

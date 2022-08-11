@@ -196,34 +196,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return resolvedShopIterations;
   })
 
-  fastify.post("/api/shopify/returnFormatToPrevious", async (request, response) => {
-    const patchResponse = fastify.objection.models.shopifyDraftOrders.query()
-      .where('id', '=', '25ccbc9b-4a39-4540-91bd-36cec4197064')
-      .patch({
-        "shop_id": "59835023511",
-        "access_control_conditions": "[{\"conditionType\":\"evmBasic\",\"contractAddress\":\"0xA3D109E28589D2AbC15991B57Ce5ca461Ad8e026\",\"standardContractType\":\"ERC721\",\"chain\":\"polygon\",\"method\":\"balanceOf\",\"parameters\":[\":userAddress\"],\"returnValueTest\":{\"comparator\":\">=\",\"value\":\"1\"}}]",
-        "humanized_access_control_conditions": "Owns at least 1 of 0xA3D109E28589D2AbC15991B57Ce5ca461Ad8e026 tokens",
-        "asset_id_on_service": "gid://shopify/Product/7347665666199",
-        "title": "test with new setup",
-        "summary": "Token gated floral leaf",
-        "asset_type": "exclusive",
-        "user_id": "",
-        "draft_order_details": "{\"id\":\"gid://shopify/Product/7347665666199\",\"quantity\":1,\"title\":\"test with new setup\",\"description\":null,\"price\":\"9.00\",\"redeemLimit\":\"0\",\"value\":0,\"valueType\":\"PERCENTAGE\"}",
-        "extra_data": "evmBasic",
-        "active": true,
-        "redeemed_by": "{}",
-        "description": null,
-        "discount": null,
-        "used_chains": null,
-        "condition_types": null,
-        "redeemed_nfts": null,
-        "asset_name_on_service": null,
-        "offer_type": null,
-        "redeem_type": null,
-      })
-    return patchResponse;
-  })
-
   fastify.post('/api/shopify/getAllMetafields', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
