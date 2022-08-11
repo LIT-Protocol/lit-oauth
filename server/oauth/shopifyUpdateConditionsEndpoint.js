@@ -395,7 +395,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
 
     let draftOrders = await fastify.objection.models.shopifyDraftOrders
-      .query();
+      .query().where('shop_id', '=', shopId);
 
     return draftOrders;
   })
