@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './ShopifyProductSelect.css';
 import { Card, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
-const ShopifyProductSelect = ({product, index, updateSelectedVariant, selectedVariantArray}) => {
+const ShopifyProductSelect = ({product, index, updateSelectedVariant, disableSelect, selectedVariantArray}) => {
   const [ variantMenuOptions, setVariantMenuOptions ] = useState(null);
   const [ selectedVariantMenuOption, setSelectedVariantMenuOption ] = useState('');
   const [ selectedProductVariant, setSelectedProductVariant ] = useState(null);
@@ -41,6 +41,7 @@ const ShopifyProductSelect = ({product, index, updateSelectedVariant, selectedVa
           <FormControl fullWidth>
             <InputLabel>Select a product</InputLabel>
             <Select value={selectedVariantMenuOption}
+                    disabled={disableSelect}
                     className={'product-variant-select'}
                     label={'Select a product'}
                     onChange={(e) => {

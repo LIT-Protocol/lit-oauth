@@ -52,10 +52,11 @@
 
 @media only screen and (max-width: 500px) {
     .lit-success-container {
-        position: static;
-        top: auto;
-        left: auto;
-        transform: translate(0, 0);
+        width: 100%;
+    }
+
+    .lit-success-container .MuiPaper-root {
+        overflow-y: scroll;
     }
 
     .lit-fail-container {

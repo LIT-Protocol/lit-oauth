@@ -148,6 +148,7 @@ const ShopifyRedeemSuccess = ({
                 <ShopifyProductSelect key={i}
                                       product={product}
                                       index={i}
+                                      disableSelect={!!redeemLink}
                                       selectedVariantsArray={selectedVariantsArray}
                                       updateSelectedVariant={updateSelectedVariant}></ShopifyProductSelect>
               )
@@ -157,7 +158,8 @@ const ShopifyRedeemSuccess = ({
         <CardActions>
           {!redeemLink ? (
             <span className={'offer-actions'}>
-              <LoadingButton disabled={redeemButtonIsDisabled}
+              <LoadingButton className={'offer-actions-redeem-offer-button'}
+                             disabled={redeemButtonIsDisabled}
                              variant={'contained'}
                              loading={redeemLoader}
                              onClick={cueRedeemOffer}>Redeem Offer</LoadingButton>
@@ -191,7 +193,8 @@ const ShopifyRedeemSuccess = ({
       {!!sortedValidityResponse.length && (
         <Dialog className={'select-nft-dialog'} maxWidth={'xl'} fullScreen={pickNftDialogSize}
                 open={showSelectNftDialog}>
-          <DialogTitle>Which NFT would you like to use to redeem this offer?</DialogTitle>
+          <DialogTitle>Which NFT would you like to use to redeem this
+            offer?</DialogTitle>
           <DialogContent className={'select-nft-content'}>
             <div>
               {sortedValidityResponse.map((n, i) => {

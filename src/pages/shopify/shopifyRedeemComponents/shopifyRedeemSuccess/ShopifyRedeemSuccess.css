@@ -139,6 +139,7 @@
     .redeem-success-container {
         min-width: auto;
         height: 100vh;
+        overflow-y: auto;
     }
 
     .offer-info p {
@@ -146,10 +147,26 @@
         word-break: break-all;
     }
 
-    .select-nft-card {
-        width: 90%;
+    .offer-actions-button-holder {
         flex-direction: column;
+    }
+
+    .offer-actions-button:first-child {
+        margin-top: 0.5rem;
+    }
+
+    .select-nft-dialog .MuiDialogTitle-root {
+        text-align: center;
+        font-size: 1.1rem;
+        border-bottom: 1px solid #efefef;
+    }
+
+    .select-nft-card {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
         height: auto;
+        padding: 1em 0;
     }
 
     .select-nft-info {
@@ -158,17 +175,35 @@
 
     .select-nft-info p {
         word-break: break-all;
+        font-size: 0.9rem;
+    }
+
+    .select-nft-dialog .MuiDialogActions-root {
+        border-top: 1px solid #efefef;
+    }
+
+    .select-nft-dialog-actions {
+        flex-direction: column-reverse;
     }
 
     .select-nft-dialog-actions Button {
-        margin: 0 0.5em;
+        margin: 0 0 0.5em;
+    }
+
+    .offer-actions-redeem-offer-button {
+        width: 100%;
     }
 
     .offer-actions-button-holder {
         justify-content: space-between;
+        flex-direction: column-reverse;
     }
 
     .offer-actions-button {
         margin-left: 0 !important;
+    }
+
+    .offer-actions-redeemed {
+        flex-direction: column-reverse;
     }
 }
