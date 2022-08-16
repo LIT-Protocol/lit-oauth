@@ -228,7 +228,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
     const redemptionStatus = await checkUserValidity(offerData[0], authSig);
 
-    console.log('after allow redeem', redemptionStatus)
+    console.log('after allow redeem', fastify.objection.models)
     return redemptionStatus;
   });
 

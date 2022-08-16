@@ -7,7 +7,13 @@ export default class Metrics extends BaseModel {
 
   static get columns() {
     return [
-      'shopify_draft_order_data',
+      'id',
+      "store_name",
+      "store_id",
+      "offer_uuid",
+      "list_of_redemptions",
+      "draft_order_details",
+      "asset_id_on_service"
     ];
   }
 }

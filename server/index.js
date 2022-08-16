@@ -22,6 +22,7 @@ import Shares from "./models/Shares.js";
 import ShopifyShares from "./models/ShopifyShares.js";
 import ShopifyStores from "./models/ShopifyStores.js";
 import ShopifyDraftOrders from "./models/ShopifyDraftOrders.js";
+import Metrics from './models/Metrics.js'
 
 dotenv.config({
   path: "../.env",
@@ -43,7 +44,7 @@ fastify.register(fastifyCors, {
 
 fastify.register(fastifyObjectionJS, {
   knexConfig: knexConfig[process.env.NODE_ENV || "development"],
-  models: [ ConnectedServices, Shares, ShopifyShares, ShopifyStores, ShopifyDraftOrders ],
+  models: [ ConnectedServices, Shares, ShopifyShares, ShopifyStores, ShopifyDraftOrders, Metrics ],
 });
 
 const BuildPath = path.join(__dirname, "..", "build");

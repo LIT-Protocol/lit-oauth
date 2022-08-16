@@ -16,5 +16,5 @@ export const up = (knex) => {
 };
 
 export const down = (knex) => {
-  return knex.schema.dropTableIfExists("shares");
+  return knex.schema.dropTableIfExists("metrics");
 };

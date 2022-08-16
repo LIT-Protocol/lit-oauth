@@ -2,7 +2,6 @@
 import { checkEthereumNfts, checkPolygonNfts } from "./shopifyAlchemyHelpers.js";
 
 export const updateMetrics = (fastify, offerData, shopName, redeemEntry) => {
-  console.log('updateMetrics offerData', offerData)
   try {
     const currentOffer = fastify.objection.models.metrics.query().where('offer_uuid', '=', offerData.id)
     if (!currentOffer[0]) {

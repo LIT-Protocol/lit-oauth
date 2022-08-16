@@ -45,7 +45,7 @@ const ShopifyRedeem = () => {
 
   useEffect(() => {
     if (!connectedToLitNodeClient) {
-      connectToLitNode();
+      connectToLitNodeAndParseQueryParams();
     }
   }, [ connectedToLitNodeClient ]);
 
@@ -60,13 +60,17 @@ const ShopifyRedeem = () => {
     setOpenSnackbar(true);
   }
 
-  const connectToLitNode = async () => {
+  const connectToLitNodeAndParseQueryParams = async () => {
     let litNodeClient = new LitJsSdk.LitNodeClient();
     await litNodeClient.connect();
     window.litNodeClient = litNodeClient;
     const queryString = window.location.search;
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
+    const authSigEncoded = queryParams.get('authSig');
+    if (!!authSigEncoded) {
+      parseAuthSigParam(authSigEncoded);
+    }
     setDraftOrderId(id);
     try {
       const resp = await getOffer(id);
@@ -79,7 +83,20 @@ const ShopifyRedeem = () => {
     }
   }
 
+  const parseAuthSigParam = (authSigEncoded) => {
+    const authSigObj = JSON.parse(decodeURI(authSigEncoded));
+    if (authSigObj['ethereum']) {
+      setStoredEVMAuthSig(authSigObj.ethereum);
+    }
+    if (authSigObj['solana']) {
+      setStoredSolanaAuthSig(authSigObj.solana);
+    }
+    const updatedURL = window.location.href.split('&authSig=')[0];
+    window.location.href = updatedURL;
+  }
+
   const getAuthSigs = async (chainString) => {
+    console.log('chainString', chainString)
     // todo: remove eventually. this loads the EVM signature for obsolete condition types that don't have a chain string
     if (!chainString) {
       await getEVMAuthSig();
@@ -87,9 +104,9 @@ const ShopifyRedeem = () => {
       const chainArray = chainString.split(',');
       chainArray.forEach(c => {
         // todo: will need to update this as some point to describe EVM chains as something better than 'not solRpc'
-        if (c !== 'solRpc') {
+        if (c !== 'solRpc' && !storedEVMAuthSig) {
           getEVMAuthSig();
-        } else if (c === 'solRpc') {
+        } else if (c === 'solRpc' && !storedSolanaAuthSig) {
           getSolanaAuthSig();
         }
       });
