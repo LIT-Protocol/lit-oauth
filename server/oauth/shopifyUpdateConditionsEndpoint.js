@@ -58,7 +58,12 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     const updatedUaccObj = updateConditionTypes(parsedAcc);
 
     // update assetIdOnService
-    offerHolder.assetIdOnService = JSON.stringify([ JSON.parse(o.assetIdOnService) ].flat());
+    try {
+      const parsedAssetId = JSON.parse(o.assetIdOnService);
+      offerHolder.assetIdOnService = JSON.stringify([ JSON.parse(parsedAssetId) ].flat());
+    } catch (err) {
+      offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
+    }
 
     // update conditionTypes.  will always be evmBasic for v1 conditions
     offerHolder.conditionTypes = 'evmBasic';
