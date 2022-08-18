@@ -87,13 +87,6 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     const parsedDraftOrderDetails = JSON.parse(o.draftOrderDetails);
     parsedDraftOrderDetails['conditionTypes'] = updatedUaccObj.conditionTypes.join(',');
     parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
-    // parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
-    // try {
-    //   const checkAssetIdOnService = JSON.parse(parsedDraftOrderDetails.id);
-    //   offerHolder.assetIdOnService = parsedDraftOrderDetails.id;
-    // } catch (err) {
-    //   offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
-    // }
     parsedDraftOrderDetails['typeOfAccessControl'] = offerHolder.assetType;
     parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
     parsedDraftOrderDetails['usedChains'] = updatedUaccObj.chainsUsed.join(',');
