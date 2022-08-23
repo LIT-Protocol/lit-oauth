@@ -393,10 +393,21 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     console.log('request.body', request.body)
     console.log('draftOrder', draftOrder[0])
-    const parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
+    let parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
     const parsedRedeemedList = request.body.redeemedList;
     console.log('parsedRedeemedList', parsedRedeemedList)
+    parsedDraftOrderList['solRpc'] = parsedRedeemedList;
     console.log('parsedDraftOrderList', parsedDraftOrderList)
+    const updatedConditions = JSON.stringify(parsedDraftOrderList);
+
+    // const patched = await fastify.objection.models.shopifyDraftOrders
+    //   .query()
+    //   .where('id', '=', request.body.uuid)
+    //   .patch({
+    //     redeemedBy: updatedConditions
+    //   })
+
+    return updatedConditions;
 
   })
 
