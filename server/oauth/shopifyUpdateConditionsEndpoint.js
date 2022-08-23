@@ -407,7 +407,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     //     redeemedBy: updatedConditions
     //   })
 
-    return patched;
+    // return patched;
+    return parsedDraftOrderList
 
   })
 
