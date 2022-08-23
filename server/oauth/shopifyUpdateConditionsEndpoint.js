@@ -382,6 +382,22 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return resolvedFixed;
   })
 
+  fastify.post('/api/shopify/updateRedeemedList', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const draftOrder = fastify.objection.models.shopifyDraftOrders.query().where('id', '=', request.body.uuid);
+
+    console.log('request.body', request.body)
+    console.log('draftOrder', draftOrder[0])
+    const parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
+    const parsedRedeemedList = request.body.redeemedList;
+    console.log('parsedRedeemedList', parsedRedeemedList)
+    console.log('parsedDraftOrderList', parsedDraftOrderList)
+
+  })
+
   fastify.post('/api/shopify/recreateMetadata', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
