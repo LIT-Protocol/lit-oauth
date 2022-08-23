@@ -394,7 +394,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     console.log('request.body', request.body)
     console.log('draftOrder', draftOrder[0])
     let parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
-    const parsedRedeemedList = request.body.redeemedList;
+    const parsedRedeemedList = JSON.parse(request.body.redeemedList);
     console.log('parsedRedeemedList', typeof parsedRedeemedList)
     parsedDraftOrderList['solRpc'] = parsedRedeemedList;
     console.log('parsedDraftOrderList', typeof parsedDraftOrderList)
