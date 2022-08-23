@@ -387,7 +387,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    const draftOrder = fastify.objection.models.shopifyDraftOrders.query().where('id', '=', request.body.uuid);
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', request.body.uuid);
 
     console.log('request.body', request.body)
     console.log('draftOrder', draftOrder[0])
