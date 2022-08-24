@@ -65,23 +65,19 @@ const ShopifyRedeem = () => {
     await litNodeClient.connect();
     window.litNodeClient = litNodeClient;
     const queryString = window.location.search;
-    console.log('QUERY STRING', queryString)
     const queryParams = new URLSearchParams(queryString);
-    console.log('QUERY PARAMS', queryParams)
     const id = queryParams.get('id');
     setDraftOrderId(id);
     try {
       const resp = await getOffer(id);
       setOfferData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      // const authSigEncoded = queryParams.get('authSig');
-      // if (!!authSigEncoded) {
-      //   console.log('CHECK AUTH SIG ENCODED', authSigEncoded)
-      //   parseAuthSigParam(authSigEncoded);
-      // } else {
-      //   console.log('@@@@@@@ -> aint nuthing but an auth thing')
-      // }
-      await getAuthSigs(resp.data.conditionTypes);
+      const authSigEncoded = queryParams.get('authSig');
+      if (!!authSigEncoded) {
+        parseAuthSigParam(authSigEncoded);
+      } else {
+        await getAuthSigs(resp.data.conditionTypes);
+      }
     } catch (err) {
       console.log('Error getting access control', err);
       toggleSnackbar('Error getting access control: err', 'error')
@@ -98,11 +94,10 @@ const ShopifyRedeem = () => {
       setStoredSolanaAuthSig(authSigObj.solana);
     }
     const updatedURL = window.location.href.split('&authSig=')[0];
-    window.history.pushState(null, 'Lit Token Access', updatedURL)
+    window.history.replaceState(null, 'Lit Token Access', updatedURL)
   }
 
   const getAuthSigs = async (chainString) => {
-    console.log('chainString', chainString)
     // todo: remove eventually. this loads the EVM signature for obsolete condition types that don't have a chain string
     if (!chainString) {
       await getEVMAuthSig();
