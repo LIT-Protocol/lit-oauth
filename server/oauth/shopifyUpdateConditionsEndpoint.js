@@ -498,4 +498,54 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return resolvedUpdatedMetadata;
   })
 
+  fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
+    const {name, pass, getEmptyFields, shopId} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    let specificStore = null;
+    let draftOrders = null;
+    let allDraftOrders;
+    let allStores = [];
+    if (!!getEmptyFields) {
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query().where("offer_type", "=", null)
+    } else if (name === 'all') {
+      const allStoresHolder = await fastify.objection.models.shopifyStores
+        .query()
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+      allStores = allStoresHolder.map(s => {
+        let tempStore = s;
+        delete tempStore.accessToken;
+        return tempStore;
+      })
+    } else if (!!shopId) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_id', '=', shopId);
+
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
+    } else if (!!name) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_name', '=', shortenShopName(name));
+
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
+    }
+
+    return {
+      specificStore: specificStore,
+      storeDraftOrders: draftOrders,
+      allStores: allStores,
+      length: draftOrders.length
+    };
+  });
+
 }
