@@ -382,7 +382,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return resolvedFixed;
   })
 
-  fastify.post('/api/shopify/updateRedeemedList', async (request, response) => {
+  fastify.post('/api/shopify/manuallyUpdateRedeemedList', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
     }

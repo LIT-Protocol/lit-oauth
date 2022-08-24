@@ -17,6 +17,7 @@ import {
   checkUserValidity, updateMetrics, updateNftIdRedeem,
   updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
+import { sendSlackMetricsReportMessage } from "../utils.js";
 
 dotenv.config({
   path: "../../env",
@@ -33,22 +34,85 @@ const validateDevToken = async (token) => {
   })
 }
 
-export default async function shopifyDevEndpoints(fastify, opts) {
+export default async function shopifyEndpoints(fastify, opts) {
 
-  // REFACTOR ENDPOINTS
-  fastify.post("/api/shopify/deleteDevShopData", async (request, reply) => {
-    const result = await validateDevToken(request.headers.authorization);
-    if (!result) {
-      reply.code(401).send("Unauthorized");
-      return;
+  fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
+    const {shop, accessToken} = JSON.parse(request.body);
+    const shortenedShopName = shortenShopName(shop);
+    const queryForExistingShop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_name", "=", shortenedShopName);
+
+    let shopDetails;
+
+    // if shop does not currently exist in our database
+    if (!queryForExistingShop.length) {
+      console.log('saveAccessToken: shop doesnt yet exist', shop)
+      try {
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
+
+      } catch (err) {
+        console.log('----> Error getting shopify details', err)
+        reply.code(401);
+        return false;
+      }
+
+      await fastify.objection.models.shopifyStores.query().insert({
+        shop_name: shortenedShopName,
+        access_token: accessToken,
+        email: shopDetails.email,
+        shop_id: shopDetails.id
+      });
+      await sendSlackMetricsReportMessage({
+        msg: `Shopify account connected ${shopDetails.email}`,
+      });
+
+    } else {
+      console.log('saveAccessToken: shop does exist', shop)
+      // shop does exist in database
+
+      try {
+        // check to see if token is valid
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
+
+        // patch shop to update email in case it's changed
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            email: shopDetails.email,
+            access_token: accessToken,
+          });
+      } catch (err) {
+        // if token is invalid, update it with new access token
+        console.log('saveAccessToken: token is invalid, update', shop)
+        console.log('----> Error with Shopify: token is probably invalid', err);
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            access_token: accessToken,
+            email: shopDetails.email,
+          });
+      }
     }
-    console.log('Webhook to delete shop data')
-    // TODO: will need to be expanded and tested to delete shop data upon deleting the app
-    reply.code(200).send(true);
+
+    const shopInfo = {shopId: shopDetails.id, name: shopDetails.myshopify_domain};
+    reply.code(200).send(shopInfo);
   });
 
-  fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
-    console.log('start of saveDevDraftOrder', request.body)
+  fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
+    console.log('start of saveDraftOrder', request.body)
     const {
       shop_id,
       shop_name,
@@ -124,8 +188,8 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllDevDraftOrders", async (request, reply) => {
-    console.log('getAllDevDraftOrders', request.body)
+  fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
+    console.log('getAllDraftOrders', request.body)
     try {
       const result = await validateDevToken(request.headers.authorization);
       if (!result) {
@@ -143,7 +207,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteDevDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/deleteDraftOrder", async (request, reply) => {
     const result = await validateDevToken(request.headers.authorization);
 
     if (!result) {
@@ -177,10 +241,10 @@ export default async function shopifyDevEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/checkForUserValidity", async (request, reply) => {
-    console.log('CHECK ON USER VALIDITY YO!', request.body)
     const {uuid, jwt, authSig} = request.body;
     let verified;
     let payload;
+    console.log('check 0')
     try {
       const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
@@ -195,6 +259,8 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       }
     }
 
+    console.log('check I')
+
     if (
       !verified ||
       payload.baseUrl !==
@@ -207,6 +273,8 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     let offerData = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
+
+    console.log('-----> offerData', offerData[0])
 
     const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
 
@@ -422,7 +490,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   })
 
-  fastify.post('/api/shopify/updateDevRedeemedList', async (request, reply) => {
+  fastify.post('/api/shopify/updateRedeemedList', async (request, reply) => {
     console.log('request.body', request.body)
     try {
       const result = await validateDevToken(request.headers.authorization);
@@ -455,32 +523,5 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       console.error("--> Error getting all draft orders:", err);
       return err;
     }
-  })
-
-  fastify.post('/api/shopify/seed', async (request, reply) => {
-    const res = await fastify.objection.models.shopifyDraftOrders.query().insert({
-      shopId: '59835023511',
-      accessControlConditions: "[{\"conditionType\":\"evmBasic\",\"contractAddress\":\"0xA3D109E28589D2AbC15991B57Ce5ca461Ad8e026\",\"standardContractType\":\"ERC721\",\"chain\":\"polygon\",\"method\":\"balanceOf\",\"parameters\":[\":userAddress\"],\"returnValueTest\":{\"comparator\":\">=\",\"value\":\"1\"}}]",
-      humanizedAccessControlConditions: 'Controls wallet with address 0xcC542677e244c83FF66cEd6b6a88Eb7A6da1f024',
-      assetIdOnService: 'gid://shopify/Product/7347665535127',
-      title: 'check it out - DO NOT DELETE',
-      summary: 'Token gated twilight darkness',
-      assetType: 'exclusive',
-      userId: '',
-      draftOrderDetails: '{"id":"gid://shopify/Product/7347665535127","quantity":1,"title":"original discount - DO NOT DELETE","description":null,"redeemLimit":"0","value":0,"valueType":"PERCENTAGE"}',
-      extraData: 'evmBasic',
-      active: true,
-      redeemedBy: '{}',
-      description: null,
-      discount: null,
-      usedChains: null,
-      conditionTypes: null,
-      redeemedNfts: null,
-      assetNameOnService: null,
-      offerType: null,
-      redeemType: null
-    })
-    console.log('CHCEK RES!', res)
-    return res;
   })
 }

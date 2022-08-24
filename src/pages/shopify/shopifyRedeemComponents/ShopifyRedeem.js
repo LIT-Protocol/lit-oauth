@@ -65,17 +65,22 @@ const ShopifyRedeem = () => {
     await litNodeClient.connect();
     window.litNodeClient = litNodeClient;
     const queryString = window.location.search;
+    console.log('QUERY STRING', queryString)
     const queryParams = new URLSearchParams(queryString);
+    console.log('QUERY PARAMS', queryParams)
     const id = queryParams.get('id');
-    const authSigEncoded = queryParams.get('authSig');
-    if (!!authSigEncoded) {
-      parseAuthSigParam(authSigEncoded);
-    }
     setDraftOrderId(id);
     try {
       const resp = await getOffer(id);
       setOfferData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
+      // const authSigEncoded = queryParams.get('authSig');
+      // if (!!authSigEncoded) {
+      //   console.log('CHECK AUTH SIG ENCODED', authSigEncoded)
+      //   parseAuthSigParam(authSigEncoded);
+      // } else {
+      //   console.log('@@@@@@@ -> aint nuthing but an auth thing')
+      // }
       await getAuthSigs(resp.data.conditionTypes);
     } catch (err) {
       console.log('Error getting access control', err);
@@ -89,10 +94,11 @@ const ShopifyRedeem = () => {
       setStoredEVMAuthSig(authSigObj.ethereum);
     }
     if (authSigObj['solana']) {
+      console.log('CHECK SOLANA', authSigObj.solana)
       setStoredSolanaAuthSig(authSigObj.solana);
     }
     const updatedURL = window.location.href.split('&authSig=')[0];
-    window.location.href = updatedURL;
+    window.history.pushState(null, 'Lit Token Access', updatedURL)
   }
 
   const getAuthSigs = async (chainString) => {
@@ -143,6 +149,8 @@ const ShopifyRedeem = () => {
       storedSolanaAuthSig,
       offerData
     }
+    console.log('------> acc', JSON.parse(offerData.accessControlConditions))
+    console.log('------> provisionAccessObj', provisionAccessObj)
     try {
       return provisionAccess(provisionAccessObj).then(jwt => {
         return jwt;

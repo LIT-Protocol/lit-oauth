@@ -8386,10 +8386,37 @@ lit-fastify-bugsnag@^0.3.1:
     "@bugsnag/js" "^7.9.2"
     fastify-plugin "^3.0.0"
 
-lit-js-sdk@^1.1.180, lit-js-sdk@^1.1.202:
+lit-js-sdk@^1.1.180:
   version "1.1.207"
   resolved "https://registry.yarnpkg.com/lit-js-sdk/-/lit-js-sdk-1.1.207.tgz#30bb51eb57047c5895851834b54787adac350264"
   integrity sha512-VT/il4914cyBNk0KMNPRru55R4SCDE04JNI3V0bWgucU3/MQ8TJxOfGEDn4pap72qor20tk4gF4HVoCk2ZGmEQ==
+  dependencies:
+    "@ethersproject/bytes" "^5.5.0"
+    "@ethersproject/contracts" "^5.2.0"
+    "@ethersproject/hash" "^5.4.0"
+    "@ethersproject/providers" "^5.2.0"
+    "@ethersproject/strings" "^5.5.0"
+    "@ethersproject/units" "^5.4.0"
+    "@ethersproject/wallet" "^5.2.0"
+    "@walletconnect/ethereum-provider" "^1.7.8"
+    buffer "^6.0.3"
+    bufferutil "^4.0.6"
+    cross-blob "^3.0.1"
+    jszip "^3.6.0"
+    lit-connect-modal "^0.1.8"
+    lit-siwe "^1.1.8"
+    node-fetch "^3.2.3"
+    pako "^2.0.4"
+    tslib "^2.3.1"
+    tweetnacl "^1.0.3"
+    tweetnacl-util "^0.15.1"
+    uint8arrays "^3.0.0"
+    utf-8-validate "^5.0.8"
+
+lit-js-sdk@^1.1.216:
+  version "1.1.216"
+  resolved "https://registry.yarnpkg.com/lit-js-sdk/-/lit-js-sdk-1.1.216.tgz#52dfef245ff4483c6c34b5e967e6ec26c1e67ee4"
+  integrity sha512-ku/TrCf/B3TgN2x80sHToP9ckGQz+xeMOik5WZU+7VFqiOtrF3ZZynDPEbB4tj/posiv2uRcN+X1dHEUZdGoAA==
   dependencies:
     "@ethersproject/bytes" "^5.5.0"
     "@ethersproject/contracts" "^5.2.0"
