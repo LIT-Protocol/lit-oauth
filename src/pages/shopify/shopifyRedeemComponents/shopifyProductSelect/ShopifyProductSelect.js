@@ -15,15 +15,20 @@ const ShopifyProductSelect = ({
   const [ loaded, setLoaded ] = useState(false);
 
   useEffect(() => {
-    const mappedVariantRows = product.variants.map((p) => {
-      return p.title
+    let mappedVariantRows = [];
+    console.log('check product', product)
+    product.variants.forEach((p) => {
+      if (!!p.inventory_management && p.inventory_policy === 'deny' && p.inventory_quantity === 0) {
+        console.log(`Variant titled '${p.title}' is out of stock. Skipping.`)
+      } else {
+        mappedVariantRows.push(p.title);
+        if (!!preselectedVariant?.productIdParam && p.id.toString() === preselectedVariant.productIdParam) {
+          setSelectedVariantMenuOption(p.title);
+          updateSelectedVariant(p, index);
+        }
+      }
     });
     setVariantMenuOptions(mappedVariantRows);
-    if (!!preselectedVariant?.productIdParam && product.id.toString() === preselectedVariant.productIdParam) {
-      const presetVariant = product.variants.find(v => v.id.toString() === preselectedVariant.variantIdParam);
-      setSelectedVariantMenuOption(presetVariant.title);
-      updateSelectedVariant(presetVariant, index);
-    }
     setLoaded(true);
   }, []);
 
