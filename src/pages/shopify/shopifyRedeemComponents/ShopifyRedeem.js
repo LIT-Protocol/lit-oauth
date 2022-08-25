@@ -99,7 +99,6 @@ const ShopifyRedeem = () => {
       setStoredEVMAuthSig(authSigObj.ethereum);
     }
     if (authSigObj['solana']) {
-      console.log('CHECK SOLANA', authSigObj.solana)
       setStoredSolanaAuthSig(authSigObj.solana);
     }
     const updatedURL = window.location.href.split('&authSig=')[0];
@@ -250,6 +249,7 @@ const ShopifyRedeem = () => {
                                 validityResponse={validityResponse.data}
                                 toggleRedeemFailure={toggleRedeemFailure}
                                 preselectedVariant={preselectedVariant}
+                                setShowRedeemFailure={setShowRedeemFailure}
           ></ShopifyRedeemSuccess>
         </div>
       )

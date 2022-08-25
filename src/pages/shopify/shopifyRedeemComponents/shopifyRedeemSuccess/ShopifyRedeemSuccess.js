@@ -21,7 +21,8 @@ const ShopifyRedeemSuccess = ({
                                 storedEVMAuthSig = null,
                                 storedSolanaAuthSig = null,
                                 toggleRedeemFailure,
-                                preselectedVariant
+                                preselectedVariant,
+                                setShowRedeemFailure
                               }) => {
   const [ selectedVariantsArray, setSelectedVariantsArray ] = useState([]);
   const [ redeemButtonIsDisabled, setRedeemButtonIsDisabled ] = useState(true);
@@ -108,11 +109,18 @@ const ShopifyRedeemSuccess = ({
     setShowSelectNftDialog(false);
     try {
       const redeemOfferRes = await redeemOfferAndUpdateUserStats(redeemOfferObj);
+      console.log('redeemOfferRes', redeemOfferRes)
       if (!draftOrderDetails.hasRedeemLimit) {
         window.location.href = redeemOfferRes.data.redeemUrl;
       } else {
-        setRedeemLink(redeemOfferRes.data.redeemUrl);
-        setRedeemLoader(false);
+        if (redeemOfferRes.data.hasOwnProperty('allowRedeem') && redeemOfferRes.data['allowRedeem'] === false) {
+          console.log('DISALLOW REDEEM')
+          toggleRedeemFailure('Error checking offer validity', redeemOfferRes.data.message, '');
+          setShowRedeemFailure(true);
+        } else {
+          setRedeemLink(redeemOfferRes.data.redeemUrl);
+          setRedeemLoader(false);
+        }
       }
     } catch (err) {
       console.log('Error redeeming offer:', err);

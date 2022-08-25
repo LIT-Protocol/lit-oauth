@@ -95,7 +95,6 @@ export default async function shopifyEndpoints(fastify, opts) {
           });
       } catch (err) {
         // if token is invalid, update it with new access token
-        console.log('saveAccessToken: token is invalid, update', shop)
         console.log('----> Error with Shopify: token is probably invalid', err);
         await fastify.objection.models.shopifyStores
           .query()
@@ -112,7 +111,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
-    console.log('start of saveDraftOrder', request.body)
     const {
       shop_id,
       shop_name,
@@ -177,8 +175,6 @@ export default async function shopifyEndpoints(fastify, opts) {
           redeem_type
         });
 
-      console.log('@@@ post insert query res', query)
-
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
       return query.id;
@@ -189,7 +185,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
-    console.log('getAllDraftOrders', request.body)
     try {
       const result = await validateDevToken(request.headers.authorization);
       if (!result) {
@@ -244,12 +239,10 @@ export default async function shopifyEndpoints(fastify, opts) {
     const {uuid, jwt, authSig} = request.body;
     let verified;
     let payload;
-    console.log('check 0')
     try {
       const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
       payload = jwtData.payload;
-      console.log('verified', verified)
     } catch (err) {
 
       return {
@@ -258,8 +251,6 @@ export default async function shopifyEndpoints(fastify, opts) {
         allowRedeem: false,
       }
     }
-
-    console.log('check I')
 
     if (
       !verified ||
@@ -273,8 +264,6 @@ export default async function shopifyEndpoints(fastify, opts) {
     let offerData = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
-
-    console.log('-----> offerData', offerData[0])
 
     const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
 
@@ -292,11 +281,8 @@ export default async function shopifyEndpoints(fastify, opts) {
 
     const updatedRedeemedBy = await updateV1WalletRedeemedBy(fastify, offerData)
 
-    console.log('updatedRedeemedBy', updatedRedeemedBy)
-
     const redemptionStatus = await checkUserValidity(offerData[0], authSig);
 
-    console.log('after allow redeem', fastify.objection.models)
     return redemptionStatus;
   });
 
@@ -420,6 +406,30 @@ export default async function shopifyEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
+    // Note: check user validity before moving forward and update redeem if they are allowed
+    let redeemEntry = {}
+    try {
+      if (draftOrderDetails.hasRedeemLimit) {
+        const validityRes = await checkUserValidity(offerData[0], authSig);
+        if (!validityRes.allowRedeem) {
+          return validityRes;
+        }
+        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
+          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
+        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
+          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
+        }
+      }
+    } catch (err) {
+      console.log('Failed to update redemption', err);
+      if (draftOrderDetails.hasRedeemLimit) {
+        return {
+          allowRedeem: false,
+          message: 'An error occurred when trying to check redeem limit. Please try again later.'
+        }
+      }
+    }
+
     const lineItemsArray = selectedVariantsArray.map(v => {
       return {
         title: `${v.productTitle} - ${v.title}`,
@@ -443,16 +453,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       note_attributes
     };
 
-    let redeemEntry = {}
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
-      if (draftOrderRes && draftOrderDetails.hasRedeemLimit) {
-        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
-          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
-        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
-          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
-        }
-      }
       try {
         const draftOrderMetafieldRes = await addShopifyMetafieldToDraftOrder({shopify, draftOrderRes, selectedNft});
       } catch (err) {
