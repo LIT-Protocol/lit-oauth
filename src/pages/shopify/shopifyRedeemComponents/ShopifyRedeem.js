@@ -37,6 +37,7 @@ const ShopifyRedeem = () => {
   const [ validityResponse, setValidityResponse ] = useState({});
   const [ humanizedAccessControlConditions, setHumanizedAccessControlConditions ] = useState(null);
   const [ offerData, setOfferData ] = useState(null);
+  const [ preselectedVariant, setPreselectedVariant ] = useState(null);
 
   document.addEventListener('lit-ready', function (e) {
     console.log('lit-ready event listener')
@@ -72,6 +73,14 @@ const ShopifyRedeem = () => {
       const resp = await getOffer(id);
       setOfferData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
+      const productIdParam = queryParams.get('productId');
+      const variantIdParam = queryParams.get('variantId');
+      if (!!variantIdParam && !!productIdParam) {
+        setPreselectedVariant({
+          variantIdParam,
+          productIdParam
+        })
+      }
       const authSigEncoded = queryParams.get('authSig');
       if (!!authSigEncoded) {
         parseAuthSigParam(authSigEncoded);
@@ -240,6 +249,7 @@ const ShopifyRedeem = () => {
                                 storedSolanaAuthSig={storedSolanaAuthSig}
                                 validityResponse={validityResponse.data}
                                 toggleRedeemFailure={toggleRedeemFailure}
+                                preselectedVariant={preselectedVariant}
           ></ShopifyRedeemSuccess>
         </div>
       )

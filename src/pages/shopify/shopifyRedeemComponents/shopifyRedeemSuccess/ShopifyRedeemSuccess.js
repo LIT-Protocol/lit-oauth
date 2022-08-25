@@ -20,7 +20,8 @@ const ShopifyRedeemSuccess = ({
                                 validityResponse,
                                 storedEVMAuthSig = null,
                                 storedSolanaAuthSig = null,
-                                toggleRedeemFailure
+                                toggleRedeemFailure,
+                                preselectedVariant
                               }) => {
   const [ selectedVariantsArray, setSelectedVariantsArray ] = useState([]);
   const [ redeemButtonIsDisabled, setRedeemButtonIsDisabled ] = useState(true);
@@ -150,6 +151,7 @@ const ShopifyRedeemSuccess = ({
                                       index={i}
                                       disableSelect={!!redeemLink}
                                       selectedVariantsArray={selectedVariantsArray}
+                                      preselectedVariant={preselectedVariant}
                                       updateSelectedVariant={updateSelectedVariant}></ShopifyProductSelect>
               )
             }
