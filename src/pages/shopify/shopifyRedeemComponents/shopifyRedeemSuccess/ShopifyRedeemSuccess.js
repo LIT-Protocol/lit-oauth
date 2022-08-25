@@ -109,12 +109,10 @@ const ShopifyRedeemSuccess = ({
     setShowSelectNftDialog(false);
     try {
       const redeemOfferRes = await redeemOfferAndUpdateUserStats(redeemOfferObj);
-      console.log('redeemOfferRes', redeemOfferRes)
       if (!draftOrderDetails.hasRedeemLimit) {
         window.location.href = redeemOfferRes.data.redeemUrl;
       } else {
         if (redeemOfferRes.data.hasOwnProperty('allowRedeem') && redeemOfferRes.data['allowRedeem'] === false) {
-          console.log('DISALLOW REDEEM')
           toggleRedeemFailure('Error checking offer validity', redeemOfferRes.data.message, '');
           setShowRedeemFailure(true);
         } else {
