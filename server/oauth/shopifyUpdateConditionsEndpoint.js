@@ -315,6 +315,20 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
   });
 
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const uuid = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
+  })
+
   fastify.post('/api/shopify/deleteAllMetafields', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
