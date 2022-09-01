@@ -297,19 +297,16 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const resolvedMetafieldsPromise = await Promise.all(metafieldPromise);
 
-    return resolvedMetafieldsPromise;
-    // let filteredMetafields = [];
-    // resolvedMetafieldsPromise.forEach((m, i) => {
-    //   console.log('m', m)
-    //   filteredMetafields[i] = [];
-    //   m.forEach(n => {
-    //     if (n.namespace === 'lit_offer') {
-    //       filteredMetafields[i].push(n)
-    //     }
-    //
-    //   })
-    // })
-    //
+    let filteredMetafields = [];
+    resolvedMetafieldsPromise.forEach((m, i) => {
+      if (m.namespace === 'lit_offer') {
+        filteredMetafields.push(m)
+      }
+    })
+
+    console.log('filteredMetafields', filteredMetafields)
+    return filteredMetafields
+
     // const checkDelete = filteredMetafields.flat().map(async meta => {
     //   return await shopify.metafield.delete(meta.id);
     // })
