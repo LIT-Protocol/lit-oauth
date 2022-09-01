@@ -215,7 +215,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const allDraftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId)
     let ids = [];
-    allDraftOrders.forEach(draftOrder => {
+    allDraftOrders.forEach((draftOrder) => {
+      delay(1000)
       try {
         const idHolder = JSON.parse(draftOrder.assetIdOnService);
         idHolder.forEach(id => {
@@ -534,6 +535,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       specificStore = await fastify.objection.models.shopifyStores
         .query()
         .where('shop_name', '=', shortenShopName(name));
+
+      console.log('check specific store', specificStore)
 
       draftOrders = await fastify.objection.models.shopifyDraftOrders
         .query()
