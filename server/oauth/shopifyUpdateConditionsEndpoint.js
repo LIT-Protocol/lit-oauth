@@ -252,7 +252,59 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // const deleteChecked = await Promise.all(checkDelete);
     //
     // return deleteChecked;
-  })
+  });
+
+  fastify.post('/api/shopify/deleteProductMetafield', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {shopId, uuid} = request.body;
+    console.log('SHop', shopId)
+    console.log('uuid', uuid)
+    if (!shopId || !uuid) {
+      return `Missing shopId or uuid.`
+    }
+
+    const shop = await fastify.objection.models.shopifyStores.query()
+      .where("shop_id", "=", shopId);
+
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
+
+    let ids = [];
+
+    const metafieldPromise = await shopify.metafield.list({
+      metafield: {
+        owner_resource: 'product',
+        owner_id: draftOrder[0].id
+      }
+    })
+
+
+    const resolvedMetafieldsPromise = await Promise.all(metafieldPromise);
+
+    return resolvedMetafieldsPromise;
+    // let filteredMetafields = [];
+    // resolvedMetafieldsPromise.forEach((m, i) => {
+    //   console.log('m', m)
+    //   filteredMetafields[i] = [];
+    //   m.forEach(n => {
+    //     if (n.namespace === 'lit_offer') {
+    //       filteredMetafields[i].push(n)
+    //     }
+    //
+    //   })
+    // })
+    //
+    // const checkDelete = filteredMetafields.flat().map(async meta => {
+    //   return await shopify.metafield.delete(meta.id);
+    // })
+    //
+    // return checkDelete;
+
+  });
 
   fastify.post('/api/shopify/deleteAllMetafields', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
