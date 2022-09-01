@@ -254,7 +254,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // return deleteChecked;
   });
 
-  fastify.post('/api/shopify/deleteProductMetafield', async (request, response) => {
+  fastify.post('/api/shopify/deleteProductData', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
     }
@@ -275,14 +275,17 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
 
-    console.log('draftOrder', draftOrder[0])
+    let splitAssetId = draftOrder[0].assetIdOnService[0].split('Product/');
+    const assetId = splitAssetId.pop()
+
+    console.log('assetId', assetId)
 
     let ids = [];
 
     const metafieldPromise = await shopify.metafield.list({
       metafield: {
         owner_resource: 'product',
-        owner_id: draftOrder[0].assetIdOnService[0]
+        owner_id: assetId
       }
     })
 
