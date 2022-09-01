@@ -305,13 +305,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     })
 
     console.log('filteredMetafields', filteredMetafields)
-    return filteredMetafields
+    // return filteredMetafields
 
-    // const checkDelete = filteredMetafields.flat().map(async meta => {
-    //   return await shopify.metafield.delete(meta.id);
-    // })
-    //
-    // return checkDelete;
+    const checkDelete = filteredMetafields.flat().map(async meta => {
+      return await shopify.metafield.delete(meta.id);
+    })
+
+    return checkDelete;
 
   });
 
