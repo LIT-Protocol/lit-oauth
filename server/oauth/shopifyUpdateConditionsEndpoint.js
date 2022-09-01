@@ -216,7 +216,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const allDraftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId)
     let ids = [];
     allDraftOrders.forEach((draftOrder) => {
-      delay(1000)
       try {
         const idHolder = JSON.parse(draftOrder.assetIdOnService);
         idHolder.forEach(id => {
@@ -233,7 +232,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // return ids;
 
     const allProductMetafieldPromises = ids.map(async id => {
-      await delay(300);
+      await delay(1000);
       return await shopify.metafield.list({
         metafield: {
           owner_resource: 'product',
