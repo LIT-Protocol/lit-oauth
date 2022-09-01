@@ -275,7 +275,10 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
 
-    let splitAssetId = draftOrder[0].assetIdOnService[0].split('Product/');
+    console.log('check draftOrder', draftOrder[0])
+
+    let splitAssetId = draftOrder[0].assetIdOnService[0].split('/');
+    console.log('splitAssetId', splitAssetId)
     const assetId = splitAssetId.pop()
 
     console.log('assetId', assetId)
