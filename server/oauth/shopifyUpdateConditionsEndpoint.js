@@ -277,7 +277,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     console.log('check draftOrder', draftOrder[0])
 
-    let splitAssetId = JSON.parse(draftOrder[0].assetIdOnService[0]).split('/');
+    let parsedAssetId = JSON.parse(draftOrder[0].assetIdOnService[0]);
+    console.log('parsedAssetId', parsedAssetId)
+    const splitAssetId = parsedAssetId[0].split('Product/');
     console.log('splitAssetId', splitAssetId)
     const assetId = splitAssetId.pop()
 
