@@ -320,7 +320,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    const uuid = request.body;
+    const {uuid} = request.body;
     const allResults = await fastify.objection.models.shopifyDraftOrders
       .query()
       .delete()
