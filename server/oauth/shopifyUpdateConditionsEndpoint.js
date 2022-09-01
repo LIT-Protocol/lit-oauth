@@ -282,7 +282,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const metafieldPromise = await shopify.metafield.list({
       metafield: {
         owner_resource: 'product',
-        owner_id: draftOrder[0].id
+        owner_id: draftOrder[0].assetIdOnService[0]
       }
     })
 
