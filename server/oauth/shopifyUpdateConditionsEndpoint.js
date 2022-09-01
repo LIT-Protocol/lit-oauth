@@ -259,7 +259,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    const {shopId, uuid} = request.body;
+    const {shopId, uuid, productId} = request.body;
     console.log('SHop', shopId)
     console.log('uuid', uuid)
     if (!shopId || !uuid) {
@@ -273,19 +273,24 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
 
-    const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
+    let assetId;
 
-    console.log('check draftOrder', draftOrder[0])
+    if (!!productId) {
+      assetId = productId;
+    } else {
+      const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
 
-    let parsedAssetId = JSON.parse(draftOrder[0].assetIdOnService);
-    console.log('parsedAssetId', parsedAssetId)
-    const splitAssetId = parsedAssetId[0].split('Product/');
-    console.log('splitAssetId', splitAssetId)
-    const assetId = splitAssetId.pop()
+      console.log('check draftOrder', draftOrder[0])
 
-    console.log('assetId', assetId)
+      let parsedAssetId = JSON.parse(draftOrder[0].assetIdOnService);
+      console.log('parsedAssetId', parsedAssetId)
+      const splitAssetId = parsedAssetId[0].split('Product/');
+      console.log('splitAssetId', splitAssetId)
+      assetId = splitAssetId.pop()
+  
+      console.log('assetId', assetId)
+    }
 
-    let ids = [];
 
     const metafieldPromise = await shopify.metafield.list({
       metafield: {
