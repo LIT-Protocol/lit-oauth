@@ -287,10 +287,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       const splitAssetId = parsedAssetId[0].split('Product/');
       console.log('splitAssetId', splitAssetId)
       assetId = splitAssetId.pop()
-  
+
       console.log('assetId', assetId)
     }
-
 
     const metafieldPromise = await shopify.metafield.list({
       metafield: {
