@@ -298,7 +298,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       }
     })
 
-
     const resolvedMetafieldsPromise = await Promise.all(metafieldPromise);
 
     let filteredMetafields = [];
