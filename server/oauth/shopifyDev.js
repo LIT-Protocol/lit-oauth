@@ -17,6 +17,7 @@ import {
   checkUserValidity, updateMetrics, updateNftIdRedeem,
   updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
+import { createPrepopulateEntry } from "./shopifyHelpers/shopifyPrepopulateFunctions.js";
 
 dotenv.config({
   path: "../../env",
@@ -68,7 +69,9 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       asset_name_on_service,
       offer_type,
       condition_types,
-      redeem_type
+      redeem_type,
+      allow_prepopulate,
+      prepopulate_object
     } = request.body;
 
     const redeemed_by = seedRedeemedByList(draft_order_details);
@@ -112,6 +115,10 @@ export default async function shopifyDevEndpoints(fastify, opts) {
           condition_types,
           redeem_type
         });
+
+      // if (allow_prepopulate) {
+      //   await createPrepopulateEntry(fastify, query.id)
+      // }
 
       console.log('@@@ post insert query res', query)
 

@@ -3,8 +3,6 @@ import {
   checkUserValidity,
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
 import LitJsSdk from "lit-js-sdk";
-import { shortenShopName } from "./shopifyHelpers/shopifyReusableFunctions.js";
-import { makeShopifyInstance, updateProductWithTagAndUuid } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 
 dotenv.config({
   path: "../../env",
