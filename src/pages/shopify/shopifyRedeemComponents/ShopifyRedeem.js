@@ -37,6 +37,7 @@ const ShopifyRedeem = () => {
   const [ validityResponse, setValidityResponse ] = useState({});
   const [ humanizedAccessControlConditions, setHumanizedAccessControlConditions ] = useState(null);
   const [ offerData, setOfferData ] = useState(null);
+  const [ preselectedVariant, setPreselectedVariant ] = useState(null);
 
   document.addEventListener('lit-ready', function (e) {
     console.log('lit-ready event listener')
@@ -67,16 +68,25 @@ const ShopifyRedeem = () => {
     const queryString = window.location.search;
     const queryParams = new URLSearchParams(queryString);
     const id = queryParams.get('id');
-    const authSigEncoded = queryParams.get('authSig');
-    if (!!authSigEncoded) {
-      parseAuthSigParam(authSigEncoded);
-    }
     setDraftOrderId(id);
     try {
       const resp = await getOffer(id);
       setOfferData(resp.data);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
-      await getAuthSigs(resp.data.conditionTypes);
+      const productIdParam = queryParams.get('productId');
+      const variantIdParam = queryParams.get('variantId');
+      if (!!variantIdParam && !!productIdParam) {
+        setPreselectedVariant({
+          variantIdParam,
+          productIdParam
+        })
+      }
+      const authSigEncoded = queryParams.get('authSig');
+      if (!!authSigEncoded) {
+        parseAuthSigParam(authSigEncoded);
+      } else {
+        await getAuthSigs(resp.data.conditionTypes);
+      }
     } catch (err) {
       console.log('Error getting access control', err);
       toggleSnackbar('Error getting access control: err', 'error')
@@ -92,11 +102,10 @@ const ShopifyRedeem = () => {
       setStoredSolanaAuthSig(authSigObj.solana);
     }
     const updatedURL = window.location.href.split('&authSig=')[0];
-    window.location.href = updatedURL;
+    window.history.replaceState(null, 'Lit Token Access', updatedURL)
   }
 
   const getAuthSigs = async (chainString) => {
-    console.log('chainString', chainString)
     // todo: remove eventually. this loads the EVM signature for obsolete condition types that don't have a chain string
     if (!chainString) {
       await getEVMAuthSig();
@@ -143,6 +152,8 @@ const ShopifyRedeem = () => {
       storedSolanaAuthSig,
       offerData
     }
+    console.log('------> acc', JSON.parse(offerData.accessControlConditions))
+    console.log('------> provisionAccessObj', provisionAccessObj)
     try {
       return provisionAccess(provisionAccessObj).then(jwt => {
         return jwt;
@@ -237,6 +248,8 @@ const ShopifyRedeem = () => {
                                 storedSolanaAuthSig={storedSolanaAuthSig}
                                 validityResponse={validityResponse.data}
                                 toggleRedeemFailure={toggleRedeemFailure}
+                                preselectedVariant={preselectedVariant}
+                                setShowRedeemFailure={setShowRedeemFailure}
           ></ShopifyRedeemSuccess>
         </div>
       )

@@ -7,7 +7,6 @@ import GoogleGranting from "./pages/google/GoogleGranting";
 import GoogleLinkShare from "./pages/google/GoogleLinkShare";
 import ServiceLogin from "./pages/serviceLogin/ServiceLogin";
 import ShopifySplash from "./pages/shopify/ShopifySplash";
-import ShopifyRedeemOld from "./pages/shopify/ShopifyRedeemOld.js";
 import ShopifyDocs from "./pages/shopify/ShopifyDocs";
 import ShopifyRedeem from "./pages/shopify/shopifyRedeemComponents/ShopifyRedeem.js";
 
@@ -19,7 +18,6 @@ const ROUTING_COMPONENTS = {
   ServiceLogin: ServiceLogin,
   ShopifySplash: ShopifySplash,
   ShopifyRedeem: ShopifyRedeem,
-  ShopifyRedeemOld: ShopifyRedeemOld,
   ShopifyDocs: ShopifyDocs
 };
 

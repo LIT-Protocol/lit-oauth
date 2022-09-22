@@ -17,7 +17,7 @@ import {
   checkUserValidity, updateMetrics, updateNftIdRedeem,
   updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
-import { createPrepopulateEntry } from "./shopifyHelpers/shopifyPrepopulateFunctions.js";
+import { sendSlackMetricsReportMessage } from "../utils.js";
 
 dotenv.config({
   path: "../../env",
@@ -34,22 +34,83 @@ const validateDevToken = async (token) => {
   })
 }
 
-export default async function shopifyDevEndpoints(fastify, opts) {
+export default async function shopifyEndpoints(fastify, opts) {
 
-  // REFACTOR ENDPOINTS
-  fastify.post("/api/shopify/deleteDevShopData", async (request, reply) => {
-    const result = await validateDevToken(request.headers.authorization);
-    if (!result) {
-      reply.code(401).send("Unauthorized");
-      return;
+  fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
+    const {shop, accessToken} = JSON.parse(request.body);
+    const shortenedShopName = shortenShopName(shop);
+    const queryForExistingShop = await fastify.objection.models.shopifyStores
+      .query()
+      .where("shop_name", "=", shortenedShopName);
+
+    let shopDetails;
+
+    // if shop does not currently exist in our database
+    if (!queryForExistingShop.length) {
+      console.log('saveAccessToken: shop doesnt yet exist', shop)
+      try {
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
+
+      } catch (err) {
+        console.log('----> Error getting shopify details', err)
+        reply.code(401);
+        return false;
+      }
+
+      await fastify.objection.models.shopifyStores.query().insert({
+        shop_name: shortenedShopName,
+        access_token: accessToken,
+        email: shopDetails.email,
+        shop_id: shopDetails.id
+      });
+      await sendSlackMetricsReportMessage({
+        msg: `Shopify account connected ${shopDetails.email}`,
+      });
+
+    } else {
+      console.log('saveAccessToken: shop does exist', shop)
+      // shop does exist in database
+
+      try {
+        // check to see if token is valid
+        const shopify = new Shopify({
+          shopName: shop,
+          accessToken: accessToken,
+        });
+
+        shopDetails = await shopify.shop.get([ shop, accessToken ]);
+
+        // patch shop to update email in case it's changed
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            email: shopDetails.email,
+            access_token: accessToken,
+          });
+      } catch (err) {
+        // if token is invalid, update it with new access token
+        console.log('----> Error with Shopify: token is probably invalid', err);
+        await fastify.objection.models.shopifyStores
+          .query()
+          .where("shop_name", "=", shortenedShopName)
+          .patch({
+            access_token: accessToken,
+            email: shopDetails.email,
+          });
+      }
     }
-    console.log('Webhook to delete shop data')
-    // TODO: will need to be expanded and tested to delete shop data upon deleting the app
-    reply.code(200).send(true);
+
+    const shopInfo = {shopId: shopDetails.id, name: shopDetails.myshopify_domain};
+    reply.code(200).send(shopInfo);
   });
 
-  fastify.post("/api/shopify/saveDevDraftOrder", async (request, reply) => {
-    console.log('start of saveDevDraftOrder', request.body)
+  fastify.post("/api/shopify/saveDraftOrder", async (request, reply) => {
     const {
       shop_id,
       shop_name,
@@ -71,7 +132,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       condition_types,
       redeem_type,
       allow_prepopulate,
-      prepopulate_object
+      prepopulateObj
     } = request.body;
 
     const redeemed_by = seedRedeemedByList(draft_order_details);
@@ -116,12 +177,6 @@ export default async function shopifyDevEndpoints(fastify, opts) {
           redeem_type
         });
 
-      // if (allow_prepopulate) {
-      //   await createPrepopulateEntry(fastify, query.id)
-      // }
-
-      console.log('@@@ post insert query res', query)
-
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
       return query.id;
@@ -131,8 +186,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/getAllDevDraftOrders", async (request, reply) => {
-    console.log('getAllDevDraftOrders', request.body)
+  fastify.post("/api/shopify/getAllDraftOrders", async (request, reply) => {
     try {
       const result = await validateDevToken(request.headers.authorization);
       if (!result) {
@@ -150,7 +204,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   });
 
-  fastify.post("/api/shopify/deleteDevDraftOrder", async (request, reply) => {
+  fastify.post("/api/shopify/deleteDraftOrder", async (request, reply) => {
     const result = await validateDevToken(request.headers.authorization);
 
     if (!result) {
@@ -184,7 +238,6 @@ export default async function shopifyDevEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/checkForUserValidity", async (request, reply) => {
-    console.log('CHECK ON USER VALIDITY YO!', request.body)
     const {uuid, jwt, authSig} = request.body;
     let verified;
     let payload;
@@ -192,7 +245,6 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       const jwtData = LitJsSdk.verifyJwt({jwt});
       verified = jwtData.verified;
       payload = jwtData.payload;
-      console.log('verified', verified)
     } catch (err) {
 
       return {
@@ -231,11 +283,8 @@ export default async function shopifyDevEndpoints(fastify, opts) {
 
     const updatedRedeemedBy = await updateV1WalletRedeemedBy(fastify, offerData)
 
-    console.log('updatedRedeemedBy', updatedRedeemedBy)
-
     const redemptionStatus = await checkUserValidity(offerData[0], authSig);
 
-    console.log('after allow redeem', fastify.objection.models)
     return redemptionStatus;
   });
 
@@ -359,6 +408,30 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       accessToken: shop[0].accessToken,
     });
 
+    // Note: check user validity before moving forward and update redeem if they are allowed
+    let redeemEntry = {}
+    try {
+      if (draftOrderDetails.hasRedeemLimit) {
+        const validityRes = await checkUserValidity(offerData[0], authSig);
+        if (!validityRes.allowRedeem) {
+          return validityRes;
+        }
+        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
+          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
+        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
+          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
+        }
+      }
+    } catch (err) {
+      console.log('Failed to update redemption', err);
+      if (draftOrderDetails.hasRedeemLimit) {
+        return {
+          allowRedeem: false,
+          message: 'An error occurred when trying to check redeem limit. Please try again later.'
+        }
+      }
+    }
+
     const lineItemsArray = selectedVariantsArray.map(v => {
       return {
         title: `${v.productTitle} - ${v.title}`,
@@ -382,16 +455,8 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       note_attributes
     };
 
-    let redeemEntry = {}
     try {
       const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
-      if (draftOrderRes && draftOrderDetails.hasRedeemLimit) {
-        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
-          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
-        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
-          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
-        }
-      }
       try {
         const draftOrderMetafieldRes = await addShopifyMetafieldToDraftOrder({shopify, draftOrderRes, selectedNft});
       } catch (err) {
@@ -429,7 +494,7 @@ export default async function shopifyDevEndpoints(fastify, opts) {
     }
   })
 
-  fastify.post('/api/shopify/updateDevRedeemedList', async (request, reply) => {
+  fastify.post('/api/shopify/updateRedeemedList', async (request, reply) => {
     console.log('request.body', request.body)
     try {
       const result = await validateDevToken(request.headers.authorization);
@@ -462,32 +527,5 @@ export default async function shopifyDevEndpoints(fastify, opts) {
       console.error("--> Error getting all draft orders:", err);
       return err;
     }
-  })
-
-  fastify.post('/api/shopify/seed', async (request, reply) => {
-    const res = await fastify.objection.models.shopifyDraftOrders.query().insert({
-      shopId: '59835023511',
-      accessControlConditions: "[{\"conditionType\":\"evmBasic\",\"contractAddress\":\"0xA3D109E28589D2AbC15991B57Ce5ca461Ad8e026\",\"standardContractType\":\"ERC721\",\"chain\":\"polygon\",\"method\":\"balanceOf\",\"parameters\":[\":userAddress\"],\"returnValueTest\":{\"comparator\":\">=\",\"value\":\"1\"}}]",
-      humanizedAccessControlConditions: 'Controls wallet with address 0xcC542677e244c83FF66cEd6b6a88Eb7A6da1f024',
-      assetIdOnService: 'gid://shopify/Product/7347665535127',
-      title: 'check it out - DO NOT DELETE',
-      summary: 'Token gated twilight darkness',
-      assetType: 'exclusive',
-      userId: '',
-      draftOrderDetails: '{"id":"gid://shopify/Product/7347665535127","quantity":1,"title":"original discount - DO NOT DELETE","description":null,"redeemLimit":"0","value":0,"valueType":"PERCENTAGE"}',
-      extraData: 'evmBasic',
-      active: true,
-      redeemedBy: '{}',
-      description: null,
-      discount: null,
-      usedChains: null,
-      conditionTypes: null,
-      redeemedNfts: null,
-      assetNameOnService: null,
-      offerType: null,
-      redeemType: null
-    })
-    console.log('CHCEK RES!', res)
-    return res;
   })
 }

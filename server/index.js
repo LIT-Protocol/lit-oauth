@@ -6,8 +6,7 @@ import fastifyBugsnag from "lit-fastify-bugsnag";
 import * as path from "path";
 import zoomOauthEndpoints from "./oauth/zoom.js";
 import googleOauthEndpoints from "./oauth/google.js";
-import shopifyEndpoints from "./oauth/shopifyOld.js";
-import shopifyDevEndpoints from "./oauth/shopifyDev.js";
+import shopifyEndpoints from "./oauth/shopify.js";
 import shopifyGDPREndpoints from "./oauth/shopifyGDPREndpoints.js";
 import shopifyThemeAppExtensionEndpoints from "./oauth/shopifyThemeAppExtensionEndpoints.js";
 import shopifyUpdateConditionsEndpoint from "./oauth/shopifyUpdateConditionsEndpoint.js";
@@ -90,7 +89,6 @@ fastify.post("/api/connectedServices", async (request, reply) => {
 fastify.register(zoomOauthEndpoints);
 fastify.register(googleOauthEndpoints);
 fastify.register(shopifyEndpoints);
-fastify.register(shopifyDevEndpoints);
 fastify.register(shopifyGDPREndpoints);
 fastify.register(shopifyThemeAppExtensionEndpoints);
 fastify.register(shopifyUpdateConditionsEndpoint);

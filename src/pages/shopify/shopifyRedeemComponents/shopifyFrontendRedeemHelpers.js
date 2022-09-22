@@ -29,7 +29,11 @@ export const provisionAccess = async ({
     extraData: "",
   };
 
-  console.log('!!!!!!! resourceId', resourceId)
+  console.log('!!!!!!! resourceId', {
+    unifiedAccessControlConditions: unifiedAccessControlConditions,
+    authSig: authSigs,
+    resourceId: resourceId
+  })
 
   try {
     const jwt = await window.litNodeClient.getSignedToken({

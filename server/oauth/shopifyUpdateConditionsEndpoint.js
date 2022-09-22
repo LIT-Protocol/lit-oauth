@@ -215,7 +215,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const allDraftOrders = await fastify.objection.models.shopifyDraftOrders.query().where('shop_id', '=', request.body.shopId)
     let ids = [];
-    allDraftOrders.forEach(draftOrder => {
+    allDraftOrders.forEach((draftOrder) => {
       try {
         const idHolder = JSON.parse(draftOrder.assetIdOnService);
         idHolder.forEach(id => {
@@ -232,7 +232,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // return ids;
 
     const allProductMetafieldPromises = ids.map(async id => {
-      await delay(300);
+      await delay(1000);
       return await shopify.metafield.list({
         metafield: {
           owner_resource: 'product',
@@ -252,6 +252,84 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     // const deleteChecked = await Promise.all(checkDelete);
     //
     // return deleteChecked;
+  });
+
+  fastify.post('/api/shopify/deleteProductData', async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {shopId, uuid, productId} = request.body;
+    console.log('SHop', shopId)
+    console.log('uuid', uuid)
+    if (!shopId || !uuid) {
+      return `Missing shopId or uuid.`
+    }
+
+    const shop = await fastify.objection.models.shopifyStores.query()
+      .where("shop_id", "=", shopId);
+
+    console.log('check shop', shop)
+
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+    let assetId;
+
+    if (!!productId) {
+      assetId = productId;
+    } else {
+      const draftOrder = await fastify.objection.models.shopifyDraftOrders.query().where('id', '=', uuid)
+
+      console.log('check draftOrder', draftOrder[0])
+
+      let parsedAssetId = JSON.parse(draftOrder[0].assetIdOnService);
+      console.log('parsedAssetId', parsedAssetId)
+      const splitAssetId = parsedAssetId[0].split('Product/');
+      console.log('splitAssetId', splitAssetId)
+      assetId = splitAssetId.pop()
+
+      console.log('assetId', assetId)
+    }
+
+    const metafieldPromise = await shopify.metafield.list({
+      metafield: {
+        owner_resource: 'product',
+        owner_id: assetId
+      }
+    })
+
+    const resolvedMetafieldsPromise = await Promise.all(metafieldPromise);
+
+    let filteredMetafields = [];
+    resolvedMetafieldsPromise.forEach((m, i) => {
+      if (m.namespace === 'lit_offer') {
+        filteredMetafields.push(m)
+      }
+    })
+
+    console.log('filteredMetafields', filteredMetafields)
+    // return filteredMetafields
+
+    const checkDelete = filteredMetafields.flat().map(async meta => {
+      return await shopify.metafield.delete(meta.id);
+    })
+
+    return checkDelete;
+
+  });
+
+  fastify.post("/api/shopify/deleteSpecific", async (request, reply) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {uuid} = request.body;
+    const allResults = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .delete()
+      .where('id', '=', uuid);
+
+    return allResults;
   })
 
   fastify.post('/api/shopify/deleteAllMetafields', async (request, response) => {
@@ -382,19 +460,33 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return resolvedFixed;
   })
 
-  fastify.post('/api/shopify/updateRedeemedList', async (request, response) => {
+  fastify.post('/api/shopify/manuallyUpdateRedeemedList', async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
     }
 
-    const draftOrder = fastify.objection.models.shopifyDraftOrders.query().where('id', '=', request.body.uuid);
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', request.body.uuid);
 
     console.log('request.body', request.body)
     console.log('draftOrder', draftOrder[0])
-    const parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
-    const parsedRedeemedList = request.body.redeemedList;
-    console.log('parsedRedeemedList', parsedRedeemedList)
-    console.log('parsedDraftOrderList', parsedDraftOrderList)
+    let parsedDraftOrderList = JSON.parse(draftOrder[0].redeemedBy);
+    const parsedRedeemedList = JSON.parse(request.body.redeemedList);
+    console.log('parsedRedeemedList', typeof parsedRedeemedList)
+    parsedDraftOrderList['solRpc'] = parsedRedeemedList;
+    console.log('parsedDraftOrderList', typeof parsedDraftOrderList)
+    const updatedConditions = JSON.stringify(parsedDraftOrderList);
+
+    const patched = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', request.body.uuid)
+      .patch({
+        redeemedBy: updatedConditions
+      })
+
+    return patched;
+    // return parsedDraftOrderList
 
   })
 
@@ -483,5 +575,61 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     const resolvedUpdatedMetadata = await Promise.all(updatedMetadata);
     return resolvedUpdatedMetadata;
   })
+
+  fastify.post("/api/shopify/checkOnDraftOrders", async (request, reply) => {
+    const {name, pass, getEmptyFields, shopId} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    let specificStore = null;
+    let draftOrders = null;
+    let allDraftOrders;
+    let allStores = [];
+    if (!!getEmptyFields) {
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query().where("offer_type", "=", null)
+    } else if (name === 'all') {
+      const allStoresHolder = await fastify.objection.models.shopifyStores
+        .query()
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+      allStores = allStoresHolder.map(s => {
+        let tempStore = s;
+        delete tempStore.accessToken;
+        return tempStore;
+      })
+    } else if (!!shopId) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_id', '=', shopId);
+
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
+    } else if (!!name) {
+      specificStore = await fastify.objection.models.shopifyStores
+        .query()
+        .where('shop_name', '=', shortenShopName(name));
+
+      if (specificStore[0].accessToken) {
+        delete specificStore[0].accessToken;
+      }
+
+      console.log('check specific store', specificStore)
+
+      draftOrders = await fastify.objection.models.shopifyDraftOrders
+        .query()
+        .where("shop_id", "=", specificStore[0].shopId);
+    }
+
+    return {
+      specificStore: specificStore,
+      storeDraftOrders: draftOrders,
+      allStores: allStores,
+      length: draftOrders.length
+    };
+  });
 
 }

@@ -20,7 +20,9 @@ const ShopifyRedeemSuccess = ({
                                 validityResponse,
                                 storedEVMAuthSig = null,
                                 storedSolanaAuthSig = null,
-                                toggleRedeemFailure
+                                toggleRedeemFailure,
+                                preselectedVariant,
+                                setShowRedeemFailure
                               }) => {
   const [ selectedVariantsArray, setSelectedVariantsArray ] = useState([]);
   const [ redeemButtonIsDisabled, setRedeemButtonIsDisabled ] = useState(true);
@@ -110,8 +112,13 @@ const ShopifyRedeemSuccess = ({
       if (!draftOrderDetails.hasRedeemLimit) {
         window.location.href = redeemOfferRes.data.redeemUrl;
       } else {
-        setRedeemLink(redeemOfferRes.data.redeemUrl);
-        setRedeemLoader(false);
+        if (redeemOfferRes.data.hasOwnProperty('allowRedeem') && redeemOfferRes.data['allowRedeem'] === false) {
+          toggleRedeemFailure('Error checking offer validity', redeemOfferRes.data.message, '');
+          setShowRedeemFailure(true);
+        } else {
+          setRedeemLink(redeemOfferRes.data.redeemUrl);
+          setRedeemLoader(false);
+        }
       }
     } catch (err) {
       console.log('Error redeeming offer:', err);
@@ -150,6 +157,7 @@ const ShopifyRedeemSuccess = ({
                                       index={i}
                                       disableSelect={!!redeemLink}
                                       selectedVariantsArray={selectedVariantsArray}
+                                      preselectedVariant={preselectedVariant}
                                       updateSelectedVariant={updateSelectedVariant}></ShopifyProductSelect>
               )
             }

@@ -34,11 +34,6 @@ export const URL_MAP = {
     componentName: "ShopifyRedeem",
     exact: true,
   },
-  shopifyRedeemOld: {
-    path: [ "/shopify/l" ],
-    componentName: "shopifyRedeemOld",
-    exact: true,
-  },
   shopifyDocs: {
     path: [ "/shopify/docs" ],
     componentName: "ShopifyDocs",

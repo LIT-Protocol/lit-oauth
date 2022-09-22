@@ -10,7 +10,7 @@ export const up = (knex) => {
       .primary()
       .defaultTo(knex.raw("gen_random_uuid()"));
     table.text('draft_order_id')
-    table.json('draft_orders')
+    table.json('draft_order_data')
     table.timestamps();
   });
 };

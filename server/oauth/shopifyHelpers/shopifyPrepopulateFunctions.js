@@ -3,6 +3,7 @@ export const createPrepopulateEntry = async (fastify, draftOrderId) => {
     .query()
     .insert({
       draft_order_id: draftOrderId,
-      draft_orders: []
+      draft_orders: [],
+      prepopulate_data: {}
     });
 }
