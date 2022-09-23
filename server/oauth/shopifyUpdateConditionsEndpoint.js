@@ -85,15 +85,18 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
 
     // update draftOrderDetails
     const parsedDraftOrderDetails = JSON.parse(o.draftOrderDetails);
+    if (!Array.isArray(parsedDraftOrderDetails.id)) {
+      parsedDraftOrderDetails['id'] = [ parsedDraftOrderDetails.id ];
+    }
     parsedDraftOrderDetails['conditionTypes'] = updatedUaccObj.conditionTypes.join(',');
-    parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
     parsedDraftOrderDetails['typeOfAccessControl'] = offerHolder.assetType;
-    parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
     parsedDraftOrderDetails['usedChains'] = updatedUaccObj.chainsUsed.join(',');
     offerHolder.draftOrderDetails = JSON.stringify(parsedDraftOrderDetails);
 
     // update redeemType.  if draftOrder redeem limit is anything above 0, it will be limited by walletAddress
-    offerHolder.redeemType = parsedDraftOrderDetails.redeemLimit > 0 ? 'walletAddress' : null;
+    // parsedDraftOrderDetails['hasRedeemLimit'] = parsedDraftOrderDetails['redeemLimit'] > 0;
+    // parsedDraftOrderDetails['typeOfRedeem'] = parsedDraftOrderDetails['redeemLimit'] > 0 ? 'walletAddress' : null;
+    // offerHolder.redeemType = parsedDraftOrderDetails.redeemLimit > 0 ? 'walletAddress' : null;
 
     //update conditionType
     return offerHolder;
@@ -171,7 +174,7 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
-  fastify.post("/api/shopify/updateAllConditions", async (request, response) => {
+  fastify.post("/api/shopify/updateShopConditions", async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
     }
@@ -180,7 +183,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     if (request.body['shopId']) {
       shops = await fastify.objection.models.shopifyStores.query().where('shop_id', '=', request.body.shopId);
     } else {
-      shops = await fastify.objection.models.shopifyStores.query();
+      return 'no shop specified';
     }
 
     const allShopsWithDraftOrders = shops.map(async s => {
