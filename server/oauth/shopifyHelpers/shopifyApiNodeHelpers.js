@@ -1,4 +1,5 @@
 import Shopify from "shopify-api-node";
+import { updateMetrics } from "./shopifyUserRedemptions.js";
 
 export const makeShopifyInstance = (shopName, accessToken) => {
   return new Shopify({
@@ -181,8 +182,16 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
   let tags = [];
 
   console.log('selectedNft', selectedNft)
-
-  if (draftOrderDetails['hasRedeemLimit']) {
+  // Note: below is used when pre-populate is selected
+  if (draftOrderDetails['allowPrepopulate']) {
+    tags.push(`lit-pre-populate`);
+    const nftIdNote = {
+      name: 'Pre-populated draft order',
+      value: `Created for offer titled: '${draftOrderDetails.title}'`
+    }
+    noteAttributes.push(nftIdNote);
+    // Note: below is used when a redeem limit has been set
+  } else if (draftOrderDetails['hasRedeemLimit']) {
     if (draftOrderDetails.typeOfRedeem === 'nftId') {
       tags.push(`lit-nft-id`);
       // tags.push(selectedNft.nft.contract.address);
@@ -225,5 +234,52 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
   return {
     tags: tags.join(','),
     note_attributes: noteAttributes
+  }
+}
+
+export const makeDraftOrder = async ({shopify, selectedVariantsArray, draftOrderDetails}) => {
+  const lineItemsArray = selectedVariantsArray.map(v => {
+    return {
+      title: `${v.productTitle} - ${v.title}`,
+      variant_id: v.id,
+      id: v.productId,
+      price: v.price,
+      quantity: 1,
+      applied_discount: {
+        value_type: draftOrderDetails.valueType.toLowerCase(),
+        value: draftOrderDetails.value
+      }
+    }
+  })
+
+  const authSig = {}
+
+  const {tags, note_attributes} = createNoteAttributesAndTags({draftOrderDetails, authSig, selectedNft});
+
+  const draftOrderRequest = {
+    note: `Offer Title: ${draftOrderDetails.title}`,
+    line_items: lineItemsArray,
+    tags,
+    note_attributes
+  };
+
+  try {
+    const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
+    try {
+      const draftOrderMetafieldRes = await addShopifyMetafieldToDraftOrder({shopify, draftOrderRes});
+    } catch (err) {
+      console.log('Error creating draft order metafield', err);
+      return err;
+    }
+
+    try {
+      updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
+    } catch (err) {
+      console.log('Error updating metrics:', err);
+    }
+    return {redeemUrl: draftOrderRes.invoice_url};
+  } catch (err) {
+    console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
+    return err;
   }
 }

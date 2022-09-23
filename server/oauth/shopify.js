@@ -7,7 +7,7 @@ import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
 import {
-  addShopifyMetafieldToDraftOrder, createNoteAttributesAndTags,
+  addShopifyMetafieldToDraftOrder, createNoteAttributesAndTags, makeDraftOrder,
   makeShopifyInstance,
   removeTagAndMetafieldFromProducts,
   updateProductWithTagAndUuid
@@ -18,6 +18,7 @@ import {
   updateV1WalletRedeemedBy, updateWalletAddressRedeem
 } from "./shopifyHelpers/shopifyUserRedemptions.js";
 import { sendSlackMetricsReportMessage } from "../utils.js";
+import { createPrepopulateEntry, toggleRecursiveCalls } from "./shopifyHelpers/shopifyPrepopulateFunctions.js";
 
 dotenv.config({
   path: "../../env",
@@ -132,7 +133,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       condition_types,
       redeem_type,
       allow_prepopulate,
-      prepopulateObj
+      prepopulateData
     } = request.body;
 
     const redeemed_by = seedRedeemedByList(draft_order_details);
@@ -178,6 +179,19 @@ export default async function shopifyEndpoints(fastify, opts) {
         });
 
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
+
+      console.log('CHECK QUERY', query)
+      // Note: sets up prepopulate
+      if (allow_prepopulate) {
+        const prepopulateDataRes = await createPrepopulateEntry(fastify, shopify, query.id, prepopulateData);
+        const parsedDraftOrderDetails = JSON.parse(draft_order_details);
+        toggleRecursiveCalls({
+          fastify,
+          shopify,
+          offerId: query[0].id,
+          parsedDraftOrderDetails
+        });
+      }
 
       return query.id;
     } catch (err) {
