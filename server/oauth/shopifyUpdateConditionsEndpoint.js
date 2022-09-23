@@ -60,7 +60,11 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
     // update assetIdOnService
     try {
       const parsedAssetId = JSON.parse(o.assetIdOnService);
-      offerHolder.assetIdOnService = JSON.stringify([ JSON.parse(parsedAssetId) ].flat());
+      if (!Array.isArray(parsedAssetId)) {
+        offerHolder.assetIdOnService = JSON.stringify([ parsedAssetId ].flat());
+      } else {
+        offerHolder.assetIdOnService = JSON.stringify(parsedAssetId.flat());
+      }
     } catch (err) {
       offerHolder.assetIdOnService = JSON.stringify([ o.assetIdOnService ]);
     }
@@ -174,6 +178,25 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
+  fastify.post("/api/shopify/patchOffer", async (request, response) => {
+    if (request.body.key !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const {id, offerUpdate} = request.body;
+
+    if (!id || !offerUpdate) {
+      return 'incomplete information'
+    }
+
+    const draftOrderPatch = fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where('id', '=', id)
+      .patch(offerUpdate)
+
+    return draftOrderPatch;
+  })
+
   fastify.post("/api/shopify/updateShopConditions", async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
       return 'nope';
