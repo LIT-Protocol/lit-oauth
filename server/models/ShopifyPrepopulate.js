@@ -9,7 +9,9 @@ export default class ShopifyPrepopulate extends BaseModel {
     return [
       'id',
       'draft_order_id',
-      'draft_order_data'
+      'prepopulate_data',
+      'product_details',
+      'errors'
     ];
   }
 }

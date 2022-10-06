@@ -27,6 +27,18 @@ export const getAllOfferProducts = async ({uuid, jwt, authSig}) => {
 }
 
 export const redeemOfferAndUpdateUserStats = async (redeemOfferObj) => {
-  return await axios
-    .post(API_HOST + "/api/shopify/redeemOfferAndUpdateUserStats", redeemOfferObj);
+  return await axios.post(API_HOST + "/api/shopify/redeemOfferAndUpdateUserStats", redeemOfferObj);
 }
+
+export const getPrepopulateInfo = async ({uuid, jwt}) => {
+  return await axios.post(
+    `${API_HOST}/api/shopify/getPrepopulateInfo`,
+    {
+      uuid,
+      jwt
+    });
+};
+
+export const redeemPrepopulate = async (redeemOfferObj) => {
+  return await axios.post(`${API_HOST}/api/shopify/redeemPrepopulate`, redeemOfferObj);
+};

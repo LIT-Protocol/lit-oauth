@@ -177,22 +177,22 @@ export const addShopifyMetafieldToDraftOrder = async ({shopify, draftOrderRes}) 
   }
 }
 
-export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selectedNft}) => {
+export const createNoteAttributesAndTags = ({parsedDraftOrderDetails, authSig, selectedNft = null}) => {
   let noteAttributes = [];
   let tags = [];
 
   console.log('selectedNft', selectedNft)
   // Note: below is used when pre-populate is selected
-  if (draftOrderDetails['allowPrepopulate']) {
+  if (parsedDraftOrderDetails['allowPrepopulate']) {
     tags.push(`lit-pre-populate`);
     const nftIdNote = {
       name: 'Pre-populated draft order',
-      value: `Created for offer titled: '${draftOrderDetails.title}'`
+      value: `Created for offer titled: '${parsedDraftOrderDetails.title}'`
     }
     noteAttributes.push(nftIdNote);
     // Note: below is used when a redeem limit has been set
-  } else if (draftOrderDetails['hasRedeemLimit']) {
-    if (draftOrderDetails.typeOfRedeem === 'nftId') {
+  } else if (parsedDraftOrderDetails['hasRedeemLimit']) {
+    if (parsedDraftOrderDetails.typeOfRedeem === 'nftId') {
       tags.push(`lit-nft-id`);
       // tags.push(selectedNft.nft.contract.address);
       // tags.push(selectedNft.nft.id.tokenId);
@@ -203,7 +203,7 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
       noteAttributes.push(nftIdNote);
     } else {
       tags.push(`lit-wallet-address`);
-      const splitConditionTypes = draftOrderDetails.conditionTypes.split(',');
+      const splitConditionTypes = parsedDraftOrderDetails.conditionTypes.split(',');
       if (splitConditionTypes.indexOf('evmBasic') !== -1) {
         // tags.push(authSig.ethereum.address);
         const nftIdNote = {
@@ -223,7 +223,7 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
     }
   }
 
-  if (draftOrderDetails['typeOfAccessControl'] === 'exclusive') {
+  if (parsedDraftOrderDetails['typeOfAccessControl'] === 'exclusive') {
     tags.push('lit-exclusive');
   } else {
     tags.push('lit-discount');
@@ -237,31 +237,35 @@ export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selecte
   }
 }
 
-export const makeDraftOrder = async ({shopify, selectedVariantsArray, draftOrderDetails}) => {
+export const makePrepopulateDraftOrder = async ({shopify, selectedVariantsArray, parsedDraftOrderDetails}) => {
   const lineItemsArray = selectedVariantsArray.map(v => {
     return {
       title: `${v.productTitle} - ${v.title}`,
-      variant_id: v.id,
-      id: v.productId,
+      variant_id: v.id.split('/').pop(),
+      id: v.productId.split('/').pop(),
       price: v.price,
       quantity: 1,
       applied_discount: {
-        value_type: draftOrderDetails.valueType.toLowerCase(),
-        value: draftOrderDetails.value
+        value_type: parsedDraftOrderDetails.valueType.toLowerCase(),
+        value: parsedDraftOrderDetails.value
       }
     }
   })
 
+  console.log('CHECK LINE ITEMS ARRAY', lineItemsArray)
+
   const authSig = {}
 
-  const {tags, note_attributes} = createNoteAttributesAndTags({draftOrderDetails, authSig, selectedNft});
+  const {tags, note_attributes} = createNoteAttributesAndTags({parsedDraftOrderDetails, authSig});
 
   const draftOrderRequest = {
-    note: `Offer Title: ${draftOrderDetails.title}`,
+    note: `Offer Title: ${parsedDraftOrderDetails.title}`,
     line_items: lineItemsArray,
     tags,
     note_attributes
   };
+
+  console.log('draftOrderRequest', draftOrderRequest)
 
   try {
     const draftOrderRes = await shopify.draftOrder.create(draftOrderRequest);
@@ -272,14 +276,14 @@ export const makeDraftOrder = async ({shopify, selectedVariantsArray, draftOrder
       return err;
     }
 
-    try {
-      updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
-    } catch (err) {
-      console.log('Error updating metrics:', err);
-    }
+    // try {
+    //   updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
+    // } catch (err) {
+    //   console.log('Error updating metrics:', err);
+    // }
     return {redeemUrl: draftOrderRes.invoice_url};
   } catch (err) {
-    console.error(`----> Error redeeming draft order for ${shop[0].shopName}`, err);
+    console.error(`----> Error making draft order for ${parsedDraftOrderDetails.shop_name}`, err);
     return err;
   }
 }

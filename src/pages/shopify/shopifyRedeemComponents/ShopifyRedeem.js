@@ -12,6 +12,7 @@ import { checkForUserValidity } from "./shopifyRedeemApi.js";
 import ShopifyRedeemSuccess from "./shopifyRedeemSuccess/ShopifyRedeemSuccess.js";
 import { IconButton, Tooltip } from "@mui/material";
 import InfoIcon from '@mui/icons-material/Info';
+import ShopifyPrepopulateSuccess from "./shopifyPrepopulateSuccess/ShopifyPrepopulateSuccess.js";
 
 const ShopifyRedeem = () => {
   const {performWithAuthSig} = useAppContext();
@@ -37,6 +38,7 @@ const ShopifyRedeem = () => {
   const [ validityResponse, setValidityResponse ] = useState({});
   const [ humanizedAccessControlConditions, setHumanizedAccessControlConditions ] = useState(null);
   const [ offerData, setOfferData ] = useState(null);
+  const [ draftOrderDetails, setDraftOrderDetails ] = useState(null);
   const [ preselectedVariant, setPreselectedVariant ] = useState(null);
 
   document.addEventListener('lit-ready', function (e) {
@@ -72,6 +74,8 @@ const ShopifyRedeem = () => {
     try {
       const resp = await getOffer(id);
       setOfferData(resp.data);
+      const parsedDraftOrderDetails = JSON.parse(resp.data.draftOrderDetails);
+      setDraftOrderDetails(parsedDraftOrderDetails);
       setHumanizedAccessControlConditions(resp.data.humanizedAccessControlConditions);
       const productIdParam = queryParams.get('productId');
       const variantIdParam = queryParams.get('variantId');
@@ -152,8 +156,7 @@ const ShopifyRedeem = () => {
       storedSolanaAuthSig,
       offerData
     }
-    console.log('------> acc', JSON.parse(offerData.accessControlConditions))
-    console.log('------> provisionAccessObj', provisionAccessObj)
+    console.log('CHECK PROVISION ACCESS OBJ', provisionAccessObj)
     try {
       return provisionAccess(provisionAccessObj).then(jwt => {
         return jwt;
@@ -238,6 +241,22 @@ const ShopifyRedeem = () => {
         </div>
       )
     }
+    if (accessVerified && offerProducts && draftOrderDetails.allowPrepopulate) {
+      return (
+        <div className={'lit-success-container'}>
+          <ShopifyPrepopulateSuccess offerData={offerData}
+                                     offerProducts={offerProducts}
+                                     currentJwt={currentJwt}
+                                     storedEVMAuthSig={storedEVMAuthSig}
+                                     storedSolanaAuthSig={storedSolanaAuthSig}
+                                     validityResponse={validityResponse.data}
+                                     toggleRedeemFailure={toggleRedeemFailure}
+                                     preselectedVariant={preselectedVariant}
+                                     setShowRedeemFailure={setShowRedeemFailure}>
+          </ShopifyPrepopulateSuccess>
+        </div>
+      )
+    }
     if (accessVerified && offerProducts) {
       return (
         <div className={'lit-success-container'}>
@@ -258,8 +277,6 @@ const ShopifyRedeem = () => {
 
   return (
     <div className={'lit-shopify-container'}>
-      {/*Shopify Redeem v3*/}
-      {/*<button onClick={testSnackbar}>test snackbar</button>*/}
       {getState()}
       <ShopifySnackbar snackbarInfo={snackbarInfo} openSnackbar={openSnackbar} setOpenSnackbar={setOpenSnackbar}/>
       <span className={'lit-info'}>

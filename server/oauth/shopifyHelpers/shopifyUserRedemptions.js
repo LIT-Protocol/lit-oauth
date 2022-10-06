@@ -40,21 +40,21 @@ export const checkUserValidity = async (offerData, authSig) => {
     allowRedeem: true,
     message: ''
   };
-  const draftOrderDetails = JSON.parse(offerData.draftOrderDetails);
-  if (!draftOrderDetails.hasRedeemLimit) {
+  const parsedDraftOrderDetails = JSON.parse(offerData.draftOrderDetails);
+  if (!parsedDraftOrderDetails.hasRedeemLimit) {
     return redemptionStatus;
-  } else if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
-    const redemptionValidity = await checkWalletAddressValidity(offerData, authSig, draftOrderDetails);
+  } else if (parsedDraftOrderDetails.typeOfRedeem === 'walletAddress') {
+    const redemptionValidity = await checkWalletAddressValidity(offerData, authSig, parsedDraftOrderDetails);
     redemptionStatus = redemptionValidity;
-  } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
-    const redemptionValidity = await checkNftIdValidity(offerData, draftOrderDetails, authSig);
+  } else if (parsedDraftOrderDetails.typeOfRedeem === 'nftId') {
+    const redemptionValidity = await checkNftIdValidity(offerData, parsedDraftOrderDetails, authSig);
     redemptionStatus = redemptionValidity;
   }
 
   return redemptionStatus;
 }
 
-export const checkWalletAddressValidity = async (offerData, authSig, draftOrderDetails) => {
+export const checkWalletAddressValidity = async (offerData, authSig, parsedDraftOrderDetails) => {
   let redemptionStatus = {
     allowRedeem: true,
     message: ''
@@ -65,13 +65,13 @@ export const checkWalletAddressValidity = async (offerData, authSig, draftOrderD
     // separate into different if statements for ease of reading.  above is conditions checking for condition type and existence of authSig.
     // below is checking the redeemed by object for the existence of that particular wallet's existence
     if (parsedRedeemedBy?.evmBasic?.[authSig.ethereum.address] &&
-      parsedRedeemedBy?.evmBasic?.[authSig.ethereum.address] >= draftOrderDetails.redeemLimit) {
+      parsedRedeemedBy?.evmBasic?.[authSig.ethereum.address] >= parsedDraftOrderDetails.redeemLimit) {
       redemptionStatus.allowRedeem = false;
       redemptionStatus.message = [ 'You have reached the limit for allowed number of redemptions.' ]
     }
   } else if (conditionTypesArray.indexOf('solRpc') > -1 && authSig?.['solana'] && authSig?.solana?.['address']) {
     if (parsedRedeemedBy?.solRpc?.[authSig.solana.address] &&
-      parsedRedeemedBy?.solRpc?.[authSig.solana.address] >= draftOrderDetails.redeemLimit) {
+      parsedRedeemedBy?.solRpc?.[authSig.solana.address] >= parsedDraftOrderDetails.redeemLimit) {
       redemptionStatus.allowRedeem = false;
       redemptionStatus.message = [ 'You have reached the limit for allowed number of redemptions.' ]
     }
@@ -79,7 +79,7 @@ export const checkWalletAddressValidity = async (offerData, authSig, draftOrderD
   return redemptionStatus;
 }
 
-export const checkNftIdValidity = async (offerData, draftOrderDetails, authSig) => {
+export const checkNftIdValidity = async (offerData, parsedDraftOrderDetails, authSig) => {
   const parsedUacc = JSON.parse(offerData.accessControlConditions);
   const uaccContractAddress = parsedUacc[0].contractAddress.toLowerCase();
   let chain = parsedUacc[0].chain;
@@ -98,11 +98,11 @@ export const checkNftIdValidity = async (offerData, draftOrderDetails, authSig) 
   }
 
   return checkForNftRedeem({
-    chain, availableNfts, draftOrderDetails, offerData, uaccContractAddress
+    chain, availableNfts, parsedDraftOrderDetails, offerData, uaccContractAddress
   });
 }
 
-const checkForNftRedeem = ({chain, availableNfts, draftOrderDetails, offerData, uaccContractAddress}) => {
+const checkForNftRedeem = ({chain, availableNfts, parsedDraftOrderDetails, offerData, uaccContractAddress}) => {
   let parsedRedeemedNfts = JSON.parse(offerData.redeemedNfts);
   let redemptionStatus = {
     allowRedeem: false,
@@ -116,7 +116,7 @@ const checkForNftRedeem = ({chain, availableNfts, draftOrderDetails, offerData, 
     if (!parsedRedeemedNfts[chain] ||
       !parsedRedeemedNfts[chain][uaccContractAddress] ||
       !parsedRedeemedNfts[chain][uaccContractAddress][currentNftId] ||
-      (parseInt(parsedRedeemedNfts[chain][uaccContractAddress][currentNftId]) < parseInt(draftOrderDetails.redeemLimit))) {
+      (parseInt(parsedRedeemedNfts[chain][uaccContractAddress][currentNftId]) < parseInt(parsedDraftOrderDetails.redeemLimit))) {
       redemptionStatus.allowRedeem = true;
       redemptionStatus.message = '';
       const nftInfoObj = {
@@ -138,7 +138,7 @@ const checkForNftRedeem = ({chain, availableNfts, draftOrderDetails, offerData, 
 
 
 // wallets have two subcategories, evmBasic and solRpc, since EVM chains can use the same wallet
-export const updateWalletAddressRedeem = async (fastify, authSig, offerData, draftOrderDetails) => {
+export const updateWalletAddressRedeem = async (fastify, authSig, offerData) => {
   let metricObject = {
     time: Date.now(),
     type: 'walletAddress',
@@ -184,7 +184,7 @@ export const updateWalletAddressRedeem = async (fastify, authSig, offerData, dra
 }
 
 // nft id needs to be organized by individual chains since nfts don't exist cross chain
-export const updateNftIdRedeem = async (fastify, selectedNft, offerData, draftOrderDetails) => {
+export const updateNftIdRedeem = async (fastify, selectedNft, offerData) => {
   const usedChain = offerData.usedChains;
   const contractAddress = selectedNft.nft.contract.address.toLowerCase();
   const tokenId = selectedNft.nft.id.tokenId.toLowerCase();

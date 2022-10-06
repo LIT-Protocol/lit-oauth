@@ -387,6 +387,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         ids.push(endHolder)
       }
     })
+    console.log('-----> ids', ids)
 
     // return ids;
 

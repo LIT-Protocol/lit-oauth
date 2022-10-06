@@ -7,7 +7,7 @@ import Shopify from "shopify-api-node";
 import dotenv from "dotenv";
 import jsonwebtoken from "jsonwebtoken";
 import {
-  addShopifyMetafieldToDraftOrder, createNoteAttributesAndTags, makeDraftOrder,
+  addShopifyMetafieldToDraftOrder, createNoteAttributesAndTags,
   makeShopifyInstance,
   removeTagAndMetafieldFromProducts,
   updateProductWithTagAndUuid
@@ -133,7 +133,8 @@ export default async function shopifyEndpoints(fastify, opts) {
       condition_types,
       redeem_type,
       allow_prepopulate,
-      prepopulateData
+      prepopulate_data,
+      product_details
     } = request.body;
 
     const redeemed_by = seedRedeemedByList(draft_order_details);
@@ -175,20 +176,28 @@ export default async function shopifyEndpoints(fastify, opts) {
           asset_name_on_service,
           offer_type,
           condition_types,
-          redeem_type
+          redeem_type,
         });
 
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
-      console.log('CHECK QUERY', query)
       // Note: sets up prepopulate
       if (allow_prepopulate) {
-        const prepopulateDataRes = await createPrepopulateEntry(fastify, shopify, query.id, prepopulateData);
+        const prepopulateDataRes = await createPrepopulateEntry({
+          fastify,
+          productDetails: product_details,
+          draftOrderId: query.id,
+          prepopulateData: prepopulate_data,
+          // shopify,
+          // shop: shop[0],
+          // draftOrderDetails: draft_order_details,
+        });
         const parsedDraftOrderDetails = JSON.parse(draft_order_details);
+        console.log('SHOPIFY.com parsedDraftOrderDetails', parsedDraftOrderDetails)
         toggleRecursiveCalls({
           fastify,
           shopify,
-          offerId: query[0].id,
+          offerId: query.id,
           parsedDraftOrderDetails
         });
       }
@@ -234,8 +243,23 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.id);
 
-    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+    const parsedDraftOrderDetails = JSON.parse(draftToDelete[0].draftOrderDetails);
+    console.log('parsedDraftOrderDetails', parsedDraftOrderDetails)
+    console.log('draftToDelete', draftToDelete[0])
+    try {
+      if (!!parsedDraftOrderDetails.allowPrepopulate) {
+        const deletedPrepopulate = await fastify.objection.models.shopifyPrepopulate
+          .query()
+          .delete()
+          .where("draft_order_id", "=", draftToDelete[0].id);
 
+        console.log('DELETE PREPOPULATED', deletedPrepopulate)
+      }
+    } catch (err) {
+      console.log('Error deleting prepopulate', err)
+    }
+
+    const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
     const deleteProductDataResolve = await removeTagAndMetafieldFromProducts(shopify, draftToDelete[0], shop[0], request.body.id);
 
     try {
@@ -370,12 +394,31 @@ export default async function shopifyEndpoints(fastify, opts) {
   });
 
   fastify.post("/api/shopify/getOffer", async (request, reply) => {
-    const offerData = await fastify.objection.models.shopifyDraftOrders
+    // const {uuid, jwt, selectedVariantsArray, selectedNft, authSig} = request.body;
+    // let verified;
+    // let payload;
+    // try {
+    //   const jwtData = LitJsSdk.verifyJwt({jwt});
+    //   verified = jwtData.verified;
+    //   payload = jwtData.payload;
+    // } catch (err) {
+    //
+    //   return {
+    //     err,
+    //     allowRedeem: false,
+    //   }
+    // }
+
+    const draftOrder = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where("id", "=", request.body.uuid);
 
-    if (offerData[0]) {
-      return offerData[0];
+    if (draftOrder[0]) {
+      // const humanizedAccessControlConditions =
+      //   draftOrder[0].humanizedAccessControlConditions;
+      // const parsedUacc = JSON.parse(draftOrder[0].accessControlConditions);
+      // return {parsedUacc, humanizedAccessControlConditions, extraData: draftOrder[0].extraData};
+      return draftOrder[0];
     } else {
       return null;
     }
@@ -410,8 +453,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       .query()
       .where("id", "=", request.body.uuid);
 
-    const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
-    console.log('draftOrderDetails', draftOrderDetails)
+    const parsedDraftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
@@ -425,20 +467,20 @@ export default async function shopifyEndpoints(fastify, opts) {
     // Note: check user validity before moving forward and update redeem if they are allowed
     let redeemEntry = {}
     try {
-      if (draftOrderDetails.hasRedeemLimit) {
+      if (parsedDraftOrderDetails.hasRedeemLimit) {
         const validityRes = await checkUserValidity(offerData[0], authSig);
         if (!validityRes.allowRedeem) {
           return validityRes;
         }
-        if (draftOrderDetails.typeOfRedeem === 'walletAddress') {
-          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], draftOrderDetails);
-        } else if (draftOrderDetails.typeOfRedeem === 'nftId') {
-          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], draftOrderDetails);
+        if (parsedDraftOrderDetails.typeOfRedeem === 'walletAddress') {
+          redeemEntry = await updateWalletAddressRedeem(fastify, authSig, offerData[0], parsedDraftOrderDetails);
+        } else if (parsedDraftOrderDetails.typeOfRedeem === 'nftId') {
+          redeemEntry = await updateNftIdRedeem(fastify, selectedNft, offerData[0], parsedDraftOrderDetails);
         }
       }
     } catch (err) {
       console.log('Failed to update redemption', err);
-      if (draftOrderDetails.hasRedeemLimit) {
+      if (parsedDraftOrderDetails.hasRedeemLimit) {
         return {
           allowRedeem: false,
           message: 'An error occurred when trying to check redeem limit. Please try again later.'
@@ -454,16 +496,16 @@ export default async function shopifyEndpoints(fastify, opts) {
         price: v.price,
         quantity: 1,
         applied_discount: {
-          value_type: draftOrderDetails.valueType.toLowerCase(),
-          value: draftOrderDetails.value
+          value_type: parsedDraftOrderDetails.valueType.toLowerCase(),
+          value: parsedDraftOrderDetails.value
         }
       }
     })
 
-    const {tags, note_attributes} = createNoteAttributesAndTags({draftOrderDetails, authSig, selectedNft});
+    const {tags, note_attributes} = createNoteAttributesAndTags({parsedDraftOrderDetails, authSig, selectedNft});
 
     const draftOrderRequest = {
-      note: `Offer Title: ${draftOrderDetails.title}`,
+      note: `Offer Title: ${parsedDraftOrderDetails.title}`,
       line_items: lineItemsArray,
       tags,
       note_attributes
@@ -541,5 +583,201 @@ export default async function shopifyEndpoints(fastify, opts) {
       console.error("--> Error getting all draft orders:", err);
       return err;
     }
+  })
+
+  fastify.post('/api/shopify/checkOnPrepopulateStatus', async (request, reply) => {
+    const result = await validateDevToken(request.headers.authorization);
+    if (!result) {
+      return "Unauthorized";
+    }
+
+    const {offerId} = request.body;
+
+    const draftOrderPrepopulateObj = await fastify.objection.models.shopifyPrepopulate
+      .query()
+      .where('draft_order_id', '=', offerId);
+
+    let statusObject = {
+      status: 'complete',
+      individualStatus: [],
+      time: null
+    };
+
+    let mappedStatus = []
+    Object.keys(draftOrderPrepopulateObj[0].prepopulateData).forEach(v => {
+      const variantObj = draftOrderPrepopulateObj[0].prepopulateData[v];
+
+      // set overall status
+      if (variantObj.status !== 'complete' && statusObject.status !== 'error') {
+        statusObject.status = 'incomplete';
+      }
+      if (variantObj.status === 'error') {
+        statusObject.status = 'error';
+      }
+
+      // get variant display name
+      const variantInfo = draftOrderPrepopulateObj[0].productDetails[0].variants.find(w => {
+        return w.id.split("/").pop() === v;
+      });
+
+      // get number of used draft orders
+      let used = 0;
+      variantObj.draftOrderUrls.forEach(draftOrder => {
+        if (draftOrder.used) {
+          used++;
+        }
+      })
+
+      mappedStatus.push({
+        variantStatus: variantObj.status,
+        length: variantObj.numberOfOrders,
+        used,
+        errors: draftOrderPrepopulateObj[0].errors,
+        displayName: variantInfo.displayName
+      });
+    });
+
+    statusObject.individualStatus = mappedStatus;
+    statusObject.time = Date.now();
+
+    return statusObject;
+  })
+
+  fastify.post('/api/shopify/getPrepopulateInfo', async (request, reply) => {
+    const {uuid, jwt} = request.body;
+    console.log('getPrepopulateInfo request.body', request.body)
+    let verified;
+    let payload;
+    try {
+      const jwtData = LitJsSdk.verifyJwt({jwt});
+      verified = jwtData.verified;
+      payload = jwtData.payload;
+    } catch (err) {
+
+      return {
+        err,
+        allowRedeem: false,
+      }
+    }
+
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + uuid
+    ) {
+      return "Unauthorized.";
+    }
+
+    const draftOrderPrepopulateObj = await fastify.objection.models.shopifyPrepopulate
+      .query()
+      .where('draft_order_id', '=', uuid);
+
+    let statusObject = {
+      individualStatus: [],
+      time: null
+    };
+
+    let mappedStatus = []
+    Object.keys(draftOrderPrepopulateObj[0].prepopulateData).forEach(v => {
+      const variantObj = draftOrderPrepopulateObj[0].prepopulateData[v];
+
+      // get variant display name
+      const variantInfo = draftOrderPrepopulateObj[0].productDetails[0].variants.find(w => {
+        return w.id.split("/").pop() === v;
+      });
+
+      console.log('variantInfo', variantInfo)
+      // get number of used draft orders
+      let used = 0;
+      let available = true;
+      variantObj.draftOrderUrls.forEach(draftOrder => {
+        if (draftOrder.used) {
+          used++;
+        }
+      })
+
+      // set can redeem based on number of draft order already used vs number of existing
+      if (used === variantObj.draftOrderUrls.length) {
+        available = false;
+      }
+
+      mappedStatus.push({
+        variantId: variantInfo.id,
+        productId: variantInfo.product.id,
+        length: variantObj.numberOfOrders,
+        available,
+        displayName: variantInfo.displayName,
+        title: variantInfo.title
+      });
+    });
+
+    statusObject.individualStatus = mappedStatus;
+    statusObject.time = Date.now();
+
+    return statusObject;
+  })
+
+  fastify.post('/api/shopify/redeemPrepopulate', async (request, reply) => {
+    const {draftOrderId, jwt, selectedVariantsArray, selectedNft, authSig} = request.body;
+    let verified;
+    let payload;
+    try {
+      const jwtData = LitJsSdk.verifyJwt({jwt});
+      verified = jwtData.verified;
+      payload = jwtData.payload;
+    } catch (err) {
+      return {
+        err,
+        allowRedeem: false,
+      }
+    }
+
+    if (
+      !verified ||
+      payload.baseUrl !==
+      `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST}` ||
+      payload.path !== "/shopify/l/" + draftOrderId
+    ) {
+      return "Unauthorized.";
+    }
+
+    const offerData = await fastify.objection.models.shopifyDraftOrders
+      .query()
+      .where("id", "=", request.body.draftOrderId);
+
+    const parsedDraftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
+    console.log('draftOrderDetails', parsedDraftOrderDetails)
+
+    const prepopulateData = await fastify.objection.models.shopifyPrepopulate
+      .query()
+      .where("draft_order_id", "=", request.body.draftOrderId);
+
+    // find unused link
+    const selectedVariantId = selectedVariantsArray[0].id;
+    const foundCouponIndex = prepopulateData[0].prepopulateData[selectedVariantId].draftOrderUrls.findIndex((v, i) => !v.used)
+    // switch link to used
+    prepopulateData[0].prepopulateData[selectedVariantId].draftOrderUrls[foundCouponIndex].used = true;
+
+    // patch data with updated list
+    await fastify.objection.models.shopifyPrepopulate
+      .query()
+      .where("draft_order_id", "=", request.body.draftOrderId)
+      .patch({
+        prepopulateData: JSON.stringify(prepopulateData[0].prepopulateData)
+      });
+
+    return prepopulateData[0].prepopulateData[selectedVariantId].draftOrderUrls[foundCouponIndex];
+
+    // const shop = await fastify.objection.models.shopifyStores
+    //   .query()
+    //   .where("shop_id", "=", offerData[0].shopId);
+    //
+    // const shopify = new Shopify({
+    //   shopName: shop[0].shopName,
+    //   accessToken: shop[0].accessToken,
+    // });
+
+
   })
 }

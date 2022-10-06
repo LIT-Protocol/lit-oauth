@@ -10,7 +10,9 @@ export const up = (knex) => {
       .primary()
       .defaultTo(knex.raw("gen_random_uuid()"));
     table.text('draft_order_id')
-    table.json('draft_order_data')
+    table.json('prepopulate_data')
+    table.json('product_details')
+    table.json('errors')
     table.timestamps();
   });
 };
