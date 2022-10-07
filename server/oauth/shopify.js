@@ -138,16 +138,11 @@ export default async function shopifyEndpoints(fastify, opts) {
       product_details
     } = request.body;
 
-    console.log('@@@@@@ -> saveDraftOrder request.body', request.body)
-
     const redeemed_by = seedRedeemedByList(draft_order_details);
     const redeemed_nfts = seedRedeemedNftList(draft_order_details);
 
-    console.log('@@@@@@ -> saveDraftOrder after seedRedeemedBy - fastify.objection.models', fastify.objection.models)
-
     try {
       const result = await validateDevToken(request.headers.authorization);
-      console.log('@@@@@@ -> validateDevToken result', result)
       if (!result) {
         return "Unauthorized";
       }
@@ -157,12 +152,8 @@ export default async function shopifyEndpoints(fastify, opts) {
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
 
-      console.log('@@@@@@ -> saveDraftOrder check shop', shop)
-
       // adds exclusive or discount tag to product
       const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
-
-      console.log('@@@@@@ -> saveDraftOrder shopify instance')
 
       const query = await fastify.objection.models.shopifyDraftOrders
         .query()
@@ -189,8 +180,6 @@ export default async function shopifyEndpoints(fastify, opts) {
           redeem_type,
         });
 
-      console.log('@@@@@@ -> saveDraftOrder after insert draft order')
-
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
       // Note: sets up prepopulate
@@ -205,7 +194,6 @@ export default async function shopifyEndpoints(fastify, opts) {
           // draftOrderDetails: draft_order_details,
         });
         const parsedDraftOrderDetails = JSON.parse(draft_order_details);
-        console.log('SHOPIFY.com parsedDraftOrderDetails', parsedDraftOrderDetails)
         toggleRecursiveCalls({
           fastify,
           shopify,
@@ -643,6 +631,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       mappedStatus.push({
         variantStatus: variantObj.status,
         length: variantObj.numberOfOrders,
+        currentLength: variantObj.draftOrderUrls.length,
         used,
         errors: draftOrderPrepopulateObj[0].errors,
         displayName: variantInfo.displayName
