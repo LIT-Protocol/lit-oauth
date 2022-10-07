@@ -5,7 +5,8 @@ export const validateMerchantToken = async (token) => {
   const splitToken = removeBearer[1];
   return new Promise((resolve, reject) => {
     // jsonwebtoken.verify(splitToken, process.env.LIT_CUSTOM_SHOPIFY_API_SECRET, { algorithms: ['H256'] }, (err, decoded) => {
-    jsonwebtoken.verify(splitToken, process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET, [ 'H256' ], (err, decoded) => {
+    // jsonwebtoken.verify(splitToken, process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET, [ 'H256' ], (err, decoded) => {
+    jsonwebtoken.verify(splitToken, process.env.LIT_PROTOCOL_SHOP_ZAPPOS_SECRET, [ 'H256' ], (err, decoded) => {
       if (err) reject(false);
       else if (decoded) resolve(decoded);
     })
