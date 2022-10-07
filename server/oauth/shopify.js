@@ -143,10 +143,11 @@ export default async function shopifyEndpoints(fastify, opts) {
     const redeemed_by = seedRedeemedByList(draft_order_details);
     const redeemed_nfts = seedRedeemedNftList(draft_order_details);
 
-    console.log('@@@@@@ -> saveDraftOrder after seedRedeemedBy')
+    console.log('@@@@@@ -> saveDraftOrder after seedRedeemedBy - fastify.objection.models', fastify.objection.models)
 
     try {
       const result = await validateDevToken(request.headers.authorization);
+      console.log('@@@@@@ -> validateDevToken result', result)
       if (!result) {
         return "Unauthorized";
       }
