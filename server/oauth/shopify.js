@@ -137,8 +137,12 @@ export default async function shopifyEndpoints(fastify, opts) {
       product_details
     } = request.body;
 
+    console.log('@@@@@@ -> saveDraftOrder request.body', request.body)
+
     const redeemed_by = seedRedeemedByList(draft_order_details);
     const redeemed_nfts = seedRedeemedNftList(draft_order_details);
+
+    console.log('@@@@@@ -> saveDraftOrder after seedRedeemedBy')
 
     try {
       const result = await validateDevToken(request.headers.authorization);
@@ -151,8 +155,12 @@ export default async function shopifyEndpoints(fastify, opts) {
         // .where("shop_id", "=", shop_id);
         .where("shop_name", "=", shortenShopName(shop_name));
 
+      console.log('@@@@@@ -> saveDraftOrder check shop', shop)
+
       // adds exclusive or discount tag to product
       const shopify = makeShopifyInstance(shop[0].shopName, shop[0].accessToken)
+
+      console.log('@@@@@@ -> saveDraftOrder shopify instance')
 
       const query = await fastify.objection.models.shopifyDraftOrders
         .query()
@@ -178,6 +186,8 @@ export default async function shopifyEndpoints(fastify, opts) {
           condition_types,
           redeem_type,
         });
+
+      console.log('@@@@@@ -> saveDraftOrder after insert draft order')
 
       const updateResolve = await updateProductWithTagAndUuid(shopify, query, shop[0]);
 
