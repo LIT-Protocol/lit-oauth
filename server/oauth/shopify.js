@@ -39,6 +39,7 @@ const validateDevToken = async (token) => {
 export default async function shopifyEndpoints(fastify, opts) {
 
   fastify.post("/api/shopify/saveAccessToken", async (request, reply) => {
+    console.log('@@@@@@ -> SAVE ACCESS TOKEN')
     const {shop, accessToken} = JSON.parse(request.body);
     const shortenedShopName = shortenShopName(shop);
     const queryForExistingShop = await fastify.objection.models.shopifyStores
