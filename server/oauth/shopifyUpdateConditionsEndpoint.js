@@ -177,6 +177,10 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
   return resolvedUpdatedOldOffers;
 }
 
+const recursiveUpdateAccessToken = async (arrayOfShops) => {
+  const nextShop = arrayOfShops.shift();
+}
+
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
   fastify.post("/api/shopify/patchOffer", async (request, response) => {
     if (request.body.key !== process.env.ADMIN_KEY) {
@@ -387,6 +391,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         ids.push(endHolder)
       }
     })
+    console.log('-----> ids', ids)
 
     // return ids;
 
@@ -639,6 +644,10 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         .query()
         .where('shop_name', '=', shortenShopName(name));
 
+      if (specificStore[0].accessToken) {
+        delete specificStore[0].accessToken;
+      }
+
       console.log('check specific store', specificStore)
 
       draftOrders = await fastify.objection.models.shopifyDraftOrders
@@ -653,5 +662,49 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       length: draftOrders.length
     };
   });
+
+  fastify.post("/api/shopify/updateAccessToken", async (request, reply) => {
+    const {name, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    if (name !== null) {
+      const store = fastify.objection.models.shopifyStores.query()
+        .where('shop_name', '=', shortenShopName(name));
+
+      const oldAccessToken = store[0].accessToken;
+
+      const postData = {
+        client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
+        client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
+        refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
+        access_token: oldAccessToken,
+      }
+
+      const response = await fetch(`https://${name}.myshopify.com/admin/oauth/access_token.json`, {
+        method: "post",
+        body: JSON.stringify(postData),
+        headers: {"Content-Type": "application/json"}
+      })
+
+      const data = await response.json()
+      const newAccessToken = data["access_token"]
+
+      console.log('CHECK DATA ON UPDATE', data)
+      console.log('CHECK ACCESS TOKEN', newAccessToken)
+      const updatedStore = fastify.objection.models.shopifyStores.query()
+        .where('shop_name', '=', shortenShopName(name))
+        .patch({
+          access_token: newAccessToken
+        })
+
+      console.log('updatedStore', updatedStore)
+    } else {
+
+    }
+
+  })
 
 }
