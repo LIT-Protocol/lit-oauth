@@ -723,6 +723,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         access_token: oldAccessToken,
       }
       console.log('CHECK REQUEST URL')
+      let success = true;
 
       try {
         const response = await axios.post(`https://${name}.myshopify.com/admin/oauth/access_token.json`, postData);
@@ -738,8 +739,10 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
           })
         console.log('updatedStore', updatedStore)
       } catch (err) {
+        success = false
         console.log('unable to update', err)
       }
+      return success;
 
     } else {
       const arrayOfShops = await fastify.objection.models.shopifyStores.query()
