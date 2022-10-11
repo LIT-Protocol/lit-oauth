@@ -758,7 +758,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    return await fastify.objection.models.shares
+    return await fastify.objection.models.shopifyStores
       .query()
       .delete()
       .where("shop_name", "=", name);
