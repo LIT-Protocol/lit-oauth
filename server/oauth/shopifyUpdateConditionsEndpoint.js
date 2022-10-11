@@ -214,9 +214,9 @@ const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
     console.log('unable to update', err)
   }
 
-  // setTimeout(async () => {
-  //   await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
-  // }, 1000)
+  setTimeout(async () => {
+    await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
+  }, 1000)
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
