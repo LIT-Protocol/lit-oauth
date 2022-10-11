@@ -46,7 +46,7 @@ export default async function shopifyEndpoints(fastify, opts) {
     let shopDetails;
 
     // if shop does not currently exist in our database
-    if (!queryForExistingShop.length || !queryForExistingShop[0].accessToken) {
+    if (!queryForExistingShop.length) {
       console.log('saveAccessToken: shop doesnt yet exist', shop, accessToken)
       try {
         const shopify = new Shopify({
