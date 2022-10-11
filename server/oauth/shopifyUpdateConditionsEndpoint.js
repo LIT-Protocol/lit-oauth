@@ -197,17 +197,11 @@ const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
     access_token: oldAccessToken,
   }
 
-  const response = await axios({
-    url: `https://${store.name}.myshopify.com/admin/oauth/access_token.json`,
-    method: "post",
-    data: JSON.stringify(postData),
-    headers: {"Content-Type": "application/json"}
-  })
+  const response = await axios.post(`https://${store.name}.myshopify.com/admin/oauth/access_token.json`, postData);
 
-  const data = await response.json()
-  const newAccessToken = data["access_token"]
+  const newAccessToken = response["access_token"]
 
-  console.log('CHECK DATA ON UPDATE', data)
+  console.log('CHECK DATA ON UPDATE', response)
   console.log('CHECK ACCESS TOKEN', newAccessToken)
   const updatedStore = await fastify.objection.models.shopifyStores.query()
     .where('shop_name', '=', shortenShopName(store.name))
@@ -724,17 +718,11 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         access_token: oldAccessToken,
       }
 
-      const response = await axios({
-        url: `https://${store.name}.myshopify.com/admin/oauth/access_token.json`,
-        method: "post",
-        data: JSON.stringify(postData),
-        headers: {"Content-Type": "application/json"}
-      })
+      const response = await axios.post(`https://${store[0].name}.myshopify.com/admin/oauth/access_token.json`, postData);
 
-      const data = await response.json()
-      const newAccessToken = data["access_token"]
+      const newAccessToken = response["access_token"]
 
-      console.log('CHECK DATA ON UPDATE', data)
+      console.log('CHECK DATA ON UPDATE', response)
       console.log('CHECK ACCESS TOKEN', newAccessToken)
       const updatedStore = await fastify.objection.models.shopifyStores.query()
         .where('shop_name', '=', shortenShopName(name))
