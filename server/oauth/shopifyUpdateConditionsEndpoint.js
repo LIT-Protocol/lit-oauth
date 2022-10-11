@@ -728,9 +728,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       try {
         const response = await axios.post(`https://${name}.myshopify.com/admin/oauth/access_token.json`, postData);
 
-        const newAccessToken = response["access_token"]
+        const newAccessToken = response.data["access_token"]
 
-        console.log('CHECK DATA ON UPDATE', response)
+        console.log('CHECK DATA ON UPDATE', response.data)
         console.log('CHECK ACCESS TOKEN', newAccessToken)
         const updatedStore = await fastify.objection.models.shopifyStores.query()
           .where('shop_name', '=', shortenShopName(name))
@@ -748,6 +748,20 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       const arrayOfShops = await fastify.objection.models.shopifyStores.query()
       await recursiveUpdateAccessToken(arrayOfShops, fastify);
     }
+
+  })
+
+  fastify.post("/api/shopify/deleteStore", async (request, reply) => {
+    const {name, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    return await fastify.objection.models.shares
+      .query()
+      .delete()
+      .where("shop_name", "=", name);
 
   })
 
