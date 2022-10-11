@@ -671,7 +671,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     }
 
     if (name !== null) {
-      const store = fastify.objection.models.shopifyStores.query()
+      const store = await fastify.objection.models.shopifyStores.query()
         .where('shop_name', '=', shortenShopName(name));
 
       console.log('store', store)
@@ -696,7 +696,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       console.log('CHECK DATA ON UPDATE', data)
       console.log('CHECK ACCESS TOKEN', newAccessToken)
-      const updatedStore = fastify.objection.models.shopifyStores.query()
+      const updatedStore = await fastify.objection.models.shopifyStores.query()
         .where('shop_name', '=', shortenShopName(name))
         .patch({
           access_token: newAccessToken
