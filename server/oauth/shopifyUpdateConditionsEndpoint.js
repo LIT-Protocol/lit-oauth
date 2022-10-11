@@ -674,6 +674,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       const store = fastify.objection.models.shopifyStores.query()
         .where('shop_name', '=', shortenShopName(name));
 
+      console.log('store', store)
+
       const oldAccessToken = store[0].accessToken;
 
       const postData = {
