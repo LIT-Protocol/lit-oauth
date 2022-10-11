@@ -197,20 +197,26 @@ const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
     access_token: oldAccessToken,
   }
 
-  const response = await axios.post(`https://${store.shopName}.myshopify.com/admin/oauth/access_token.json`, postData);
+  try {
+    const response = await axios.post(`https://${store.shopName}.myshopify.com/admin/oauth/access_token.json`, postData);
 
-  const newAccessToken = response["access_token"]
+    const newAccessToken = response["access_token"]
 
-  console.log('----> recursive data check', response)
-  const updatedStore = await fastify.objection.models.shopifyStores.query()
-    .where('shop_name', '=', shortenShopName(store.name))
-    .patch({
-      access_token: newAccessToken
-    })
+    console.log('CHECK DATA ON UPDATE', response)
+    console.log('CHECK ACCESS TOKEN', newAccessToken)
+    const updatedStore = await fastify.objection.models.shopifyStores.query()
+      .where('shop_name', '=', store.shopName)
+      .patch({
+        access_token: newAccessToken
+      })
+    console.log('updatedStore', updatedStore)
+  } catch (err) {
+    console.log('unable to update', err)
+  }
 
-  setTimeout(async () => {
-    await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
-  }, 1000)
+  // setTimeout(async () => {
+  //   await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
+  // }, 1000)
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
@@ -718,19 +724,23 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       }
       console.log('CHECK REQUEST URL')
 
-      const response = await axios.post(`https://${name}.myshopify.com/admin/oauth/access_token.json`, postData);
+      try {
+        const response = await axios.post(`https://${name}.myshopify.com/admin/oauth/access_token.json`, postData);
 
-      const newAccessToken = response["access_token"]
+        const newAccessToken = response["access_token"]
 
-      console.log('CHECK DATA ON UPDATE', response)
-      console.log('CHECK ACCESS TOKEN', newAccessToken)
-      const updatedStore = await fastify.objection.models.shopifyStores.query()
-        .where('shop_name', '=', shortenShopName(name))
-        .patch({
-          access_token: newAccessToken
-        })
+        console.log('CHECK DATA ON UPDATE', response)
+        console.log('CHECK ACCESS TOKEN', newAccessToken)
+        const updatedStore = await fastify.objection.models.shopifyStores.query()
+          .where('shop_name', '=', shortenShopName(name))
+          .patch({
+            access_token: newAccessToken
+          })
+        console.log('updatedStore', updatedStore)
+      } catch (err) {
+        console.log('unable to update', err)
+      }
 
-      console.log('updatedStore', updatedStore)
     } else {
       const arrayOfShops = await fastify.objection.models.shopifyStores.query()
       await recursiveUpdateAccessToken(arrayOfShops, fastify);
