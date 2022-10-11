@@ -4,6 +4,7 @@ import {
 } from "./shopifyHelpers/shopifyApiNodeHelpers.js";
 import dotenv from "dotenv";
 import { shortenShopName } from "./shopifyHelpers/shopifyReusableFunctions.js";
+import axios from "axios";
 
 dotenv.config({
   path: "../../env",
@@ -177,8 +178,46 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
   return resolvedUpdatedOldOffers;
 }
 
-const recursiveUpdateAccessToken = async (arrayOfShops) => {
-  const nextShop = arrayOfShops.shift();
+const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
+  if (!arrayOfShops.length) {
+    return;
+  }
+  let currentArrayOfShops = arrayOfShops;
+
+  const store = currentArrayOfShops.shift();
+
+  console.log('store', store)
+
+  const oldAccessToken = store.accessToken;
+
+  const postData = {
+    client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
+    client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
+    refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
+    access_token: oldAccessToken,
+  }
+
+  const response = await axios({
+    url: `https://${store.name}.myshopify.com/admin/oauth/access_token.json`,
+    method: "post",
+    data: JSON.stringify(postData),
+    headers: {"Content-Type": "application/json"}
+  })
+
+  const data = await response.json()
+  const newAccessToken = data["access_token"]
+
+  console.log('CHECK DATA ON UPDATE', data)
+  console.log('CHECK ACCESS TOKEN', newAccessToken)
+  const updatedStore = await fastify.objection.models.shopifyStores.query()
+    .where('shop_name', '=', shortenShopName(store.name))
+    .patch({
+      access_token: newAccessToken
+    })
+
+  setTimeout(async () => {
+    await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
+  }, 1000)
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
@@ -685,9 +724,10 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         access_token: oldAccessToken,
       }
 
-      const response = await fetch(`https://${name}.myshopify.com/admin/oauth/access_token.json`, {
+      const response = await axios({
+        url: `https://${store.name}.myshopify.com/admin/oauth/access_token.json`,
         method: "post",
-        body: JSON.stringify(postData),
+        data: JSON.stringify(postData),
         headers: {"Content-Type": "application/json"}
       })
 
@@ -704,7 +744,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       console.log('updatedStore', updatedStore)
     } else {
-
+      const arrayOfShops = await fastify.objection.models.shopifyStores.query()
+      await recursiveUpdateAccessToken(arrayOfShops, fastify);
     }
 
   })
