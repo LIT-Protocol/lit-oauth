@@ -760,7 +760,8 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    await recursiveUpdateAccessToken(shopNames, fastify);
+    console.log('check shopnames', shopNames)
+    // await recursiveUpdateAccessToken(shopNames, fastify);
     return true;
   })
 
