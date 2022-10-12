@@ -218,7 +218,7 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
       })
     console.log('updatedStore', updatedStore)
   } catch (err) {
-    console.log('unable to update', err)
+    console.log('unable to update', err['response']['data'])
     success = false;
   }
 
@@ -750,7 +750,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         console.log('updatedStore', updatedStore)
       } catch (err) {
         success = false
-        console.log('unable to update', err)
+        console.log('unable to update', err['response']['data'])
       }
       return success;
 
