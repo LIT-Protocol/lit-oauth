@@ -1,15 +1,17 @@
 // functions for checking user redemption status
 import { checkEthereumNfts, checkPolygonNfts } from "./shopifyAlchemyHelpers.js";
 
-export const updateMetrics = (fastify, offerData, shopName, redeemEntry) => {
+export const updateMetrics = async (fastify, offerData, shopName, redeemEntry) => {
   try {
     const currentOffer = fastify.objection.models.metrics.query().where('offer_uuid', '=', offerData.id)
+    console.log('UPDATE METRICS!', currentOffer)
     if (!currentOffer[0]) {
+      console.log('NO CURRENT OFFER')
       let redeemedList = [
         redeemEntry
       ];
 
-      const createRes = fastify.objection.models.metrics.query()
+      const createRes = await fastify.objection.models.metrics.query()
         .insert({
           offer_uuid: offerData.id,
           store_id: offerData.shopId,
@@ -18,12 +20,13 @@ export const updateMetrics = (fastify, offerData, shopName, redeemEntry) => {
           shop_name: shopName,
           list_of_redemptions: JSON.stringify(redeemedList)
         })
+      console.log('CREATERES', createRes)
     } else {
       let parsedListOfRedemptions = JSON.parse(currentOffer[0].list_of_redemptions);
       parsedListOfRedemptions.push(redeemEntry);
       const stringifiedListOfRedemptions = JSON.stringify(parsedListOfRedemptions);
 
-      const updateRes = fastify.objection.models.metrics
+      const updateRes = await fastify.objection.models.metrics
         .query()
         .where('offer_uuid', '=', offerData.id)
         .patch({
