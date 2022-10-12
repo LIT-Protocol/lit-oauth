@@ -818,6 +818,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
+    console.log('Check table!', fastify.objection.models)
+    try {
+      console.log('Check metrics!', fastify.objection.models.metrics)
+    } catch (err) {
+      console.log('no metrics pls')
+    }
+
     return await fastify.objection.models.metrics
       .query()
   })
