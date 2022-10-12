@@ -761,6 +761,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     }
 
     console.log('check shopnames', shopNames)
+    console.log('check typeof shopnames', typeof shopNames)
     // await recursiveUpdateAccessToken(shopNames, fastify);
     return true;
   })
