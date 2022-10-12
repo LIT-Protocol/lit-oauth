@@ -195,10 +195,12 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
 
   const postData = {
     client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-    client_secret: process.env.LIT_PROTOCOL_NEW_PROMOTIONAL_SECRET,
+    client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
     refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
     access_token: store[0].accessToken,
   }
+
+  console.log('postData', postData)
 
   let success = true;
 
@@ -726,7 +728,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       const postData = {
         client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-        client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
+        client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
         refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
         access_token: oldAccessToken,
       }
