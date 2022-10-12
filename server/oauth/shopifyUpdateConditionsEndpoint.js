@@ -178,24 +178,27 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
   return resolvedUpdatedOldOffers;
 }
 
-const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
-  if (!arrayOfShops.length) {
+const recursiveUpdateAccessToken = async (shopNames, fastify) => {
+  if (!shopNames.length) {
     return;
   }
-  let currentArrayOfShops = arrayOfShops;
+  let currentArrayOfShops = shopNames;
 
-  const store = currentArrayOfShops.shift();
+  const currentStoreName = currentArrayOfShops.shift();
 
-  console.log('----> recursive store', store)
+  console.log('----> recursive store', currentStoreName)
 
-  const oldAccessToken = store.accessToken;
+  const store = await fastify.objection.models.shopifyStores.query()
+    .where('shop_name', '=', shortenShopName(currentStoreName));
 
   const postData = {
     client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-    client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
+    client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
     refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
-    access_token: oldAccessToken,
+    access_token: store[0].accessToken,
   }
+
+  let success = true;
 
   try {
     const response = await axios.post(`https://${store.shopName}.myshopify.com/admin/oauth/access_token.json`, postData);
@@ -212,11 +215,14 @@ const recursiveUpdateAccessToken = async (arrayOfShops, fastify) => {
     console.log('updatedStore', updatedStore)
   } catch (err) {
     console.log('unable to update', err)
+    success = false;
   }
 
+  console.log('name:', currentStoreName)
+  console.log('success:', success)
   setTimeout(async () => {
     await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
-  }, 1000)
+  }, 5000)
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
@@ -682,9 +688,9 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
         .query()
         .where('shop_name', '=', shortenShopName(name));
 
-      if (specificStore[0].accessToken) {
-        delete specificStore[0].accessToken;
-      }
+      // if (specificStore[0].accessToken) {
+      //   delete specificStore[0].accessToken;
+      // }
 
       console.log('check specific store', specificStore)
 
@@ -718,7 +724,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       const postData = {
         client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-        client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
+        client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
         refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
         access_token: oldAccessToken,
       }
@@ -744,11 +750,19 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       }
       return success;
 
-    } else {
-      const arrayOfShops = await fastify.objection.models.shopifyStores.query()
-      await recursiveUpdateAccessToken(arrayOfShops, fastify);
+    }
+  })
+
+  fastify.post("/api/shopify/updateListOfAccessTokens", async (request, reply) => {
+    const {shopNames, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
     }
 
+    const parsedShopNames = JSON.parse(shopNames);
+
+    await recursiveUpdateAccessToken(shopNames, fastify);
   })
 
   fastify.post("/api/shopify/deleteStore", async (request, reply) => {
