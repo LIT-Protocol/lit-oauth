@@ -191,6 +191,8 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
   const store = await fastify.objection.models.shopifyStores.query()
     .where('shop_name', '=', shortenShopName(currentStoreName));
 
+  console.log('CHECK STORE', store[0])
+
   const postData = {
     client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
     client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
@@ -201,14 +203,14 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
   let success = true;
 
   try {
-    const response = await axios.post(`https://${store.shopName}.myshopify.com/admin/oauth/access_token.json`, postData);
+    const response = await axios.post(`https://${currentStoreName}.myshopify.com/admin/oauth/access_token.json`, postData);
 
     const newAccessToken = response["access_token"]
 
     console.log('CHECK DATA ON UPDATE', response)
     console.log('CHECK ACCESS TOKEN', newAccessToken)
     const updatedStore = await fastify.objection.models.shopifyStores.query()
-      .where('shop_name', '=', store.shopName)
+      .where('shop_name', '=', currentStoreName)
       .patch({
         access_token: newAccessToken
       })
@@ -760,8 +762,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'nope';
     }
 
-    console.log('check shopnames', shopNames)
-    console.log('check typeof shopnames', typeof shopNames)
     await recursiveUpdateAccessToken(shopNames, fastify);
     return true;
   })
