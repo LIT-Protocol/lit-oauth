@@ -762,7 +762,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     const parsedShopNames = JSON.parse(shopNames);
 
-    await recursiveUpdateAccessToken(shopNames, fastify);
+    await recursiveUpdateAccessToken(parsedShopNames, fastify);
   })
 
   fastify.post("/api/shopify/deleteStore", async (request, reply) => {
