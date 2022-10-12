@@ -2,11 +2,9 @@
 import { checkEthereumNfts, checkPolygonNfts } from "./shopifyAlchemyHelpers.js";
 
 export const updateMetrics = async (fastify, offerData, shopName, redeemEntry) => {
-  console.log('UPDATE METRICS!', fastify.objection.models)
   try {
     const currentOffer = await fastify.objection.models.metrics.query().where('offer_uuid', '=', offerData.id)
     if (!currentOffer[0]) {
-      console.log('NO CURRENT OFFER')
       let redeemedList = [
         redeemEntry
       ];
@@ -17,10 +15,9 @@ export const updateMetrics = async (fastify, offerData, shopName, redeemEntry) =
           store_id: offerData.shopId,
           draft_order_details: offerData.draftOrderDetails,
           asset_id_on_service: offerData.assetIdOnService,
-          shop_name: shopName,
+          store_name: shopName,
           list_of_redemptions: JSON.stringify(redeemedList)
         })
-      console.log('CREATERES', createRes)
     } else {
       let parsedListOfRedemptions = JSON.parse(currentOffer[0].list_of_redemptions);
       parsedListOfRedemptions.push(redeemEntry);

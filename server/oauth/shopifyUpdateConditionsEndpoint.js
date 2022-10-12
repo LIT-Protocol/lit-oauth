@@ -52,7 +52,6 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
 
   const updatedOldOffers = allOffers.map(o => {
     let offerHolder = JSON.parse(JSON.stringify(o));
-    console.log('o', o)
 
     // update access control conditions
     const parsedAcc = JSON.parse(o.accessControlConditions);

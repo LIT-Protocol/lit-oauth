@@ -395,7 +395,6 @@ export default async function shopifyEndpoints(fastify, opts) {
       .where("id", "=", request.body.uuid);
 
     const draftOrderDetails = JSON.parse(offerData[0].draftOrderDetails);
-    console.log('draftOrderDetails', draftOrderDetails)
 
     const shop = await fastify.objection.models.shopifyStores
       .query()
@@ -493,7 +492,6 @@ export default async function shopifyEndpoints(fastify, opts) {
   })
 
   fastify.post('/api/shopify/updateRedeemedList', async (request, reply) => {
-    console.log('request.body', request.body)
     try {
       const result = await validateDevToken(request.headers.authorization);
       if (!result) {

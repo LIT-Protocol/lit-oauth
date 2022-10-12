@@ -207,8 +207,6 @@ export default async function (fastify, opts) {
       // .where("connected_service_id", "=", connectedService[0].id)
       .where("user_id", "=", connectedService[0].userId);
 
-    console.log('----> RECOVERED SHARES', recoveredShares)
-
     return recoveredShares;
   });
 
@@ -292,8 +290,6 @@ export default async function (fastify, opts) {
         source,
         dao_address: daoAddress,
       });
-
-    console.log('----> INSERT TO LINKS QUERY', insertToLinksQuery)
 
     let uuid = await insertToLinksQuery.id;
 

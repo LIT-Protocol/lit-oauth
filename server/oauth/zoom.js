@@ -62,7 +62,6 @@ export default async function (fastify, opts) {
     const accessToken = data.access_token;
 
     const user = await getUser({accessToken});
-    console.log("user", user);
 
     // check for existing access token
     const service = (

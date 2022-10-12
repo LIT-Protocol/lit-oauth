@@ -12,7 +12,6 @@ dotenv.config({
 
 export default async function shopifyThemeAppExtensionEndpoints(fastify, opts) {
   fastify.post("/api/shopify/getRedeemStats", async (request, reply) => {
-    console.log('start of redeem stats')
     const {jwt, offerArray, authSig, shopName, product} = request.body;
 
     let verified;

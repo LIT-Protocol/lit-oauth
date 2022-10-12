@@ -13,16 +13,16 @@ import { serviceLoginConfig } from "./serviceLoginConfig";
 import { useAppContext } from "../../context";
 
 export default function ServiceLogin() {
-  const { performWithAuthSig } = useAppContext();
+  const {performWithAuthSig} = useAppContext();
 
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarInfo, setSnackbarInfo] = useState({});
-  const [storedAuthSig, setStoredAuthSig] = useState({});
+  const [ openSnackbar, setOpenSnackbar ] = useState(false);
+  const [ snackbarInfo, setSnackbarInfo ] = useState({});
+  const [ storedAuthSig, setStoredAuthSig ] = useState({});
 
-  const [currentSelectedService, setCurrentSelectedService] = useState(
+  const [ currentSelectedService, setCurrentSelectedService ] = useState(
     serviceLoginConfig[0]
   );
-  const [currentUnselectedServices, setCurrentUnselectedServices] = useState(
+  const [ currentUnselectedServices, setCurrentUnselectedServices ] = useState(
     serviceLoginConfig.slice(1)
   );
 
@@ -38,7 +38,6 @@ export default function ServiceLogin() {
         setStoredAuthSig(() => authSig);
       });
     } catch (err) {
-      console.log("LIT AUTH FAILURE", err);
       handleOpenSnackBar(
         "Lit authentication failed, redirecting to Gateway.",
         "error"
@@ -73,12 +72,11 @@ export default function ServiceLogin() {
       return;
     }
 
-    console.log("LOGIN", service);
     window.location = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/${service}`;
   };
 
   const changeService = (service) => {
-    const serviceLoginConfigClone = [...serviceLoginConfig];
+    const serviceLoginConfigClone = [ ...serviceLoginConfig ];
     const selectedServiceIndex = serviceLoginConfigClone.findIndex(
       (s) => s.serviceTag === service
     );
@@ -160,44 +158,44 @@ export default function ServiceLogin() {
         <h2 className={"unselected-services-title"}>More Apps</h2>
         <span className={"unselected-services"}>
           {!!currentUnselectedServices.length &&
-          currentUnselectedServices.map((s, i) => (
-            <Card
-              key={i}
-              className={"unselected-service-card"}
-              sx={{ maxWidth: 345 }}
-            >
-              <CardMedia component="img" height="60" image={"/desk.jpeg"}/>
-              <CardContent>
+            currentUnselectedServices.map((s, i) => (
+              <Card
+                key={i}
+                className={"unselected-service-card"}
+                sx={{maxWidth: 345}}
+              >
+                <CardMedia component="img" height="60" image={"/desk.jpeg"}/>
+                <CardContent>
                   <span className={"unselected-service-title"}>
                     <div
                       className={"service-image"}
-                      style={{ backgroundImage: `url(${s.serviceImageUrl}` }}
+                      style={{backgroundImage: `url(${s.serviceImageUrl}`}}
                     />
                     <h2 className={"left-margin-buffer"}>{s.serviceName}</h2>
                     {/*<Typography gutterBottom variant="h5" component="div">*/}
                     {/*  {s.serviceName}*/}
                     {/*</Typography>*/}
                   </span>
-                <Typography variant="body2" color="text.secondary">
-                  Grant access to {s.serviceName} with blockchain
-                  requirements.
-                </Typography>
-              </CardContent>
-              <CardActions>
-                <Button
-                  variant={"outlined"}
-                  onClick={() => changeService(s.serviceTag)}
-                  size="small"
-                >
-                  Select
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
+                  <Typography variant="body2" color="text.secondary">
+                    Grant access to {s.serviceName} with blockchain
+                    requirements.
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant={"outlined"}
+                    onClick={() => changeService(s.serviceTag)}
+                    size="small"
+                  >
+                    Select
+                  </Button>
+                </CardActions>
+              </Card>
+            ))}
         </span>
       </section>
       <Snackbar
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        anchorOrigin={{vertical: "bottom", horizontal: "center"}}
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={handleCloseSnackbar}

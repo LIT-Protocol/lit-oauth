@@ -11,8 +11,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     return id.split("/").pop();
   })
 
-  console.log('ids - check check', ids)
-
   let splitTags = [];
   let resolvedProducts;
 
@@ -22,11 +20,9 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
       return await shopifyInstance.product.get(id);
     })
     resolvedProducts = await Promise.all(products);
-    console.log('resolvedProducts', resolvedProducts)
     splitTags = resolvedProducts.map(p => {
       return p.tags.split(',');
     });
-    console.log('splitTags', splitTags)
   } catch (err) {
     console.error("--> Error getting product on save DO:", err);
     splitTags = [];
@@ -45,7 +41,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
     return updatedTag;
   });
 
-  console.log('resolvedProducts - CHECK BEFORE MAP', resolvedProducts)
   // map over new tag array and update products
   try {
     const updatedProductPromises = resolvedProducts.map(async (p, i) => {
@@ -59,7 +54,6 @@ export const updateProductWithTagAndUuid = async (shopifyInstance, queryObj, sho
 
   // map over products and add metafield with query id
   let metafieldValue = {};
-  console.log('queryObj', queryObj)
   try {
     metafieldValue = {
       description: queryObj?.description ? queryObj.description : queryObj.humanized_access_control_conditions,
@@ -179,8 +173,6 @@ export const addShopifyMetafieldToDraftOrder = async ({shopify, draftOrderRes}) 
 export const createNoteAttributesAndTags = ({draftOrderDetails, authSig, selectedNft}) => {
   let noteAttributes = [];
   let tags = [];
-
-  console.log('selectedNft', selectedNft)
 
   if (draftOrderDetails['hasRedeemLimit']) {
     if (draftOrderDetails.typeOfRedeem === 'nftId') {

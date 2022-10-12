@@ -152,8 +152,6 @@ const ShopifyRedeem = () => {
       storedSolanaAuthSig,
       offerData
     }
-    console.log('------> acc', JSON.parse(offerData.accessControlConditions))
-    console.log('------> provisionAccessObj', provisionAccessObj)
     try {
       return provisionAccess(provisionAccessObj).then(jwt => {
         return jwt;
@@ -180,7 +178,6 @@ const ShopifyRedeem = () => {
           }
         }
         const redemptionValidityResp = await checkForUserValidity(checkForUserValidityObj);
-        console.log('redemptionValidityResp', redemptionValidityResp)
         setValidityResponse(redemptionValidityResp);
         setLoading(false);
         if (!redemptionValidityResp.data.allowRedeem) {

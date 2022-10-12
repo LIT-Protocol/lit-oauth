@@ -12,9 +12,9 @@ const promotionStatusObj = {
 }
 
 export default function ShopifySplash() {
-  const [shopName, setShopName] = useState(null);
-  const [promotionStatus, setPromotionStatus] = useState('checking');
-  const [connectedToLitNodeClient, setConnectedToLitNodeClient] = useState(false);
+  const [ shopName, setShopName ] = useState(null);
+  const [ promotionStatus, setPromotionStatus ] = useState('checking');
+  const [ connectedToLitNodeClient, setConnectedToLitNodeClient ] = useState(false);
 
   document.addEventListener('lit-ready', function (e) {
     setConnectedToLitNodeClient(true);
@@ -32,26 +32,21 @@ export default function ShopifySplash() {
         setPromotionStatus('notFound');
       } else {
         setShopName(shop);
-        console.log('Check for shop promotions args:', productId)
         checkForShopPromotions(shop, productId);
       }
     }
-  }, [shopName])
+  }, [ shopName ])
 
   // todo: this will be deprecate for old versions.  should split obsolete code into a different file
   const checkForShopPromotions = async (shop, productId) => {
     try {
-      console.log('CHECK FOR PROMOTIONS')
       const res = await checkForPromotions(shop, productId);
-      console.log('RES', res)
       if (!res.data) {
         setPromotionStatus('notFound');
       } else {
         setPromotionStatus('found');
-        console.log('${res.data}', res.data)
         // TODO: comment back in
         const link = `${process.env.REACT_APP_LIT_PROTOCOL_OAUTH_FRONTEND_HOST}/shopify/l/?id=${res.data}`;
-        console.log('link', link)
         window.location.href = link;
       }
     } catch (err) {

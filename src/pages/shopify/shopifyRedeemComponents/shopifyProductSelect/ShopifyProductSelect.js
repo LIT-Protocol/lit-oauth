@@ -16,7 +16,6 @@ const ShopifyProductSelect = ({
 
   useEffect(() => {
     let mappedVariantRows = [];
-    console.log('check product', product)
     product.variants.forEach((p) => {
       if (!!p.inventory_management && p.inventory_policy === 'deny' && p.inventory_quantity === 0) {
         console.log(`Variant titled '${p.title}' is out of stock. Skipping.`)
