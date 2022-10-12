@@ -195,7 +195,7 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
 
   const postData = {
     client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-    client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
+    client_secret: process.env.LIT_PROTOCOL_NEW_PROMOTIONAL_SECRET,
     refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
     access_token: store[0].accessToken,
   }
@@ -726,7 +726,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
       const postData = {
         client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
-        client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
+        client_secret: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_SECRET,
         refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
         access_token: oldAccessToken,
       }
@@ -764,6 +764,35 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     await recursiveUpdateAccessToken(shopNames, fastify);
     return true;
+  })
+
+  fastify.post("/api/shopify/getEntireShopInfo", async (request, reply) => {
+    const {name, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const store = await fastify.objection.models.shopifyStores.query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    return store[0];
+  })
+
+  fastify.post("/api/shopify/insertNewAccessToken", async (request, reply) => {
+    const {name, newAccessToken, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const updateRes = await fastify.objection.models.shopifyStores.query()
+      .where('shop_name', '=', shortenShopName(name))
+      .patch({
+        access_token: newAccessToken
+      })
+
+    return updateRes;
   })
 
   fastify.post("/api/shopify/deleteStore", async (request, reply) => {
