@@ -463,7 +463,7 @@ export default async function shopifyEndpoints(fastify, opts) {
       }
 
       try {
-        updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
+        await updateMetrics(fastify, offerData[0], shop[0].shopName, redeemEntry)
       } catch (err) {
         console.log('Error updating metrics:', err);
       }
