@@ -241,7 +241,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       return 'incomplete information'
     }
 
-    const draftOrderPatch = fastify.objection.models.shopifyDraftOrders
+    const draftOrderPatch = await fastify.objection.models.shopifyDraftOrders
       .query()
       .where('id', '=', id)
       .patch(offerUpdate)
