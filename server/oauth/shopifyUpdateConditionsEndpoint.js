@@ -207,7 +207,9 @@ const recursiveUpdateAccessToken = async (shopNames, fastify, refreshToken) => {
   console.log('check storeRefreshUrl', storeRefreshUrl)
 
   try {
-    const response = await axios.post(storeRefreshUrl, postData);
+    const response = await axios.post(storeRefreshUrl, postData, {
+      headers: {"Content-Type": "application/json"}
+    });
 
     const newAccessToken = response["access_token"]
     const updatedStore = await fastify.objection.models.shopifyStores.query()
