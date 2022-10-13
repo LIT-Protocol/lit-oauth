@@ -177,7 +177,7 @@ const getAndUpdateOldOffers = async (fastify, allOffers) => {
   return resolvedUpdatedOldOffers;
 }
 
-const recursiveUpdateAccessToken = async (shopNames, fastify) => {
+const recursiveUpdateAccessToken = async (shopNames, fastify, refreshToken) => {
   if (!shopNames.length) {
     return;
   }
@@ -195,7 +195,7 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
   const postData = {
     client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
     client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
-    refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
+    refresh_token: refreshToken,
     access_token: store[0].accessToken,
   }
 
@@ -224,8 +224,8 @@ const recursiveUpdateAccessToken = async (shopNames, fastify) => {
   console.log('name:', currentStoreName)
   console.log('success:', success)
   setTimeout(async () => {
-    await recursiveUpdateAccessToken(currentArrayOfShops, fastify)
-  }, 5000)
+    await recursiveUpdateAccessToken(currentArrayOfShops, fastify, refreshToken)
+  }, 4000)
 }
 
 export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
@@ -711,7 +711,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
   });
 
   fastify.post("/api/shopify/updateAccessToken", async (request, reply) => {
-    const {name, pass} = request.body;
+    const {name, pass, refreshToken} = request.body;
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
@@ -728,7 +728,7 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
       const postData = {
         client_id: process.env.LIT_PROTOCOL_SHOP_PROMOTIONAL_API_KEY,
         client_secret: process.env.LIT_PROTOCOL_SHOP_NEW_PROMOTIONAL_SECRET,
-        refresh_token: process.env.SHOPIFY_TEMP_REFRESH_TOKEN,
+        refresh_token: refreshToken,
         access_token: oldAccessToken,
       }
       console.log('CHECK REQUEST URL')
@@ -757,13 +757,13 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
   })
 
   fastify.post("/api/shopify/updateListOfAccessTokens", async (request, reply) => {
-    const {shopNames, pass} = request.body;
+    const {shopNames, pass, refreshToken} = request.body;
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
     }
 
-    await recursiveUpdateAccessToken(shopNames, fastify);
+    await recursiveUpdateAccessToken(shopNames, fastify, refreshToken);
     return true;
   })
 
