@@ -767,34 +767,34 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
     return true;
   })
 
-  // fastify.post("/api/shopify/getEntireShopInfo", async (request, reply) => {
-  //   const {name, pass} = request.body;
-  //
-  //   if (pass !== process.env.ADMIN_KEY) {
-  //     return 'nope';
-  //   }
-  //
-  //   const store = await fastify.objection.models.shopifyStores.query()
-  //     .where('shop_name', '=', shortenShopName(name));
-  //
-  //   return store[0];
-  // })
-  //
-  // fastify.post("/api/shopify/insertNewAccessToken", async (request, reply) => {
-  //   const {name, newAccessToken, pass} = request.body;
-  //
-  //   if (pass !== process.env.ADMIN_KEY) {
-  //     return 'nope';
-  //   }
-  //
-  //   const updateRes = await fastify.objection.models.shopifyStores.query()
-  //     .where('shop_name', '=', shortenShopName(name))
-  //     .patch({
-  //       access_token: newAccessToken
-  //     })
-  //
-  //   return updateRes;
-  // })
+  fastify.post("/api/shopify/getEntireShopInfo", async (request, reply) => {
+    const {name, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const store = await fastify.objection.models.shopifyStores.query()
+      .where('shop_name', '=', shortenShopName(name));
+
+    return store[0];
+  })
+
+  fastify.post("/api/shopify/insertNewAccessToken", async (request, reply) => {
+    const {name, newAccessToken, pass} = request.body;
+
+    if (pass !== process.env.ADMIN_KEY) {
+      return 'nope';
+    }
+
+    const updateRes = await fastify.objection.models.shopifyStores.query()
+      .where('shop_name', '=', shortenShopName(name))
+      .patch({
+        access_token: newAccessToken
+      })
+
+    return updateRes;
+  })
 
   fastify.post("/api/shopify/deleteStore", async (request, reply) => {
     const {name, pass} = request.body;
@@ -815,13 +815,6 @@ export default async function shopifyUpdateConditionsEndpoint(fastify, opts) {
 
     if (pass !== process.env.ADMIN_KEY) {
       return 'nope';
-    }
-
-    console.log('Check table!', fastify.objection.models)
-    try {
-      console.log('Check metrics!', fastify.objection.models.metrics)
-    } catch (err) {
-      console.log('no metrics pls')
     }
 
     return await fastify.objection.models.metrics
