@@ -486,7 +486,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return orderData[0];
     } catch (err) {
-      console.error("--> Error getting all draft orders:", err);
+      console.error("--> Error getting redeem limit status orders:", err);
       return err;
     }
   })
@@ -520,7 +520,7 @@ export default async function shopifyEndpoints(fastify, opts) {
 
       return updatedOrderRes;
     } catch (err) {
-      console.error("--> Error getting all draft orders:", err);
+      console.error("--> Error updating redeem list status:", err);
       return err;
     }
   })
