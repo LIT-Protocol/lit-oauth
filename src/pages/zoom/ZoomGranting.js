@@ -19,6 +19,8 @@ import LitProtocolConnection from "../sharedComponents/litProtocolConnection/Lit
 import BackToApps from "../sharedComponents/backToApps/BackToApps";
 import ShareModal from "lit-share-modal-v3-react-17";
 
+import './zoomGranting.css'
+
 const API_HOST = process.env.REACT_APP_LIT_PROTOCOL_OAUTH_API_HOST;
 
 export default function ZoomGranting() {
@@ -359,14 +361,16 @@ export default function ZoomGranting() {
           {/*)}*/}
 
           {openShareModal && (
-            <ShareModal
-              onClose={() => setOpenShareModal(false)}
-              onUnifiedAccessControlConditionsSelected={async (restriction) => {
-                await addToAccessControlConditions(restriction);
-                setOpenShareModal(false);
-                setOpenProvisionAccessDialog(true);
-              }}
-            />
+            <div className={'share-modal-container'}>
+              <ShareModal
+                onClose={() => setOpenShareModal(false)}
+                onUnifiedAccessControlConditionsSelected={async (restriction) => {
+                  await addToAccessControlConditions(restriction);
+                  setOpenShareModal(false);
+                  setOpenProvisionAccessDialog(true);
+                }}
+              />
+            </div>
           )}
 
           <LitProtocolConnection
