@@ -1,3 +1,5 @@
+⛔️ DEPRECATED this is an unmaintained repository using an older version of the Lit JS SDK. 
+
 # Lit Protocol oauth connectors
 
 ## Migrations
